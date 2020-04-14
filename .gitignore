@@ -1,5 +1,6 @@
 env.json
 node_modules/
+!node_modules/onvif/*
 example*
 test.js
 bfg.jar

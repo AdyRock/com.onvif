@@ -17,6 +17,7 @@
     "url": "https://github.com/AdyRock/com.onvif/issues"
   },
   "source": "https://github.com/AdyRock/com.onvif",
+  "homeyCommunityTopicId": 28377,
   "images": {
     "large": "/assets/images/large.png",
     "small": "/assets/images/small.png"
@@ -175,7 +176,7 @@
               },
               "value": true,
               "hint": {
-                "en": "Motion detection waits for no motion before triggering new motion."
+                "en": "Motion detection waits for no motion before triggering a new motion."
               }
             },
             {
