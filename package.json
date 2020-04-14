@@ -1,0 +1,13 @@
+{
+  "name": "com.onvif",
+  "version": "0.0.1",
+  "main": "app.js",
+  "devDependencies": {
+    "homey": "^2.3.1"
+  },
+  "dependencies": {
+    "nimble": "0.0.2",
+    "node-fetch": "^2.6.0",
+    "onvif": "github:agsh/onvif#dev"
+  }
+}

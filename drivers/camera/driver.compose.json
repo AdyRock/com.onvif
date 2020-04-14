@@ -1,0 +1,68 @@
+{
+  "id": "camera",
+  "name": {
+    "en": "Camera"
+  },
+
+  "class": "camera",
+  "capabilities": [
+    "alarm_motion",
+    "alarm_tamper",
+    "motion_enabled"
+  ],
+
+  "pair": [{
+      "id": "list_devices",
+      "template": "list_devices",
+      "navigation": {
+        "next": "login"
+      },
+      "options": {
+        "singular": true
+      }
+    },
+    {
+      "id": "login",
+      "template": "login_credentials"
+    },
+    {
+      "id": "add_devices",
+      "template": "add_devices"
+    }
+  ],
+
+  "settings": [{
+    "type": "group",
+    "label": {
+      "en": "Credentials"
+    },
+    "children": [{
+        "id": "username",
+        "type": "text",
+        "label": {
+          "en": "User Name"
+        },
+        "value": "",
+        "hint": {
+          "en": "User name required to login to the camera."
+        }
+      },
+      {
+        "id": "password",
+        "type": "password",
+        "label": {
+          "en": "Password"
+        },
+        "value": "",
+        "hint": {
+          "en": "Password required to login to the camera."
+        }
+      }
+    ]
+  }],
+
+  "images": {
+    "large": "/drivers/camera/assets/images/large.png",
+    "small": "/drivers/camera/assets/images/small.png"
+  }
+}

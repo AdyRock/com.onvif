@@ -1,0 +1,25 @@
+{
+  "id": "com.onvif",
+  "version": "0.0.1",
+  "compatibility": ">=3.0.0",
+  "sdk": 2,
+  "name": {
+    "en": "ONVIF Camera"
+  },
+  "description": {
+    "en": "Support for ONVIF compatible cameras"
+  },
+  "category": [
+    "video"
+  ],
+  "permissions": [],
+  "images": {
+    "large": "/assets/images/large.png",
+    "small": "/assets/images/small.png"
+  },
+  "author": {
+    "name": "Adrian Rockall",
+    "email": "ady@rockall.plus.com"
+  }
+
+}

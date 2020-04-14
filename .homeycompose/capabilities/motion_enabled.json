@@ -1,0 +1,10 @@
+{
+    "type": "boolean",
+    "title": {
+        "en": "Motion enabled"
+    },
+    "getable": true,
+    "setable": true,
+    "uiComponent": "toggle",
+    "icon": "/assets/motion.svg"
+}

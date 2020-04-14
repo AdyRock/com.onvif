@@ -1,0 +1,179 @@
+{
+  "id": "com.onvif",
+  "version": "0.0.1",
+  "compatibility": ">=3.0.0",
+  "sdk": 2,
+  "name": {
+    "en": "ONVIF Camera"
+  },
+  "description": {
+    "en": "Support for ONVIF compatible cameras"
+  },
+  "category": [
+    "video"
+  ],
+  "permissions": [],
+  "images": {
+    "large": "/assets/images/large.png",
+    "small": "/assets/images/small.png"
+  },
+  "author": {
+    "name": "Adrian Rockall",
+    "email": "ady@rockall.plus.com"
+  },
+  "flow": {
+    "triggers": [
+      {
+        "id": "motionEnabledTrigger",
+        "title": {
+          "en": "Motion enabled"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          }
+        ]
+      },
+      {
+        "id": "motionDisabledTrigger",
+        "title": {
+          "en": "Motion disabled"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          }
+        ]
+      }
+    ],
+    "conditions": [
+      {
+        "id": "motionEnabledCondition",
+        "title": {
+          "en": "Motion is !{{enabled|disabled}}"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "motionEnableAction",
+        "title": {
+          "en": "Enable motion"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          }
+        ]
+      },
+      {
+        "id": "motionDisableAction",
+        "title": {
+          "en": "Disable motion"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          }
+        ]
+      }
+    ]
+  },
+  "drivers": [
+    {
+      "id": "camera",
+      "name": {
+        "en": "Camera"
+      },
+      "class": "camera",
+      "capabilities": [
+        "alarm_motion",
+        "alarm_tamper",
+        "motion_enabled"
+      ],
+      "pair": [
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "login"
+          },
+          "options": {
+            "singular": true
+          }
+        },
+        {
+          "id": "login",
+          "template": "login_credentials"
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        }
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Credentials"
+          },
+          "children": [
+            {
+              "id": "username",
+              "type": "text",
+              "label": {
+                "en": "User Name"
+              },
+              "value": "",
+              "hint": {
+                "en": "User name required to login to the camera."
+              }
+            },
+            {
+              "id": "password",
+              "type": "password",
+              "label": {
+                "en": "Password"
+              },
+              "value": "",
+              "hint": {
+                "en": "Password required to login to the camera."
+              }
+            }
+          ]
+        }
+      ],
+      "images": {
+        "large": "/drivers/camera/assets/images/large.png",
+        "small": "/drivers/camera/assets/images/small.png"
+      }
+    }
+  ],
+  "capabilities": {
+    "motion_enabled": {
+      "type": "boolean",
+      "title": {
+        "en": "Motion enabled"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "icon": "/assets/motion.svg"
+    }
+  }
+}

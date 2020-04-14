@@ -1,0 +1,34 @@
+{
+    "triggers": [{
+            "id": "motionEnabledTrigger",
+            "title": {
+                "en": "Motion enabled"
+            }
+        },
+        {
+            "id": "motionDisabledTrigger",
+            "title": {
+                "en": "Motion disabled"
+            }
+        }
+    ],
+    "conditions": [{
+        "id": "motionEnabledCondition",
+        "title": {
+            "en": "Motion is !{{enabled|disabled}}"
+        }
+    }],
+    "actions": [{
+            "id": "motionEnableAction",
+            "title": {
+                "en": "Enable motion"
+            }
+        },
+        {
+            "id": "motionDisableAction",
+            "title": {
+                "en": "Disable motion"
+            }
+        }
+    ]
+}
