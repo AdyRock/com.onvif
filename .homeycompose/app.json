@@ -13,6 +13,11 @@
     "video"
   ],
   "permissions": [],
+  "bugs": {
+    "url": "https://github.com/AdyRock/com.onvif/issues"
+  },
+  "source": "https://github.com/AdyRock/com.onvif",
+
   "images": {
     "large": "/assets/images/large.png",
     "small": "/assets/images/small.png"

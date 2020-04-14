@@ -32,35 +32,65 @@
   ],
 
   "settings": [{
-    "type": "group",
-    "label": {
-      "en": "Credentials"
-    },
-    "children": [{
-        "id": "username",
-        "type": "text",
-        "label": {
-          "en": "User Name"
-        },
-        "value": "",
-        "hint": {
-          "en": "User name required to login to the camera."
-        }
+      "type": "group",
+      "label": {
+        "en": "Credentials"
       },
-      {
-        "id": "password",
-        "type": "password",
-        "label": {
-          "en": "Password"
+      "children": [{
+          "id": "username",
+          "type": "text",
+          "label": {
+            "en": "User Name"
+          },
+          "value": "",
+          "hint": {
+            "en": "User name required to login to the camera."
+          }
         },
-        "value": "",
-        "hint": {
-          "en": "Password required to login to the camera."
+        {
+          "id": "password",
+          "type": "password",
+          "label": {
+            "en": "Password"
+          },
+          "value": "",
+          "hint": {
+            "en": "Password required to login to the camera."
+          }
         }
-      }
-    ]
-  }],
-
+      ]
+    },
+    {
+      "type": "group",
+      "label": {
+        "en": "Motion Trigger"
+      },
+      "children": [{
+          "id": "single",
+          "type": "checkbox",
+          "label": {
+            "en": "Single"
+          },
+          "value": true,
+          "hint": {
+            "en": "Motion detection waits for no motion before triggering a new motion."
+          }
+        },
+        {
+          "id": "delay",
+          "type": "number",
+          "label": {
+            "en": "Delay"
+          },
+          "value": 0.5,
+          "units": "seconds",
+          "hint": {
+            "en": "Delay before image capture after motion triggered."
+          }
+        }
+      ]
+    }
+  ],
   "images": {
     "large": "/drivers/camera/assets/images/large.png",
     "small": "/drivers/camera/assets/images/small.png"

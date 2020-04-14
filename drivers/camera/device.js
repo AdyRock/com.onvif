@@ -45,15 +45,16 @@ class CameraDevice extends Homey.Device {
 				await this.setupImages();
 
 				if (!devData.hasMotion) {
-					if (this.hasCapability('motion_onoff')) {
-						this.removeCapability('motion_onoff');
+					if (this.hasCapability('motion_enabled')) {
+						this.removeCapability('motion_enabled');
 					}
 
 					if (this.hasCapability('alarm_motion')) {
 						this.removeCapability('alarm_motion');
 					}
 				} else {
-					if (this.getCapabilityValue('motion_onoff')) {
+
+					if (this.getCapabilityValue('motion_enabled')) {
 						// Motion detection is enabled so listen for events
 						this.listenForEvents(this.cam);
 					}
@@ -71,13 +72,17 @@ class CameraDevice extends Homey.Device {
 	}
 
 	async listenForEvents(cam_obj) {
+		//Stop listening for motion events before we add a new listener
+		this.cam.removeAllListeners('event');
+
 		console.log('#############################    Waiting for events   ######################');
 		const camSnapPath = await Homey.app.getSnapshotURL(this.cam);
 		const eventImage = this.eventImage;
+		const settings = this.getSettings();
 
 		cam_obj.on('event', async (camMessage, xml) => {
 			try {
-				console.log('----------------    Event detected   -----------------------');
+				//console.log('----------------    Event detected   -----------------------');
 
 				this.setAvailable();
 
@@ -109,21 +114,28 @@ class CameraDevice extends Homey.Device {
 				}
 
 				if (dataName) {
-					console.log("Event ", dataName, " = ", dataValue);
+					//console.log("Event ", dataName, " = ", dataValue);
 					if (dataName === "IsMotion") {
-						this.setCapabilityValue('alarm_motion', dataValue);
-						if (dataValue) {
-							const storageStream = fs.createWriteStream(Homey.app.getUserDataPath(this.eventImageFilename));
-							const res = await fetch(camSnapPath.uri);
-							if (!res.ok) throw new Error(res.statusText);
-							res.body.pipe(storageStream);
-							storageStream.on('error', function (err) {
-								console.log(err);
-							})
-							storageStream.on('finish', function () {
-								eventImage.update();
-								console.log("Event Image Updated");
-							});
+						if (!settings.single || dataValue != this.getCapabilityValue('alarm_motion')) {
+							console.log("Event Processing", dataName, " = ", dataValue);
+							this.setCapabilityValue('alarm_motion', dataValue);
+							if (dataValue) {
+								if (settings.delay > 0)
+								{
+									await new Promise(resolve => setTimeout(resolve, settings.delay * 1000));
+								}
+								const storageStream = fs.createWriteStream(Homey.app.getUserDataPath(this.eventImageFilename));
+								const res = await fetch(camSnapPath.uri);
+								if (!res.ok) throw new Error(res.statusText);
+								res.body.pipe(storageStream);
+								storageStream.on('error', function (err) {
+									console.log(err);
+								})
+								storageStream.on('finish', function () {
+									eventImage.update();
+									console.log("Event Image Updated");
+								});
+							}
 						}
 					}
 				}

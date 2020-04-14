@@ -13,6 +13,10 @@
     "video"
   ],
   "permissions": [],
+  "bugs": {
+    "url": "https://github.com/AdyRock/com.onvif/issues"
+  },
+  "source": "https://github.com/AdyRock/com.onvif",
   "images": {
     "large": "/assets/images/large.png",
     "small": "/assets/images/small.png"
@@ -153,6 +157,37 @@
               "value": "",
               "hint": {
                 "en": "Password required to login to the camera."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Motion Trigger"
+          },
+          "children": [
+            {
+              "id": "single",
+              "type": "checkbox",
+              "label": {
+                "en": "Single"
+              },
+              "value": true,
+              "hint": {
+                "en": "Motion detection waits for no motion before triggering new motion."
+              }
+            },
+            {
+              "id": "delay",
+              "type": "number",
+              "label": {
+                "en": "Delay"
+              },
+              "value": 0.5,
+              "units": "seconds",
+              "hint": {
+                "en": "Delay before image capture after motion triggered."
               }
             }
           ]
