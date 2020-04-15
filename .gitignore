@@ -2,6 +2,10 @@ env.json
 !node_modules/
 node_modules/*
 !node_modules/onvif/
+!node_modules/node-fetch/
+!node_modules/sax/
+!node_modules/xml2js/
+!node_modules/xmlbuilder/
 example*
 test.js
 bfg.jar
