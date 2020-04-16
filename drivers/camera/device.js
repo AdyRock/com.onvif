@@ -123,13 +123,13 @@ class CameraDevice extends Homey.Device {
 				this.setAvailable();
 			} else {
 				var d = new Date(date);
-				date = d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes() + ":" + (d.getSeconds() < 10 ? "0" : "") + d.getSeconds() + " " + (d.getDate() < 10 ? "0" : "") + d.getDate() + "-" + (d.getMonth() < 10 ? "0" : "") + d.getMonth();
+				date = d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes() + " " + (d.getDate() < 10 ? "0" : "") + d.getDate() + "-" + (d.getMonth() < 10 ? "0" : "") + d.getMonth();
 				this.setCapabilityValue('date_time', date);
 			}
 		}.bind(this));
 
 		this.checkCamera = this.checkCamera.bind(this);
-		this.checkTimerId = setTimeout(this.checkCamera, this.getCapabilityValue('alarm_tamper') ? 10000 : 1000);
+		this.checkTimerId = setTimeout(this.checkCamera, this.getCapabilityValue('alarm_tamper') ? 60000 : 30000);
 	}
 
 	async listenForEvents(cam_obj) {
@@ -150,6 +150,7 @@ class CameraDevice extends Homey.Device {
 
 				let eventTopic = camMessage.topic._
 				eventTopic = Homey.app.stripNamespaces(eventTopic)
+				console.log(eventTopic);
 
 				let dataName = "";
 				let dataValue = "";
