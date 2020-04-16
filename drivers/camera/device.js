@@ -9,6 +9,7 @@ class CameraDevice extends Homey.Device {
 	onInit() {
 		this.cam = null;
 		this.log('CameraDevice has been inited');
+
 		this.connectCamera();
 		this.registerCapabilityListener('motion_enabled', this.onCapabilityMotionEnable.bind(this));
 
@@ -17,6 +18,35 @@ class CameraDevice extends Homey.Device {
 
 		this.motionDisabledTrigger = new Homey.FlowCardTriggerDevice('motionDisabledTrigger');
 		this.motionDisabledTrigger.register();
+
+		this.registerCapabilityListener('button.syncTime', async () => {
+			// Set the Camera date to Homey's date
+			console.log("Syncing time");
+
+			Date.prototype.stdTimezoneOffset = function () {
+				var jan = new Date(this.getFullYear(), 0, 1);
+				var jul = new Date(this.getFullYear(), 6, 1);
+				return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+			}
+
+			Date.prototype.isDstObserved = function () {
+				return this.getTimezoneOffset() < this.stdTimezoneOffset();
+			}
+
+			var d = new Date();
+			var dls = d.isDstObserved();
+
+			this.cam.setSystemDateAndTime({
+					'dateTime': d,
+					'dateTimeType': 'Manual',
+					'daylightSavings': dls
+				},
+				function (err, date, xml) {
+					if (err) {
+						console.log("Check Camera Error: ", err);
+					}
+				}.bind(this));
+		});
 	}
 
 	async onAdded() {
@@ -29,7 +59,6 @@ class CameraDevice extends Homey.Device {
 		const devData = this.getData();
 		this.log("Dev Data: ", devData);
 		const settings = this.getSettings();
-		this.log("Settings: ", settings);
 
 		if (this.getStoreValue('initialised')) {
 			try {
@@ -60,6 +89,9 @@ class CameraDevice extends Homey.Device {
 					}
 				}
 				this.setAvailable();
+				this.checkCamera = this.checkCamera.bind(this);
+				this.checkTimerId = setTimeout(this.checkCamera, 10000);
+				this.setCapabilityValue('alarm_tamper', false);
 			} catch (err) {
 				this.log("Connect to camera error: ", err);
 				this.setUnavailable();
@@ -69,6 +101,35 @@ class CameraDevice extends Homey.Device {
 		} else {
 			this.log("Device not ready");
 		}
+	}
+
+	async checkCamera() {
+		this.cam.getSystemDateAndTime(function (err, date, xml) {
+			if (err) {
+				err = String(err);
+				console.log("Check Camera Error: ", err);
+				if (err.indexOf("EHOSTUNREACH") >= 0) {
+					this.setUnavailable();
+				} else if (err.indexOf("Network timeout") >= 0) {
+					if (!this.getCapabilityValue('alarm_tamper')) {
+						this.setCapabilityValue('alarm_tamper', true);
+						var d = new Date(Date.now());
+						var date = d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes() + ":" + (d.getSeconds() < 10 ? "0" : "") + d.getSeconds() + " " + (d.getDate() < 10 ? "0" : "") + d.getDate() + "-" + (d.getMonth() < 10 ? "0" : "") + d.getMonth();
+						this.setCapabilityValue('tamper_time', date);
+					}
+				}
+			} else if (this.getCapabilityValue('alarm_tamper')) {
+				this.setCapabilityValue('alarm_tamper', false);
+				this.setAvailable();
+			} else {
+				var d = new Date(date);
+				date = d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes() + ":" + (d.getSeconds() < 10 ? "0" : "") + d.getSeconds() + " " + (d.getDate() < 10 ? "0" : "") + d.getDate() + "-" + (d.getMonth() < 10 ? "0" : "") + d.getMonth();
+				this.setCapabilityValue('date_time', date);
+			}
+		}.bind(this));
+
+		this.checkCamera = this.checkCamera.bind(this);
+		this.checkTimerId = setTimeout(this.checkCamera, this.getCapabilityValue('alarm_tamper') ? 10000 : 1000);
 	}
 
 	async listenForEvents(cam_obj) {
@@ -83,6 +144,7 @@ class CameraDevice extends Homey.Device {
 		cam_obj.on('event', async (camMessage, xml) => {
 			try {
 				//console.log('----------------    Event detected   -----------------------');
+				// console.log(camMessage);
 
 				this.setAvailable();
 
@@ -114,14 +176,16 @@ class CameraDevice extends Homey.Device {
 				}
 
 				if (dataName) {
-					//console.log("Event ", dataName, " = ", dataValue);
+					console.log("Event ", dataName, " = ", dataValue);
 					if (dataName === "IsMotion") {
 						if (!settings.single || dataValue != this.getCapabilityValue('alarm_motion')) {
 							console.log("Event Processing", dataName, " = ", dataValue);
 							this.setCapabilityValue('alarm_motion', dataValue);
 							if (dataValue) {
-								if (settings.delay > 0)
-								{
+								var d = new Date(Date.now());
+								var date = d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes() + ":" + (d.getSeconds() < 10 ? "0" : "") + d.getSeconds() + " " + (d.getDate() < 10 ? "0" : "") + d.getDate() + "-" + (d.getMonth() < 10 ? "0" : "") + d.getMonth();
+								this.setCapabilityValue('event_time', date);
+								if (settings.delay > 0) {
 									await new Promise(resolve => setTimeout(resolve, settings.delay * 1000));
 								}
 								const storageStream = fs.createWriteStream(Homey.app.getUserDataPath(this.eventImageFilename));
@@ -197,8 +261,6 @@ class CameraDevice extends Homey.Device {
 				storageStream.on('error', function (err) {
 					console.log(err);
 				});
-			} else {
-				console.log("Event image already exists");
 			}
 
 			this.eventImage = new Homey.Image();
@@ -227,6 +289,11 @@ class CameraDevice extends Homey.Device {
 		} catch (err) {
 			console.log("SnapShot error: ", err);
 		}
+	}
+
+	onDeleted() {
+		this.cam.removeAllListeners('event');
+		clearTimeout(this.checkTimerId);
 	}
 }
 

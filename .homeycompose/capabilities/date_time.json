@@ -1,0 +1,9 @@
+{
+    "type": "string",
+    "title": {
+        "en": "Camera Time"
+    },
+    "icon": "/assets/camera_time.svg",
+    "getable": true,
+    "setable": false
+}

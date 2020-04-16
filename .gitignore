@@ -6,6 +6,7 @@ node_modules/*
 !node_modules/sax/
 !node_modules/xml2js/
 !node_modules/xmlbuilder/
+!node_modules/lodash.get/
 example*
 test.js
 bfg.jar

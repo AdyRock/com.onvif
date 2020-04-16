@@ -1,0 +1,9 @@
+{
+    "type": "string",
+    "title": {
+        "en": "Tamper Time"
+    },
+    "icon": "/assets/tamper_time.svg",
+    "getable": true,
+    "setable": false
+}

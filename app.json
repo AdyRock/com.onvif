@@ -107,10 +107,25 @@
       },
       "class": "camera",
       "capabilities": [
+        "motion_enabled",
         "alarm_motion",
         "alarm_tamper",
-        "motion_enabled"
+        "event_time",
+        "tamper_time",
+        "date_time",
+        "button.syncTime"
       ],
+      "capabilitiesOptions": {
+        "button.syncTime": {
+          "maintenanceAction": true,
+          "title": {
+            "en": "Sync. Time"
+          },
+          "desc": {
+            "en": "Set the camera time to Homey's time."
+          }
+        }
+      },
       "pair": [
         {
           "id": "list_devices",
@@ -201,6 +216,24 @@
     }
   ],
   "capabilities": {
+    "date_time": {
+      "type": "string",
+      "title": {
+        "en": "Camera Time"
+      },
+      "icon": "/assets/camera_time.svg",
+      "getable": true,
+      "setable": false
+    },
+    "event_time": {
+      "type": "string",
+      "title": {
+        "en": "Motion Event Time"
+      },
+      "icon": "/assets/motion_time.svg",
+      "getable": true,
+      "setable": false
+    },
     "motion_enabled": {
       "type": "boolean",
       "title": {
@@ -210,6 +243,15 @@
       "setable": true,
       "uiComponent": "toggle",
       "icon": "/assets/motion.svg"
+    },
+    "tamper_time": {
+      "type": "string",
+      "title": {
+        "en": "Tamper Time"
+      },
+      "icon": "/assets/tamper_time.svg",
+      "getable": true,
+      "setable": false
     }
   }
 }

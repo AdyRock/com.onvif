@@ -1,0 +1,9 @@
+{
+    "type": "string",
+    "title": {
+        "en": "Motion Event Time"
+    },
+    "icon": "/assets/motion_time.svg",
+    "getable": true,
+    "setable": false
+}
