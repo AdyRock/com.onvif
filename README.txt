@@ -1,4 +1,3 @@
-Support for ONVIF compatible IP cameras.
 ONVIF is an industry standard supported by many cameras from a range of manufactures.
 See https://www.onvif.org/ for more information about the standard.
 There a various protocols defined and each camera model will support various combinations of these.
