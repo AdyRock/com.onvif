@@ -178,8 +178,17 @@ class CameraDevice extends Homey.Device {
 				this.setCapabilityValue('alarm_tamper', false);
 				this.setAvailable();
 			} else {
-				var d = new Date(date);
-				date = d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes() + " " + (d.getDate() < 10 ? "0" : "") + d.getDate() + "-" + (d.getMonth() < 10 ? "0" : "") + d.getMonth();
+				let settings = this.getSettings();
+				if (settings.timeFormat == "mm_dd") {
+					var d = new Date(date);
+					date = d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes() + " " + (d.getDate() < 10 ? "0" : "") + d.getDate() + "-" + (d.getMonth() < 10 ? "0" : "") + d.getMonth();
+				}
+				if (settings.timeFormat == "system") {
+					date = date.toLocaleString();
+				}
+				else{
+					date = date.toJSON();
+				}
 				this.setCapabilityValue('date_time', date);
 			}
 		}.bind(this));

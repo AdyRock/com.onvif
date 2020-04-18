@@ -1,6 +1,6 @@
 {
   "id": "com.onvif",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "compatibility": ">=3.0.0",
   "sdk": 2,
   "name": {
@@ -216,6 +216,37 @@
               "hint": {
                 "en": "Delay before image capture after motion triggered."
               }
+            },
+            {
+              "id": "timeFormat",
+              "type": "dropdown",
+              "label": {
+                "en": "Time Format"
+              },
+              "value": "raw",
+              "hint": {
+                "en": "The format to show the time capabilities."
+              },
+              "values": [
+                {
+                  "id": "raw",
+                  "label": {
+                    "en": "Direct From Camera"
+                  }
+                },
+                {
+                  "id": "system",
+                  "label": {
+                    "en": "Local"
+                  }
+                },
+                {
+                  "id": "mm_dd",
+                  "label": {
+                    "en": "Short HH:MM DD-MM"
+                  }
+                }
+              ]
             }
           ]
         },
