@@ -170,31 +170,36 @@ class CameraDevice extends Homey.Device {
 					if (!this.getCapabilityValue('alarm_tamper')) {
 						this.setCapabilityValue('alarm_tamper', true);
 						var d = new Date(Date.now());
-						var date = d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes() + ":" + (d.getSeconds() < 10 ? "0" : "") + d.getSeconds() + " " + (d.getDate() < 10 ? "0" : "") + d.getDate() + "-" + (d.getMonth() < 10 ? "0" : "") + d.getMonth();
-						this.setCapabilityValue('tamper_time', date);
+						this.setCapabilityValue('tamper_time', convertDate(d));
 					}
 				}
 			} else if (this.getCapabilityValue('alarm_tamper')) {
 				this.setCapabilityValue('alarm_tamper', false);
 				this.setAvailable();
 			} else {
-				let settings = this.getSettings();
-				if (settings.timeFormat == "mm_dd") {
-					var d = new Date(date);
-					date = d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes() + " " + (d.getDate() < 10 ? "0" : "") + d.getDate() + "-" + (d.getMonth() < 10 ? "0" : "") + d.getMonth();
-				}
-				if (settings.timeFormat == "system") {
-					date = date.toLocaleString();
-				}
-				else{
-					date = date.toJSON();
-				}
-				this.setCapabilityValue('date_time', date);
+				this.setCapabilityValue('date_time', convertDate(date));
 			}
 		}.bind(this));
 
 		this.checkCamera = this.checkCamera.bind(this);
 		this.checkTimerId = setTimeout(this.checkCamera, this.getCapabilityValue('alarm_tamper') ? 60000 : 30000);
+	}
+
+	convertDate(date)
+	{
+		let settings = this.getSettings();
+		if (settings.timeFormat == "mm_dd") {
+			var d = new Date(date);
+			date = d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes() + " " + (d.getDate() < 10 ? "0" : "") + d.getDate() + "-" + (d.getMonth() < 10 ? "0" : "") + d.getMonth();
+		}
+		if (settings.timeFormat == "system") {
+			date = date.toLocaleString();
+		}
+		else{
+			date = date.toJSON();
+		}
+
+		return date;
 	}
 
 	async listenForEvents(cam_obj) {
@@ -249,7 +254,7 @@ class CameraDevice extends Homey.Device {
 							this.setCapabilityValue('alarm_motion', dataValue);
 							if (dataValue) {
 								var d = new Date(Date.now());
-								var date = d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes() + ":" + (d.getSeconds() < 10 ? "0" : "") + d.getSeconds() + " " + (d.getDate() < 10 ? "0" : "") + d.getDate() + "-" + (d.getMonth() < 10 ? "0" : "") + d.getMonth();
+								var date = convertDate(d)
 								this.setCapabilityValue('event_time', date);
 								if (settings.delay > 0) {
 									await new Promise(resolve => setTimeout(resolve, settings.delay * 1000));
@@ -279,9 +284,9 @@ class CameraDevice extends Homey.Device {
 		try {
 			console.log("Switch motion detection On/Off: ", value);
 			this.setCapabilityValue('alarm_motion', false);
-			const devData = this.getData();
+			const settings = this.getSettings();
 
-			if (value && devData.hasMotion) {
+			if (value && settings.hasMotion) {
 				// Start listening for motion events
 				this.listenForEvents(this.cam);
 

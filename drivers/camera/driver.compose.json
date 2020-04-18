@@ -23,6 +23,11 @@
       "desc": {
         "en": "Set the camera time to Homey's time."
       }
+    },
+    "alarm_tamper":{
+      "title": {
+        "en": "Offline"
+      }
     }
   },
 

@@ -124,6 +124,11 @@
           "desc": {
             "en": "Set the camera time to Homey's time."
           }
+        },
+        "alarm_tamper": {
+          "title": {
+            "en": "Offline"
+          }
         }
       },
       "pair": [
@@ -329,7 +334,7 @@
     "tamper_time": {
       "type": "string",
       "title": {
-        "en": "Tamper Time"
+        "en": "Offline Time"
       },
       "icon": "/assets/tamper_time.svg",
       "getable": true,

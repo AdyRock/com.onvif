@@ -13,7 +13,7 @@ class MyApp extends Homey.App {
 
 	async discoverCameras() {
 		const devices = [];
-		onvif.Discovery.on('device', async function (cam, rinfo, xml) {
+		onvif.Discovery.on('device', function (cam, rinfo, xml) {
 			try {
 				// function will be called as soon as NVT responds
 				console.log('Reply from ', rinfo.address);
@@ -22,8 +22,6 @@ class MyApp extends Homey.App {
 				data = {
 					"id": cam.hostname,
 					"port": cam.port,
-					"path": cam.path,
-					"hasMotion": true
 				};
 				devices.push({
 					"name": cam.hostname,
