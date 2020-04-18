@@ -49,6 +49,7 @@ class CameraDriver extends Homey.Driver {
 	onPair(socket) {
 		socket.on('list_devices', (data, callback) => {
 			Homey.app.discoverCameras().then(devices => {
+				console.log("Discovered: ", JSON.stringify( devices, null, 2 ));
 				callback(null, devices);
 			}).catch(function (err) {
 				callback(new Error("Connection Failed" + err), []);

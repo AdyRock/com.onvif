@@ -43,7 +43,7 @@ class MyApp extends Homey.App {
 				// 	console.log("Discovery getCapabilities error: ", err);
 				// 	supportedEvents = ["MOTION"];
 				// }
-				// console.log("Supported Events: ", supportedEvents);
+				console.log("Supported Events: ", supportedEvents);
 
 				var data = {};
 				data = {
@@ -65,7 +65,6 @@ class MyApp extends Homey.App {
 						"username": "",
 						"password": "",
 					}
-
 				})
 			} catch (err) {
 				console.log("Discovery error: ", err);
