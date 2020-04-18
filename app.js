@@ -32,18 +32,18 @@ class MyApp extends Homey.App {
 					console.log("Discovery getInfo error: ", err);
 				}
 
-				let supportedEvents = [];
-				try {
-					let capabilities = await Homey.app.getCapabilities(cam);
-					let hasEvents = Homey.app.hasPullSupport(capabilities);
-					if (hasEvents) {
-						supportedEvents = await Homey.app.hasEventTopics(cam);
-					}
-				} catch (err) {
-					console.log("Discovery getCapabilities error: ", err);
-					supportedEvents = ["MOTION"];
-				}
-				console.log("Supported Events: ", supportedEvents);
+				let supportedEvents = ["MOTION"];
+				// try {
+				// 	let capabilities = await Homey.app.getCapabilities(cam);
+				// 	let hasEvents = Homey.app.hasPullSupport(capabilities);
+				// 	if (hasEvents) {
+				// 		supportedEvents = await Homey.app.hasEventTopics(cam);
+				// 	}
+				// } catch (err) {
+				// 	console.log("Discovery getCapabilities error: ", err);
+				// 	supportedEvents = ["MOTION"];
+				// }
+				// console.log("Supported Events: ", supportedEvents);
 
 				var data = {};
 				data = {
