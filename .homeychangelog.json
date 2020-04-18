@@ -1,5 +1,8 @@
 {
   "0.0.1": {
     "en": "First version for public testing."
+  },
+  "0.0.2": {
+    "en": "First test release"
   }
 }
