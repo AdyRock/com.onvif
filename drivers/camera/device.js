@@ -170,14 +170,14 @@ class CameraDevice extends Homey.Device {
 					if (!this.getCapabilityValue('alarm_tamper')) {
 						this.setCapabilityValue('alarm_tamper', true);
 						var d = new Date(Date.now());
-						this.setCapabilityValue('tamper_time', convertDate(d));
+						this.setCapabilityValue('tamper_time', this.convertDate(d));
 					}
 				}
 			} else if (this.getCapabilityValue('alarm_tamper')) {
 				this.setCapabilityValue('alarm_tamper', false);
 				this.setAvailable();
 			} else {
-				this.setCapabilityValue('date_time', convertDate(date));
+				this.setCapabilityValue('date_time', this.convertDate(date));
 			}
 		}.bind(this));
 
@@ -254,7 +254,7 @@ class CameraDevice extends Homey.Device {
 							this.setCapabilityValue('alarm_motion', dataValue);
 							if (dataValue) {
 								var d = new Date(Date.now());
-								var date = convertDate(d)
+								var date = this.convertDate(d)
 								this.setCapabilityValue('event_time', date);
 								if (settings.delay > 0) {
 									await new Promise(resolve => setTimeout(resolve, settings.delay * 1000));
