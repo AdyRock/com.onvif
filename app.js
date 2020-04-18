@@ -18,43 +18,12 @@ class MyApp extends Homey.App {
 				// function will be called as soon as NVT responds
 				console.log('Reply from ', rinfo.address);
 
-				let info = {};
-				try {
-					info = await Homey.app.getDeviceInformation(cam);
-					console.log(info);
-				} catch (err) {
-					info = {
-						"manufacturer": "",
-						"model": "",
-						"serialNumber": "",
-						"firmwareVersion": ""
-					};
-					console.log("Discovery getInfo error: ", err);
-				}
-
-				let supportedEvents = ["MOTION"];
-				// try {
-				// 	let capabilities = await Homey.app.getCapabilities(cam);
-				// 	let hasEvents = Homey.app.hasPullSupport(capabilities);
-				// 	if (hasEvents) {
-				// 		supportedEvents = await Homey.app.hasEventTopics(cam);
-				// 	}
-				// } catch (err) {
-				// 	console.log("Discovery getCapabilities error: ", err);
-				// 	supportedEvents = ["MOTION"];
-				// }
-				console.log("Supported Events: ", supportedEvents);
-
 				var data = {};
 				data = {
 					"id": cam.hostname,
 					"port": cam.port,
 					"path": cam.path,
-					"manufacturer": info.manufacturer,
-					"model": info.model,
-					"serialNumber": info.serialNumber,
-					"firmwareVersion": info.firmwareVersion,
-					"hasMotion": (supportedEvents.indexOf('MOTION') >= 0)
+					"hasMotion": true
 				};
 				devices.push({
 					"name": cam.hostname,
@@ -71,7 +40,10 @@ class MyApp extends Homey.App {
 			}
 		})
 
+		// Start the discovery process running
 		onvif.Discovery.probe();
+
+		// Allow time for the process to finish
 		await new Promise(resolve => setTimeout(resolve, 5000));
 		return devices;
 	}

@@ -184,6 +184,17 @@
           },
           "children": [
             {
+              "id": "hasMotion",
+              "type": "checkbox",
+              "label": {
+                "en": "Has Motion"
+              },
+              "value": true,
+              "hint": {
+                "en": "Turn on if the device supports motion. When turning off, the last event image will remain until the App is restarted"
+              }
+            },
+            {
               "id": "single",
               "type": "checkbox",
               "label": {
@@ -205,6 +216,46 @@
               "hint": {
                 "en": "Delay before image capture after motion triggered."
               }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Camera Information"
+          },
+          "children": [
+            {
+              "id": "manufacturer",
+              "type": "label",
+              "label": {
+                "en": "Manufacturer"
+              },
+              "value": ""
+            },
+            {
+              "id": "model",
+              "type": "label",
+              "label": {
+                "en": "Model"
+              },
+              "value": ""
+            },
+            {
+              "id": "serialNumber",
+              "type": "label",
+              "label": {
+                "en": "Serial Number"
+              },
+              "value": ""
+            },
+            {
+              "id": "firmwareVersion",
+              "type": "label",
+              "label": {
+                "en": "Firmware Version"
+              },
+              "value": ""
             }
           ]
         }

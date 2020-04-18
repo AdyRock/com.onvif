@@ -8,9 +8,12 @@ class CameraDevice extends Homey.Device {
 
 	onInit() {
 		this.cam = null;
+		this.eventImage = null;
+		this.nowImage = null;
 		this.log('CameraDevice has been inited');
 
-		this.connectCamera();
+		this.connectCamera(false)
+			.catch(this.error);
 		this.registerCapabilityListener('motion_enabled', this.onCapabilityMotionEnable.bind(this));
 
 		this.motionEnabledTrigger = new Homey.FlowCardTriggerDevice('motionEnabledTrigger');
@@ -52,10 +55,29 @@ class CameraDevice extends Homey.Device {
 	async onAdded() {
 		this.log('CameraDevice has been added');
 		await this.getDriver().getLastCredentials(this);
-		this.connectCamera();
+		this.connectCamera(true)
+			.catch(this.error);
 	}
 
-	async connectCamera() {
+	async onSettings(oldSettingsObj, newSettingsObj, changedKeysArr) {
+		console.log("Settings: ", oldSettingsObj, newSettingsObj, changedKeysArr);
+		if (changedKeysArr.indexOf("hasMotion") >= 0) {
+			if (newSettingsObj.hasMotion) {
+				// hasMotion switched on so add the motion capabilities
+				this.addCapability('motion_enabled');
+				this.addCapability('alarm_motion');
+				this.addCapability('event_time');
+				this.setupImages();
+			} else {
+				// hasMotion turned off
+				this.removeCapability('motion_enabled');
+				this.removeCapability('alarm_motion');
+				this.removeCapability('event_time');
+			}
+		}
+	}
+
+	async connectCamera(addingCamera) {
 		const devData = this.getData();
 		this.log("Dev Data: ", devData);
 		const settings = this.getSettings();
@@ -71,18 +93,52 @@ class CameraDevice extends Homey.Device {
 				);
 
 				console.log("Camera connected");
+
+				if (addingCamera) {
+					let info = {};
+					try {
+						info = await Homey.app.getDeviceInformation(this.cam);
+						console.log(info);
+					} catch (err) {
+						console.log("Discovery getInfo error: ", err);
+					}
+
+					let supportedEvents = ["MOTION"];
+					try {
+						let capabilities = await Homey.app.getCapabilities(this.cam);
+						let hasEvents = Homey.app.hasPullSupport(capabilities);
+						if (hasEvents) {
+							supportedEvents = await Homey.app.hasEventTopics(this.cam);
+						}
+					} catch (err) {
+						console.log("Discovery getCapabilities error: ", err);
+						supportedEvents = ["MOTION"];
+					}
+					console.log("Supported Events: ", supportedEvents);
+
+					this.setSettings({
+							"manufacturer": info.manufacturer,
+							"model": info.model,
+							"serialNumber": info.serialNumber,
+							"firmwareVersion": info.firmwareVersion,
+							"hasMotion": (supportedEvents.indexOf('MOTION') >= 0)
+						})
+						.catch(this.error);
+				}
+
 				await this.setupImages();
 
-				if (!devData.hasMotion) {
+				if (!settings.hasMotion) {
 					if (this.hasCapability('motion_enabled')) {
 						this.removeCapability('motion_enabled');
 					}
-
 					if (this.hasCapability('alarm_motion')) {
 						this.removeCapability('alarm_motion');
 					}
+					if (this.hasCapability('event_time')) {
+						this.removeCapability('event_time');
+					}
 				} else {
-
 					if (this.getCapabilityValue('motion_enabled')) {
 						// Motion detection is enabled so listen for events
 						this.listenForEvents(this.cam);
@@ -96,7 +152,7 @@ class CameraDevice extends Homey.Device {
 				this.log("Connect to camera error: ", err);
 				this.setUnavailable();
 				this.connectCamera = this.connectCamera.bind(this);
-				setTimeout(this.connectCamera, 10000);
+				setTimeout(this.connectCamera(false), 10000);
 			}
 		} else {
 			this.log("Device not ready");
@@ -245,48 +301,53 @@ class CameraDevice extends Homey.Device {
 			const snapURL = await Homey.app.getSnapshotURL(this.cam);
 			console.log("SnapShot URL = ", snapURL.uri);
 			const devData = this.getData();
+			const settings = this.getSettings();
 
-			const imageFilename = 'eventImage' + devData.id;
-			this.eventImageFilename = imageFilename.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-			this.eventImageFilename += ".jpg";
-			console.log("SnapShot save file = ", this.eventImageFilename);
+			if (settings.hasMotion) {
+				const imageFilename = 'eventImage' + devData.id;
+				this.eventImageFilename = imageFilename.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+				this.eventImageFilename += ".jpg";
+				console.log("SnapShot save file = ", this.eventImageFilename);
 
-			const eventImagePath = Homey.app.getUserDataPath(this.eventImageFilename);
-			if (!fs.existsSync(eventImagePath)) {
-				console.log("Initialising event image");
-				// Initialise the event image with the current snapshot
-				const storageStream = fs.createWriteStream(eventImagePath);
-				const res = await fetch(snapURL.uri);
-				if (!res.ok) throw new Error(res.statusText);
-				res.body.pipe(storageStream);
-				storageStream.on('error', function (err) {
-					console.log(err);
-				});
+				const eventImagePath = Homey.app.getUserDataPath(this.eventImageFilename);
+				if (!fs.existsSync(eventImagePath)) {
+					console.log("Initialising event image");
+					// Initialise the event image with the current snapshot
+					const storageStream = fs.createWriteStream(eventImagePath);
+					const res = await fetch(snapURL.uri);
+					if (!res.ok) throw new Error(res.statusText);
+					res.body.pipe(storageStream);
+					storageStream.on('error', function (err) {
+						console.log(err);
+					});
+				}
+
+				if (!this.eventImage) {
+					this.eventImage = new Homey.Image();
+					this.eventImage.setPath(eventImagePath);
+					this.eventImage.register()
+						.then(() => {
+							console.log("register")
+							this.setCameraImage('Event', 'Motion Event', this.eventImage);
+						})
+						.catch(this.error);
+				}
 			}
 
-			this.eventImage = new Homey.Image();
-			this.eventImage.setPath(eventImagePath);
-			this.eventImage.register()
-				.then(() => {
-					console.log("register")
-					this.setCameraImage('Event', 'Motion Event', this.eventImage);
-				})
-				.catch(this.error);
+			if (!this.nowImage) {
+				this.nowImage = new Homey.Image();
+				this.nowImage.setStream(async (stream) => {
+					const res = await fetch(snapURL.uri);
+					if (!res.ok) throw new Error(res.statusText);
+					res.body.pipe(stream);
+				});
 
-
-
-			this.nowImage = new Homey.Image();
-			this.nowImage.setStream(async (stream) => {
-				const res = await fetch(snapURL.uri);
-				if (!res.ok) throw new Error(res.statusText);
-				res.body.pipe(stream);
-			});
-
-			this.nowImage.register()
-				.then(() => {
-					this.setCameraImage('Now', 'Now', this.nowImage);
-				})
-				.catch(this.error);
+				this.nowImage.register()
+					.then(() => {
+						this.setCameraImage('Now', 'Now', this.nowImage);
+					})
+					.catch(this.error);
+			}
 		} catch (err) {
 			console.log("SnapShot error: ", err);
 		}
