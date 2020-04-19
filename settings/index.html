@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="lwsa.css">
+
+    <!-- The '/homey.js' script must be included in your settings view to work -->
+    <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
+</head>
+
+<body>
+    <!-- Tab links -->
+    <div class="tab">
+        <button class="tablinks" onclick="setPage(event, 'log')" id="defaultOpen">Log</button>
+    </div>
+
+    <!-- LOG PAGE -->
+    <div id="log" class="tabcontent">
+        <fieldset>
+            <p> Diagnostics Log
+            </p>
+            <div class="field row">
+                <label for="logEnabled">Log Enabled</label>
+                <input id="logEnabled" type="checkbox" value="logEnabled" />
+            </div>
+        </fieldset>
+        <fieldset>
+            <p><button id="clearLog">Clear Log</button></p>
+            <div class="field row">
+                <textarea id="diagLog"></textarea>
+            </div>
+        </fieldset>
+    </div>
+
+    <script type="text/javascript">
+        var diagLogElement = document.getElementById( 'diagLog' );
+        var logEnabledElement = document.getElementById( 'logEnabled' );
+        var clearLogElement = document.getElementById( 'clearLog' );
+
+        // a method named 'onHomeyReady' must be present in your code
+        function onHomeyReady( Homey )
+        {
+            // Tell Homey we're ready to be displayed
+            Homey.ready();
+
+            document.getElementById( "defaultOpen" ).click();
+
+            Homey.on( 'settings.set', function()
+            {
+                Homey.get( 'diagLog', function( err, diagLog )
+                {
+                    if ( err ) return Homey.alert( err );
+                    diagLogElement.value = diagLog;
+                } );
+
+            } );
+
+            logEnabledElement.addEventListener( 'click', function( e )
+            {
+                Homey.set( 'logEnabled', logEnabledElement.checked, function( err )
+                {
+                    if ( err ) return Homey.alert( err );
+                } );
+            } );
+
+            clearLogElement.addEventListener( 'click', function( e )
+            {
+                Homey.set( 'diagLog', "", function( err )
+                {
+                    if ( err ) return Homey.alert( err );
+                } );
+                diagLogElement.value = "";
+            } );
+        };
+
+        function setPage( evt, tabPage )
+        {
+            var i, tabcontent, tablinks;
+
+            // Get all elements with class="tabcontent" and hide them
+            tabcontent = document.getElementsByClassName( "tabcontent" );
+            for ( i = 0; i < tabcontent.length; i++ )
+            {
+                tabcontent[ i ].style.display = "none";
+            }
+
+            // Get all elements with class="tablinks" and remove the class "active"
+            tablinks = document.getElementsByClassName( "tablinks" );
+            for ( i = 0; i < tablinks.length; i++ )
+            {
+                tablinks[ i ].className = tablinks[ i ].className.replace( " active", "" );
+            }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById( tabPage ).style.display = "block";
+            evt.currentTarget.className += " active";
+
+            if ( tabPage == 'log' )
+            {
+                // Refresh the log data
+                Homey.get( 'logEnabled', function( err, logEnabled )
+                {
+                    if ( err ) return Homey.alert( err );
+                    logEnabledElement.checked = logEnabled;
+                } );
+
+                Homey.get( 'diagLog', function( err, diagLog )
+                {
+                    if ( err ) return Homey.alert( err );
+                    diagLogElement.value = diagLog;
+                } );
+
+                // Make the log text area fill the page
+                diagLogElement.setAttribute( 'cols', diagLogElement.parentElement.clientWidth / 8 );
+                diagLogElement.style.height = ( window.innerHeight - diagLogElement.offsetTop - 20 ) + 'px';
+            }
+        };
+    </script>
+
+</body>
+
+</html>

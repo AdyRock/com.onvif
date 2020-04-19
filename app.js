@@ -9,6 +9,7 @@ class MyApp extends Homey.App {
 
 	onInit() {
 		this.log('MyApp is running...');
+		Homey.ManagerSettings.set('diagLog', "App Started");
 	}
 
 	async discoverCameras() {
@@ -16,7 +17,7 @@ class MyApp extends Homey.App {
 		onvif.Discovery.on('device', function (cam, rinfo, xml) {
 			try {
 				// function will be called as soon as NVT responds
-				console.log('Reply from ', rinfo.address);
+				Homey.app.updateLog('Reply from ' + rinfo.address);
 
 				var data = {};
 				data = {
@@ -34,7 +35,14 @@ class MyApp extends Homey.App {
 					}
 				})
 			} catch (err) {
-				console.log("Discovery error: ", err);
+				Homey.app.updateLog("Discovery error: " + JSON.stringify(err, null, 2));
+			}
+		})
+
+		onvif.Discovery.on('error', function (msg, xml) {
+			Homey.app.updateLog("Discovery error: " + JSON.stringify(msg, null, 2));
+			if (xml) {
+				Homey.app.updateLog("xml: " + JSON.stringify(xml, null, 2));
 			}
 		})
 
@@ -49,8 +57,8 @@ class MyApp extends Homey.App {
 	async connectCamera(hostName, port, username, password) {
 		return new Promise(function (resolve, reject) {
 			try {
-				console.log("----------------------------------------------------------------");
-				console.log('Connect to Camera ', hostName, ':', port, " - ", username);
+				Homey.app.updateLog("----------------------------------------------------------------");
+				Homey.app.updateLog('Connect to Camera ', hostName, ':', port, " - ", username);
 
 				let cam = new Cam({
 					hostname: hostName,
@@ -61,10 +69,10 @@ class MyApp extends Homey.App {
 					preserveAddress: true // Enables NAT support and re-writes for PullPointSubscription URL
 				}, function (err) {
 					if (err) {
-						console.log('Connection Failed for ' + hostName + ' Port: ' + port + ' Username: ' + username);
+						Homey.app.updateLog('Connection Failed for ' + hostName + ' Port: ' + port + ' Username: ' + username);
 						reject(err);
 					} else {
-						console.log('CONNECTED');
+						Homey.app.updateLog('CONNECTED');
 						resolve(cam);
 					}
 				});
@@ -155,7 +163,7 @@ class MyApp extends Homey.App {
 								} else if (child == "messageDescription") {
 									// we have found the details that go with an event
 									supportedEvents.push(nodeName.toUpperCase());
-									console.log('Found Event - ' + nodeName)
+									Homey.app.updateLog('Found Event - ' + nodeName)
 									return;
 								} else {
 									// descend into the child node, looking for the messageDescription
@@ -175,11 +183,11 @@ class MyApp extends Homey.App {
 
 	hasPullSupport(capabilities) {
 		if (capabilities.events && capabilities.events.WSPullPointSupport && capabilities.events.WSPullPointSupport == true) {
-			console.log('Camera supports WSPullPoint');
+			Homey.app.updateLog('Camera supports WSPullPoint');
 			return true;
 		}
 
-		console.log('This camera/NVT does not support PullPoint Events');
+		Homey.app.updateLog('This camera/NVT does not support PullPoint Events');
 		return false
 	}
 
@@ -203,6 +211,22 @@ class MyApp extends Homey.App {
 
 	getUserDataPath(filename) {
 		return path.join(__dirname, 'userdata', filename);
+	}
+
+	updateLog(newMessage) {
+		if (!Homey.ManagerSettings.get('logEnabled')) {
+			return;
+		}
+
+		this.log(newMessage);
+		var oldText = Homey.ManagerSettings.get('diagLog');
+		if (oldText.length > 5000) {
+			oldText = "";
+		}
+		oldText += "* ";
+		oldText += newMessage;
+		oldText += "\r\n";
+		Homey.ManagerSettings.set('diagLog', oldText);
 	}
 }
 

@@ -49,7 +49,7 @@ class CameraDriver extends Homey.Driver {
 	onPair(socket) {
 		socket.on('list_devices', (data, callback) => {
 			Homey.app.discoverCameras().then(devices => {
-				console.log("Discovered: ", JSON.stringify( devices, null, 2 ));
+				Homey.app.updateLog("Discovered: " + JSON.stringify( devices, null, 2 ));
 				callback(null, devices);
 			}).catch(function (err) {
 				callback(new Error("Connection Failed" + err), []);
@@ -67,6 +67,8 @@ class CameraDriver extends Homey.Driver {
 			this.lastUsername = data.username;
 			this.lastPassword = data.password;
 
+			Homey.app.updateLog("Testing connection credentials");
+
 			Homey.app.connectCamera(
 					this.lastHostName,
 					this.lastPort,
@@ -74,11 +76,11 @@ class CameraDriver extends Homey.Driver {
 					this.lastPassword
 				)
 				.then(res => {
-					this.log("Valid");
+					Homey.app.updateLog("Valid");
 					callback(null, true);
 				})
 				.catch(err => {
-					this.log("Failed");
+					Homey.app.updateLog("Failed: " + JSON.stringify( err, null, 2 ));
 					callback(err);
 				});
 		});
