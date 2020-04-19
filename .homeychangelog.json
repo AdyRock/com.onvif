@@ -4,5 +4,11 @@
   },
   "0.0.2": {
     "en": "First test release"
+  },
+  "0.0.5": {
+    "en": "Rewrite of discovery routine, selectable time format, camera information now available in advanced settings, updated to latest ONVIF library."
+  },
+  "0.0.6": {
+    "en": "Added log page to App config to help diagnose issues. Added extra error traps to prevent app crashes on invalid responses."
   }
 }
