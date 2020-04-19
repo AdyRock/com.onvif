@@ -10,6 +10,10 @@ class CameraDevice extends Homey.Device {
 		this.cam = null;
 		this.eventImage = null;
 		this.nowImage = null;
+		this.eventTime = this.getStoreValue('eventTime');
+		this.alarmTime = this.getStoreValue('alarmTime');
+		this.cameraTime = null;
+
 		this.log('CameraDevice has been inited');
 
 		this.connectCamera(false)
@@ -74,6 +78,12 @@ class CameraDevice extends Homey.Device {
 				this.removeCapability('alarm_motion');
 				this.removeCapability('event_time');
 			}
+		}
+
+		if (changedKeysArr.indexOf("timeFormat") >= 0) {
+			this.setCapabilityValue('event_time', this.convertDate(this.eventTime, newSettingsObj));
+			this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, newSettingsObj));
+			this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, newSettingsObj));
 		}
 	}
 
@@ -169,37 +179,42 @@ class CameraDevice extends Homey.Device {
 				} else if (err.indexOf("Network timeout") >= 0) {
 					if (!this.getCapabilityValue('alarm_tamper')) {
 						this.setCapabilityValue('alarm_tamper', true);
-						var d = new Date(Date.now());
-						this.setCapabilityValue('tamper_time', this.convertDate(d));
+						this.alarmTime = new Date(Date.now());
+						this.setStoreValue('alarmTime', this.alarmTime);
+						this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, this.getSettings()));
 					}
 				}
 			} else if (this.getCapabilityValue('alarm_tamper')) {
 				this.setCapabilityValue('alarm_tamper', false);
 				this.setAvailable();
 			} else {
-				this.setCapabilityValue('date_time', this.convertDate(date));
+				this.cameraTime = date;
+				this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, this.getSettings()));
 			}
 		}.bind(this));
 
 		this.checkCamera = this.checkCamera.bind(this);
-		this.checkTimerId = setTimeout(this.checkCamera, this.getCapabilityValue('alarm_tamper') ? 60000 : 30000);
+		this.checkTimerId = setTimeout(this.checkCamera, this.getCapabilityValue('alarm_tamper') ? 30000 : 10000);
 	}
 
-	convertDate(date)
-	{
-		let settings = this.getSettings();
-		if (settings.timeFormat == "mm_dd") {
+	convertDate(date, settings) {
+		var strDate = "";
+		if (date) {
 			var d = new Date(date);
-			date = d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes() + " " + (d.getDate() < 10 ? "0" : "") + d.getDate() + "-" + (d.getMonth() < 10 ? "0" : "") + d.getMonth();
-		}
-		if (settings.timeFormat == "system") {
-			date = date.toLocaleString();
-		}
-		else{
-			date = date.toJSON();
+
+			if (settings.timeFormat == "mm_dd") {
+				let mins = d.getMinutes();
+				let dte = d.getDate();
+				let mnth = d.getMonth() + 1;
+				strDate = d.getHours() + ":" + (mins < 10 ? "0" : "") + mins + " " + (dte < 10 ? "0" : "") + dte + "-" + (mnth < 10 ? "0" : "") + mnth;
+			} else if (settings.timeFormat == "system") {
+				strDate = d.toLocaleString();
+			} else {
+				strDate = d.toJSON();
+			}
 		}
 
-		return date;
+		return strDate;
 	}
 
 	async listenForEvents(cam_obj) {
@@ -209,12 +224,11 @@ class CameraDevice extends Homey.Device {
 		console.log('#############################    Waiting for events   ######################');
 		const camSnapPath = await Homey.app.getSnapshotURL(this.cam);
 		const eventImage = this.eventImage;
-		const settings = this.getSettings();
 
 		cam_obj.on('event', async (camMessage, xml) => {
 			try {
-				//console.log('----------------    Event detected   -----------------------');
-				// console.log(camMessage);
+				console.log('----------------    Event detected   -----------------------');
+				console.log(camMessage);
 
 				this.setAvailable();
 
@@ -249,13 +263,15 @@ class CameraDevice extends Homey.Device {
 				if (dataName) {
 					console.log("Event ", dataName, " = ", dataValue);
 					if (dataName === "IsMotion") {
+						const settings = this.getSettings();
+
 						if (!settings.single || dataValue != this.getCapabilityValue('alarm_motion')) {
 							console.log("Event Processing", dataName, " = ", dataValue);
 							this.setCapabilityValue('alarm_motion', dataValue);
 							if (dataValue) {
-								var d = new Date(Date.now());
-								var date = this.convertDate(d)
-								this.setCapabilityValue('event_time', date);
+								this.eventTime = new Date(Date.now());
+								this.setStoreValue('eventTime', this.eventTime);
+								this.setCapabilityValue('event_time', this.convertDate(this.eventTime, settings));
 								if (settings.delay > 0) {
 									await new Promise(resolve => setTimeout(resolve, settings.delay * 1000));
 								}
@@ -277,7 +293,7 @@ class CameraDevice extends Homey.Device {
 			} catch (err) {
 				console.log("Camera Event Error: ", err);
 			}
-		})
+		});
 	}
 
 	async onCapabilityMotionEnable(value, opts) {
