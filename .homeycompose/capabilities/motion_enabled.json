@@ -1,7 +1,7 @@
 {
     "type": "boolean",
     "title": {
-        "en": "Motion enabled"
+        "en": "Motion detection"
     },
     "getable": true,
     "setable": true,
