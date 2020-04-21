@@ -135,7 +135,7 @@ class CameraDevice extends Homey.Device {
 							"model": info.model,
 							"serialNumber": info.serialNumber,
 							"firmwareVersion": info.firmwareVersion,
-							"hasMotion": (supportedEvents.indexOf('MOTION') >= 0)
+							"hasMotion": (supportedEvents.indexOf('MOTION') >= 0),
 						})
 						.catch(this.error);
 				}
@@ -331,8 +331,17 @@ class CameraDevice extends Homey.Device {
 	async setupImages() {
 		try {
 			const snapURL = await Homey.app.getSnapshotURL(this.cam);
-			Homey.app.updateLog("SnapShot URL = " + snapURL.uri);
+			Homey.app.updateLog("SnapShot URL = " + JSON.stringify(snapURL));
+
 			const devData = this.getData();
+
+			this.setSettings({
+				"ip": devData.id,
+				"port": devData.port.toString(),
+				"url": snapURL.uri
+			})
+			.catch(this.error);
+
 			const settings = this.getSettings();
 
 			if (settings.hasMotion) {

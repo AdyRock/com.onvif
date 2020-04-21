@@ -292,6 +292,30 @@
                 "en": "Firmware Version"
               },
               "value": ""
+            },
+            {
+              "id": "ip",
+              "type": "label",
+              "label": {
+                "en": "IP Address"
+              },
+              "value": ""
+            },
+            {
+              "id": "port",
+              "type": "label",
+              "label": {
+                "en": "Port"
+              },
+              "value": ""
+            },
+            {
+              "id": "url",
+              "type": "label",
+              "label": {
+                "en": "Snapshot URL"
+              },
+              "value": ""
             }
           ]
         }

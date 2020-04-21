@@ -9,48 +9,57 @@ class MyApp extends Homey.App {
 
 	onInit() {
 		this.log('MyApp is running...');
+		this.discoveredDevices = [];
+		this.discoveryInitialised = false;
 		Homey.ManagerSettings.set('diagLog', "App Started");
 	}
 
 	async discoverCameras() {
-		const devices = [];
-		onvif.Discovery.on('device', function (cam, rinfo, xml) {
-			try {
-				// function will be called as soon as NVT responds
-				Homey.app.updateLog('Reply from ' + rinfo.address);
+		this.discoveredDevices = [];
+		Homey.app.updateLog('====  Discovery Starting  ====');
+		if (!this.discoveryInitialised) {
+			this.discoveryInitialised = true;
+			onvif.Discovery.on('device', function (cam, rinfo, xml) {
+				try {
+					// function will be called as soon as NVT responds
+					Homey.app.updateLog('Reply from ' + rinfo.address);
 
-				var data = {};
-				data = {
-					"id": cam.hostname,
-					"port": cam.port,
-				};
-				devices.push({
-					"name": cam.hostname,
-					data,
-					settings: {
-						// Store username & password in settings
-						// so the user can change them later
-						"username": "",
-						"password": "",
-					}
-				})
-			} catch (err) {
-				Homey.app.updateLog("Discovery error: " + JSON.stringify(err, null, 2));
-			}
-		})
+					var data = {};
+					data = {
+						"id": cam.hostname,
+						"port": cam.port,
+					};
+					this.discoveredDevices.push({
+						"name": cam.hostname,
+						data,
+						settings: {
+							// Store username & password in settings
+							// so the user can change them later
+							"username": "",
+							"password": "",
+						}
+					})
+				} catch (err) {
+					Homey.app.updateLog("Discovery error: " + JSON.stringify(err, null, 2));
+				}
+			}.bind(this))
 
-		onvif.Discovery.on('error', function (msg, xml) {
-			Homey.app.updateLog("Discovery error: " + JSON.stringify(msg, null, 2));
-			if (xml) {
-				Homey.app.updateLog("xml: " + JSON.stringify(xml, null, 2));
-			}
-		})
+			onvif.Discovery.on('error', function (msg, xml) {
+				Homey.app.updateLog("Discovery error: " + JSON.stringify(msg, null, 2));
+				if (xml) {
+					Homey.app.updateLog("xml: " + JSON.stringify(xml, null, 2));
+				}
+			}.bind(this))
+		}
 
 		// Start the discovery process running
 		onvif.Discovery.probe();
 
 		// Allow time for the process to finish
-		await new Promise(resolve => setTimeout(resolve, 5000));
+		await new Promise(resolve => setTimeout(resolve, 6000));
+		Homey.app.updateLog('====  Discovery Finished  ====');
+		let devices = this.discoveredDevices;
+		this.discoveredDevices = [];
 		return devices;
 	}
 
