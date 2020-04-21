@@ -196,7 +196,7 @@ class CameraDevice extends Homey.Device {
 		}.bind(this));
 
 		this.checkCamera = this.checkCamera.bind(this);
-		this.checkTimerId = setTimeout(this.checkCamera, this.getCapabilityValue('alarm_tamper') ? 30000 : 10000);
+		this.checkTimerId = setTimeout(this.checkCamera, this.getCapabilityValue('alarm_tamper') ? 30000 : 100000);
 	}
 
 	convertDate(date, settings) {
