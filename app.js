@@ -40,12 +40,12 @@ class MyApp extends Homey.App {
 						}
 					})
 				} catch (err) {
-					Homey.app.updateLog("Discovery error: " + JSON.stringify(err, null, 2));
+					Homey.app.updateLog("Discovery error: " + JSON.stringify(err, null, 2), true);
 				}
 			}.bind(this))
 
 			onvif.Discovery.on('error', function (msg, xml) {
-				Homey.app.updateLog("Discovery error: " + JSON.stringify(msg, null, 2));
+				Homey.app.updateLog("Discovery error: " + JSON.stringify(msg, null, 2), true);
 				if (xml) {
 					Homey.app.updateLog("xml: " + JSON.stringify(xml, null, 2));
 				}
@@ -67,7 +67,7 @@ class MyApp extends Homey.App {
 		return new Promise(function (resolve, reject) {
 			try {
 				Homey.app.updateLog("----------------------------------------------------------------");
-				Homey.app.updateLog('Connect to Camera ', hostName, ':', port, " - ", username);
+				Homey.app.updateLog('Connect to Camera ' + hostName + ':' + port + " - " + username);
 
 				let cam = new Cam({
 					hostname: hostName,
@@ -78,7 +78,7 @@ class MyApp extends Homey.App {
 					preserveAddress: true // Enables NAT support and re-writes for PullPointSubscription URL
 				}, function (err) {
 					if (err) {
-						Homey.app.updateLog('Connection Failed for ' + hostName + ' Port: ' + port + ' Username: ' + username);
+						Homey.app.updateLog('Connection Failed for ' + hostName + ' Port: ' + port + ' Username: ' + username, true);
 						reject(err);
 					} else {
 						Homey.app.updateLog('CONNECTED');
@@ -222,8 +222,8 @@ class MyApp extends Homey.App {
 		return path.join(__dirname, 'userdata', filename);
 	}
 
-	updateLog(newMessage) {
-		if (!Homey.ManagerSettings.get('logEnabled')) {
+	updateLog(newMessage, ignoreSetting) {
+		if (!ignoreSetting && !Homey.ManagerSettings.get('logEnabled')) {
 			return;
 		}
 

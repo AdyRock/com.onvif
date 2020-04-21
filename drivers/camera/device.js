@@ -50,7 +50,7 @@ class CameraDevice extends Homey.Device {
 				},
 				function (err, date, xml) {
 					if (err) {
-						Homey.app.updateLog("Check Camera Error: " + JSON.stringify(err, null, 2));
+						Homey.app.updateLog("Check Camera Error: " + JSON.stringify(err, null, 2), true);
 					}
 				}.bind(this));
 		});
@@ -102,7 +102,7 @@ class CameraDevice extends Homey.Device {
 				);
 
 				this.cam.on('error', function (msg, xml) {
-					Homey.app.updateLog("Camera event error: " + JSON.stringify(msg, null, 2));
+					Homey.app.updateLog("Camera event error: " + JSON.stringify(msg, null, 2), true);
 					if (xml) {
 						Homey.app.updateLog("xml: " + JSON.stringify(xml, null, 2));
 					}
@@ -114,7 +114,7 @@ class CameraDevice extends Homey.Device {
 						info = await Homey.app.getDeviceInformation(this.cam);
 						Homey.app.updateLog(JSON.stringify(info, null, 2));
 					} catch (err) {
-						Homey.app.updateLog("Get camera info error: " + JSON.stringify(err, null, 2));
+						Homey.app.updateLog("Get camera info error: " + JSON.stringify(err, null, 2), true);
 					}
 
 					let supportedEvents = ["MOTION"];
@@ -125,7 +125,7 @@ class CameraDevice extends Homey.Device {
 							supportedEvents = await Homey.app.hasEventTopics(this.cam);
 						}
 					} catch (err) {
-						Homey.app.updateLog("Get camera capabilities error: " + JSON.stringify(err, null, 2));
+						Homey.app.updateLog("Get camera capabilities error: " + JSON.stringify(err, null, 2), true);
 						supportedEvents = ["MOTION"];
 					}
 					Homey.app.updateLog("Supported Events: " + supportedEvents);
@@ -163,7 +163,7 @@ class CameraDevice extends Homey.Device {
 				this.checkTimerId = setTimeout(this.checkCamera, 10000);
 				this.setCapabilityValue('alarm_tamper', false);
 			} catch (err) {
-				Homey.app.updateLog("Connect to camera error: " + JSON.stringify(err, null, 2));
+				Homey.app.updateLog("Connect to camera error: " + JSON.stringify(err, null, 2), true);
 				this.setUnavailable();
 				this.connectCamera = this.connectCamera.bind(this);
 				setTimeout(this.connectCamera(false), 10000);
@@ -175,7 +175,7 @@ class CameraDevice extends Homey.Device {
 		this.cam.getSystemDateAndTime(function (err, date, xml) {
 			if (err) {
 				err = String(err);
-				Homey.app.updateLog("Check Camera Error: " + JSON.stringify(err, null, 2));
+				Homey.app.updateLog("Check Camera Error: " + JSON.stringify(err, null, 2), true);
 				if (err.indexOf("EHOSTUNREACH") >= 0) {
 					this.setUnavailable();
 				} else if (err.indexOf("Network timeout") >= 0) {
@@ -293,7 +293,7 @@ class CameraDevice extends Homey.Device {
 					}
 				}
 			} catch (err) {
-				Homey.app.updateLog("Camera Event Error: " + JSON.stringify(err, null, 2));
+				Homey.app.updateLog("Camera Event Error: " + JSON.stringify(err, null, 2), true);
 			}
 		});
 	}
@@ -324,7 +324,7 @@ class CameraDevice extends Homey.Device {
 
 		} catch (err) {
 			//this.setUnavailable();
-			Homey.app.updateLog(this.getName() + " onCapabilityOnoff Error " + JSON.stringify(err, null, 2));
+			Homey.app.updateLog(this.getName() + " onCapabilityOnoff Error " + JSON.stringify(err, null, 2), true);
 		}
 	}
 
@@ -390,7 +390,7 @@ class CameraDevice extends Homey.Device {
 					.catch(this.error);
 			}
 		} catch (err) {
-			Homey.app.updateLog("SnapShot error: " + JSON.stringify(err, null, 2));
+			Homey.app.updateLog("SnapShot error: " + JSON.stringify(err, null, 2), true);
 		}
 	}
 
