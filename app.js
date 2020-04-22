@@ -22,7 +22,7 @@ class MyApp extends Homey.App {
 			onvif.Discovery.on('device', function (cam, rinfo, xml) {
 				try {
 					// function will be called as soon as NVT responds
-					Homey.app.updateLog('Reply from ' + rinfo.address);
+					Homey.app.updateLog('Reply from ' + JSON.stringify(cam, null, 2));
 
 					var data = {};
 					data = {
@@ -53,10 +53,10 @@ class MyApp extends Homey.App {
 		}
 
 		// Start the discovery process running
-		onvif.Discovery.probe();
+		onvif.Discovery.probe({'resolve': false});
 
 		// Allow time for the process to finish
-		await new Promise(resolve => setTimeout(resolve, 6000));
+		await new Promise(resolve => setTimeout(resolve, 5000));
 		Homey.app.updateLog('====  Discovery Finished  ====');
 		let devices = this.discoveredDevices;
 		this.discoveredDevices = [];
@@ -66,7 +66,7 @@ class MyApp extends Homey.App {
 	async connectCamera(hostName, port, username, password) {
 		return new Promise(function (resolve, reject) {
 			try {
-				Homey.app.updateLog("----------------------------------------------------------------");
+				Homey.app.updateLog("--------------------------");
 				Homey.app.updateLog('Connect to Camera ' + hostName + ':' + port + " - " + username);
 
 				let cam = new Cam({
@@ -74,8 +74,7 @@ class MyApp extends Homey.App {
 					username: username,
 					password: password,
 					port: port,
-					timeout: 10000,
-					preserveAddress: true // Enables NAT support and re-writes for PullPointSubscription URL
+					timeout: 5000,
 				}, function (err) {
 					if (err) {
 						Homey.app.updateLog('Connection Failed for ' + hostName + ' Port: ' + port + ' Username: ' + username, true);
@@ -196,7 +195,7 @@ class MyApp extends Homey.App {
 			return true;
 		}
 
-		Homey.app.updateLog('This camera/NVT does not support PullPoint Events');
+		Homey.app.updateLog('This camera/NVT does not support PullPoint Events', true);
 		return false
 	}
 

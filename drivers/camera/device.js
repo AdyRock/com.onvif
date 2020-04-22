@@ -7,6 +7,7 @@ var fs = require('fs');
 class CameraDevice extends Homey.Device {
 
 	onInit() {
+		Homey.app.updateLog("Initialising CameraDevice");
 		this.cam = null;
 		this.eventImage = null;
 		this.nowImage = null;
@@ -14,10 +15,11 @@ class CameraDevice extends Homey.Device {
 		this.alarmTime = this.getStoreValue('alarmTime');
 		this.cameraTime = null;
 
-		this.log('CameraDevice has been inited');
-
 		this.connectCamera(false)
-			.catch(this.error);
+			.catch(err => {
+				Homey.app.updateLog("Check Camera Error: " + JSON.stringify(err, null, 2), true);
+			});
+
 		this.registerCapabilityListener('motion_enabled', this.onCapabilityMotionEnable.bind(this));
 
 		this.motionEnabledTrigger = new Homey.FlowCardTriggerDevice('motionEnabledTrigger');
@@ -58,6 +60,8 @@ class CameraDevice extends Homey.Device {
 
 	async onAdded() {
 		Homey.app.updateLog('CameraDevice has been added');
+		//Allow some time for the validation check cam connection to disconnect
+		await new Promise(resolve => setTimeout(resolve, 2000));
 		await this.getDriver().getLastCredentials(this);
 		this.connectCamera(true)
 			.catch(this.error);
@@ -88,11 +92,11 @@ class CameraDevice extends Homey.Device {
 	}
 
 	async connectCamera(addingCamera) {
-		const devData = this.getData();
-		Homey.app.updateLog("Dev Data: " + JSON.stringify(devData, null, 2));
-		const settings = this.getSettings();
-
 		if (this.getStoreValue('initialised')) {
+			const devData = this.getData();
+			Homey.app.updateLog("Dev Data: " + JSON.stringify(devData, null, 2));
+			let settings = this.getSettings();
+
 			try {
 				this.cam = await Homey.app.connectCamera(
 					devData.id,
@@ -112,12 +116,12 @@ class CameraDevice extends Homey.Device {
 					let info = {};
 					try {
 						info = await Homey.app.getDeviceInformation(this.cam);
-						Homey.app.updateLog(JSON.stringify(info, null, 2));
+						Homey.app.updateLog("Camera Information: " + JSON.stringify(info, null, 2));
 					} catch (err) {
 						Homey.app.updateLog("Get camera info error: " + JSON.stringify(err, null, 2), true);
 					}
 
-					let supportedEvents = ["MOTION"];
+					let supportedEvents = [""];
 					try {
 						let capabilities = await Homey.app.getCapabilities(this.cam);
 						let hasEvents = Homey.app.hasPullSupport(capabilities);
@@ -126,47 +130,51 @@ class CameraDevice extends Homey.Device {
 						}
 					} catch (err) {
 						Homey.app.updateLog("Get camera capabilities error: " + JSON.stringify(err, null, 2), true);
-						supportedEvents = ["MOTION"];
 					}
 					Homey.app.updateLog("Supported Events: " + supportedEvents);
 
-					this.setSettings({
+					await this.setSettings({
 							"manufacturer": info.manufacturer,
 							"model": info.model,
 							"serialNumber": info.serialNumber,
 							"firmwareVersion": info.firmwareVersion,
-							"hasMotion": (supportedEvents.indexOf('MOTION') >= 0),
+							"hasMotion": (supportedEvents.indexOf('MOTION') >= 0)
 						})
-						.catch(this.error);
+
+					settings = this.getSettings();
+
+					if (!settings.hasMotion) {
+						Homey.app.updateLog("Removing unsupported motion capabilities");
+	
+						if (this.hasCapability('motion_enabled')) {
+							this.removeCapability('motion_enabled');
+						}
+						if (this.hasCapability('alarm_motion')) {
+							this.removeCapability('alarm_motion');
+						}
+						if (this.hasCapability('event_time')) {
+							this.removeCapability('event_time');
+						}
+					} else {
+						if (this.getCapabilityValue('motion_enabled')) {
+							// Motion detection is enabled so listen for events
+							this.listenForEvents(this.cam);
+						}
+					}
+						addingCamera = false;
 				}
 
 				await this.setupImages();
 
-				if (!settings.hasMotion) {
-					if (this.hasCapability('motion_enabled')) {
-						this.removeCapability('motion_enabled');
-					}
-					if (this.hasCapability('alarm_motion')) {
-						this.removeCapability('alarm_motion');
-					}
-					if (this.hasCapability('event_time')) {
-						this.removeCapability('event_time');
-					}
-				} else {
-					if (this.getCapabilityValue('motion_enabled')) {
-						// Motion detection is enabled so listen for events
-						this.listenForEvents(this.cam);
-					}
-				}
 				this.setAvailable();
 				this.checkCamera = this.checkCamera.bind(this);
 				this.checkTimerId = setTimeout(this.checkCamera, 10000);
 				this.setCapabilityValue('alarm_tamper', false);
 			} catch (err) {
-				Homey.app.updateLog("Connect to camera error: " + JSON.stringify(err, null, 2), true);
+				Homey.app.updateLog("Connect to camera error: " + err, true);
 				this.setUnavailable();
-				this.connectCamera = this.connectCamera.bind(this);
-				setTimeout(this.connectCamera(false), 10000);
+				this.checkTimerId = setTimeout(this.connectCamera.bind(this, addingCamera), 1000);
+				this.setCapabilityValue('alarm_tamper', false);
 			}
 		}
 	}
@@ -331,18 +339,18 @@ class CameraDevice extends Homey.Device {
 	async setupImages() {
 		try {
 			const snapURL = await Homey.app.getSnapshotURL(this.cam);
-			Homey.app.updateLog("SnapShot URL = " + JSON.stringify(snapURL));
 
 			const devData = this.getData();
 
-			this.setSettings({
-				"ip": devData.id,
-				"port": devData.port.toString(),
-				"url": snapURL.uri
-			})
-			.catch(this.error);
-
 			const settings = this.getSettings();
+			const publicSnapURL = snapURL.uri.replace(settings.password, "YOUR_PASSWORD");
+			Homey.app.updateLog("SnapShot URL = " + publicSnapURL);
+
+			await this.setSettings({
+					"ip": devData.id,
+					"port": devData.port.toString(),
+					"url": publicSnapURL
+				})
 
 			if (settings.hasMotion) {
 				const imageFilename = 'eventImage' + devData.id;
@@ -396,7 +404,9 @@ class CameraDevice extends Homey.Device {
 
 	onDeleted() {
 		try {
-			this.cam.removeAllListeners('event');
+			if (this.cam) {
+				this.cam.removeAllListeners('event');
+			}
 			clearTimeout(this.checkTimerId);
 		} catch (err) {
 			console.log("Delete device error", err);

@@ -44,6 +44,7 @@ class CameraDriver extends Homey.Driver {
 			password: this.lastPassword
 		});
 		await device.setStoreValue('initialised', true);
+		Homey.app.updateLog("Saved Credentials");
 	}
 
 	onPair(socket) {
@@ -75,7 +76,7 @@ class CameraDriver extends Homey.Driver {
 					this.lastUsername,
 					this.lastPassword
 				)
-				.then(res => {
+				.then(cam => {
 					Homey.app.updateLog("Valid");
 					callback(null, true);
 				})
