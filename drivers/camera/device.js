@@ -134,18 +134,18 @@ class CameraDevice extends Homey.Device {
 					Homey.app.updateLog("Supported Events: " + supportedEvents);
 
 					await this.setSettings({
-							"manufacturer": info.manufacturer,
-							"model": info.model,
-							"serialNumber": info.serialNumber,
-							"firmwareVersion": info.firmwareVersion,
-							"hasMotion": (supportedEvents.indexOf('MOTION') >= 0)
-						})
+						"manufacturer": info.manufacturer,
+						"model": info.model,
+						"serialNumber": info.serialNumber,
+						"firmwareVersion": info.firmwareVersion,
+						"hasMotion": (supportedEvents.indexOf('MOTION') >= 0)
+					})
 
 					settings = this.getSettings();
 
 					if (!settings.hasMotion) {
 						Homey.app.updateLog("Removing unsupported motion capabilities");
-	
+
 						if (this.hasCapability('motion_enabled')) {
 							this.removeCapability('motion_enabled');
 						}
@@ -161,7 +161,7 @@ class CameraDevice extends Homey.Device {
 							this.listenForEvents(this.cam);
 						}
 					}
-						addingCamera = false;
+					addingCamera = false;
 				}
 
 				await this.setupImages();
@@ -347,10 +347,10 @@ class CameraDevice extends Homey.Device {
 			Homey.app.updateLog("SnapShot URL = " + publicSnapURL);
 
 			await this.setSettings({
-					"ip": devData.id,
-					"port": devData.port.toString(),
-					"url": publicSnapURL
-				})
+				"ip": devData.id,
+				"port": devData.port.toString(),
+				"url": publicSnapURL
+			})
 
 			if (settings.hasMotion) {
 				const imageFilename = 'eventImage' + devData.id;
@@ -408,6 +408,17 @@ class CameraDevice extends Homey.Device {
 				this.cam.removeAllListeners('event');
 			}
 			clearTimeout(this.checkTimerId);
+
+			if (this.eventImageFilename) {
+				const eventImagePath = Homey.app.getUserDataPath(this.eventImageFilename);
+				if (!fs.existsSync(eventImagePath)) {
+					fs.unlink(eventImagePath, (err) => {
+						if (!err) {
+							console.log('successfully deleted: ', this.eventImageFilename);
+						}
+					});
+				}
+			}
 		} catch (err) {
 			console.log("Delete device error", err);
 		}
