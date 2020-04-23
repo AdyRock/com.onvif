@@ -4,6 +4,7 @@ const Homey = require('homey');
 var onvif = require('onvif');
 let Cam = require('onvif').Cam;
 var path = require('path');
+const nodemailer = require("/lib/nodemailer");
 
 class MyApp extends Homey.App {
 
@@ -12,6 +13,15 @@ class MyApp extends Homey.App {
 		this.discoveredDevices = [];
 		this.discoveryInitialised = false;
 		Homey.ManagerSettings.set('diagLog', "App Started");
+		Homey.ManagerSettings.set('sendLog', "");
+
+        Homey.ManagerSettings.on( 'set', function( setting )
+        {
+            if (setting === 'sendLog' && (Homey.ManagerSettings.get('sendLog') === "send") && (Homey.ManagerSettings.get('diagLog') !== ""))
+            {
+				return Homey.app.sendLog();
+			}
+		});
 	}
 
 	async discoverCameras() {
@@ -53,7 +63,9 @@ class MyApp extends Homey.App {
 		}
 
 		// Start the discovery process running
-		onvif.Discovery.probe({'resolve': false});
+		onvif.Discovery.probe({
+			'resolve': false
+		});
 
 		// Allow time for the process to finish
 		await new Promise(resolve => setTimeout(resolve, 5000));
@@ -235,6 +247,44 @@ class MyApp extends Homey.App {
 		oldText += newMessage;
 		oldText += "\r\n";
 		Homey.ManagerSettings.set('diagLog', oldText);
+		Homey.ManagerSettings.set('sendLog', "");
+	}
+
+	async sendLog() {
+		try {
+			// create reusable transporter object using the default SMTP transport
+			let transporter = nodemailer.createTransport({
+				host: Homey.env.MAIL_HOST, //Homey.env.MAIL_HOST,
+				port: 25,
+				ignoreTLS: true,
+				secure: false, // true for 465, false for other ports
+				auth: {
+					user: Homey.env.MAIL_USER, // generated ethereal user
+					pass: Homey.env.MAIL_SECRET // generated ethereal password
+				},
+				tls: {
+					// do not fail on invalid certs
+					rejectUnauthorized: false
+				}
+			});
+
+			// send mail with defined transport object
+			let info = await transporter.sendMail({
+				from: '"Homey User" <user@homey.com>', // sender address
+				to: Homey.env.MAIL_USER, // list of receivers
+				subject: "ONVIF log", // Subject line
+				text: Homey.ManagerSettings.get('diagLog') // plain text body
+			});
+
+			console.log("Message sent: %s", info.messageId);
+			// Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+
+			// Preview only available when sending through an Ethereal account
+			console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+		} catch (err) {
+			console.log("Send log error: ", err);
+			return err;
+		};
 	}
 }
 

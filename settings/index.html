@@ -25,7 +25,7 @@
             </div>
         </fieldset>
         <fieldset>
-            <p><button id="clearLog">Clear Log</button></p>
+            <p><button id="clearLog">Clear Log</button> <button id="sendLog">Send Log</button></p>
             <div class="field row">
                 <textarea id="diagLog"></textarea>
             </div>
@@ -33,86 +33,84 @@
     </div>
 
     <script type="text/javascript">
-        var diagLogElement = document.getElementById( 'diagLog' );
-        var logEnabledElement = document.getElementById( 'logEnabled' );
-        var clearLogElement = document.getElementById( 'clearLog' );
+        var diagLogElement = document.getElementById('diagLog');
+        var logEnabledElement = document.getElementById('logEnabled');
+        var clearLogElement = document.getElementById('clearLog');
+        var sendLogElement = document.getElementById('sendLog');
 
         // a method named 'onHomeyReady' must be present in your code
-        function onHomeyReady( Homey )
-        {
+        function onHomeyReady(Homey) {
             // Tell Homey we're ready to be displayed
             Homey.ready();
 
-            document.getElementById( "defaultOpen" ).click();
+            document.getElementById("defaultOpen").click();
 
-            Homey.on( 'settings.set', function()
-            {
-                Homey.get( 'diagLog', function( err, diagLog )
-                {
-                    if ( err ) return Homey.alert( err );
+            Homey.on('settings.set', function () {
+                Homey.get('diagLog', function (err, diagLog) {
+                    if (err) return Homey.alert(err);
                     diagLogElement.value = diagLog;
-                } );
+                });
 
-            } );
+            });
 
-            logEnabledElement.addEventListener( 'click', function( e )
-            {
-                Homey.set( 'logEnabled', logEnabledElement.checked, function( err )
-                {
-                    if ( err ) return Homey.alert( err );
-                } );
-            } );
+            logEnabledElement.addEventListener('click', function (e) {
+                Homey.set('logEnabled', logEnabledElement.checked, function (err) {
+                    if (err) return Homey.alert(err);
+                });
+            });
 
-            clearLogElement.addEventListener( 'click', function( e )
-            {
-                Homey.set( 'diagLog', "", function( err )
-                {
-                    if ( err ) return Homey.alert( err );
-                } );
+            clearLogElement.addEventListener('click', function (e) {
+                Homey.set('diagLog', "", function (err) {
+                    if (err) return Homey.alert(err);
+                });
                 diagLogElement.value = "";
-            } );
+            });
+
+            sendLogElement.addEventListener('click', function (e) {
+                Homey.confirm("Send the log contents to the developer?", null, function (e, ok) {
+                    if (ok) {
+                        Homey.set('sendLog', "send", function (err) {
+                            if (err) return Homey.alert(err);
+                        });
+                    }
+                });
+            });
         };
 
-        function setPage( evt, tabPage )
-        {
+        function setPage(evt, tabPage) {
             var i, tabcontent, tablinks;
 
             // Get all elements with class="tabcontent" and hide them
-            tabcontent = document.getElementsByClassName( "tabcontent" );
-            for ( i = 0; i < tabcontent.length; i++ )
-            {
-                tabcontent[ i ].style.display = "none";
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
             }
 
             // Get all elements with class="tablinks" and remove the class "active"
-            tablinks = document.getElementsByClassName( "tablinks" );
-            for ( i = 0; i < tablinks.length; i++ )
-            {
-                tablinks[ i ].className = tablinks[ i ].className.replace( " active", "" );
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
             }
 
             // Show the current tab, and add an "active" class to the button that opened the tab
-            document.getElementById( tabPage ).style.display = "block";
+            document.getElementById(tabPage).style.display = "block";
             evt.currentTarget.className += " active";
 
-            if ( tabPage == 'log' )
-            {
+            if (tabPage == 'log') {
                 // Refresh the log data
-                Homey.get( 'logEnabled', function( err, logEnabled )
-                {
-                    if ( err ) return Homey.alert( err );
+                Homey.get('logEnabled', function (err, logEnabled) {
+                    if (err) return Homey.alert(err);
                     logEnabledElement.checked = logEnabled;
-                } );
+                });
 
-                Homey.get( 'diagLog', function( err, diagLog )
-                {
-                    if ( err ) return Homey.alert( err );
+                Homey.get('diagLog', function (err, diagLog) {
+                    if (err) return Homey.alert(err);
                     diagLogElement.value = diagLog;
-                } );
+                });
 
                 // Make the log text area fill the page
-                diagLogElement.setAttribute( 'cols', diagLogElement.parentElement.clientWidth / 8 );
-                diagLogElement.style.height = ( window.innerHeight - diagLogElement.offsetTop - 20 ) + 'px';
+                diagLogElement.setAttribute('cols', diagLogElement.parentElement.clientWidth / 8);
+                diagLogElement.style.height = (window.innerHeight - diagLogElement.offsetTop - 20) + 'px';
             }
         };
     </script>
