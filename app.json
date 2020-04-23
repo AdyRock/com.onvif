@@ -53,6 +53,28 @@
             "filter": "driver_id=camera"
           }
         ]
+      },
+      {
+        "id": "snapshotReadyTrigger",
+        "title": {
+          "en": "Now snapshot ready"
+        },
+        "tokens": [
+          {
+            "name": "image",
+            "type": "image",
+            "title": {
+              "en": "Now Image"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          }
+        ]
       }
     ],
     "conditions": [
@@ -88,6 +110,19 @@
         "id": "motionDisableAction",
         "title": {
           "en": "Disable motion"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          }
+        ]
+      },
+      {
+        "id": "snapshotAction",
+        "title": {
+          "en": "Update Now snapshot"
         },
         "args": [
           {

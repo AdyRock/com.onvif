@@ -10,6 +10,19 @@
             "title": {
                 "en": "Motion disabled"
             }
+        },
+        {
+            "id": "snapshotReadyTrigger",
+            "title": {
+                "en": "Now snapshot ready"
+            },
+            "tokens": [{
+                "name": "image",
+                "type": "image",
+                "title": {
+                    "en": "Now Image"
+                }
+            }]
         }
     ],
     "conditions": [{
@@ -28,6 +41,12 @@
             "id": "motionDisableAction",
             "title": {
                 "en": "Disable motion"
+            }
+        },
+        {
+            "id": "snapshotAction",
+            "title": {
+                "en": "Update Now snapshot"
             }
         }
     ]

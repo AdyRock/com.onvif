@@ -28,6 +28,9 @@ class CameraDevice extends Homey.Device {
 		this.motionDisabledTrigger = new Homey.FlowCardTriggerDevice('motionDisabledTrigger');
 		this.motionDisabledTrigger.register();
 
+		this.snapshotReadyTrigger = new Homey.FlowCardTriggerDevice('snapshotReadyTrigger');
+		this.snapshotReadyTrigger.register();
+
 		this.registerCapabilityListener('button.syncTime', async () => {
 			// Set the Camera date to Homey's date
 			Homey.app.updateLog("Syncing time");

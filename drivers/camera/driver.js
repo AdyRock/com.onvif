@@ -24,7 +24,7 @@ class CameraDriver extends Homey.Driver {
 			.register()
 			.registerRunListener(async (args, state) => {
 
-				args.device.onCapabilityMotionEnable( true, null);
+				args.device.onCapabilityMotionEnable(true, null);
 				return await args.device.setCapabilityValue('motion_enabled', true); // Promise<void>
 			})
 
@@ -33,8 +33,28 @@ class CameraDriver extends Homey.Driver {
 			.register()
 			.registerRunListener(async (args, state) => {
 
-				args.device.onCapabilityMotionEnable( false, null);
+				args.device.onCapabilityMotionEnable(false, null);
 				return await args.device.setCapabilityValue('motion_enabled', false); // Promise<void>
+			})
+
+		this.snapshotAction = new Homey.FlowCardAction('snapshotAction');
+		this.snapshotAction
+			.register()
+			.registerRunListener(async (args, state) => {
+
+				let err = await args.device.nowImage.update();
+				if (!err)
+				{
+					let tokens = {
+						'image': args.device.nowImage
+					  }
+					  
+					args.device.snapshotReadyTrigger
+					.trigger(args.device, tokens)
+					.catch(args.device.error)
+					.then(args.device.log("Snapshot ready"))
+				}
+				return err;
 			})
 	}
 
@@ -50,7 +70,7 @@ class CameraDriver extends Homey.Driver {
 	onPair(socket) {
 		socket.on('list_devices', (data, callback) => {
 			Homey.app.discoverCameras().then(devices => {
-				Homey.app.updateLog("Discovered: " + JSON.stringify( devices, null, 2 ));
+				Homey.app.updateLog("Discovered: " + JSON.stringify(devices, null, 2));
 				callback(null, devices);
 			}).catch(function (err) {
 				callback(new Error("Connection Failed" + err), []);
@@ -81,7 +101,7 @@ class CameraDriver extends Homey.Driver {
 					callback(null, true);
 				})
 				.catch(err => {
-					Homey.app.updateLog("Failed: " + JSON.stringify( err, null, 2 ), true);
+					Homey.app.updateLog("Failed: " + JSON.stringify(err, null, 2), true);
 					callback(err);
 				});
 		});
