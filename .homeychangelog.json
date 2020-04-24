@@ -12,6 +12,6 @@
     "en": "Added log page to App config to help diagnose issues. Added extra error traps to prevent app crashes on invalid responses."
   },
   "0.0.9": {
-    "en": "Added image update and trigger flow cards. More error checking for cameras that don'r support pullpoints"
+    "en": "Added image update and trigger flow cards. More error checking for cameras that don't support pullpoints"
   }
 }
