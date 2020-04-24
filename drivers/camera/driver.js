@@ -43,16 +43,15 @@ class CameraDriver extends Homey.Driver {
 			.registerRunListener(async (args, state) => {
 
 				let err = await args.device.nowImage.update();
-				if (!err)
-				{
+				if (!err) {
 					let tokens = {
 						'image': args.device.nowImage
-					  }
-					  
+					}
+
 					args.device.snapshotReadyTrigger
-					.trigger(args.device, tokens)
-					.catch(args.device.error)
-					.then(args.device.log("Snapshot ready"))
+						.trigger(args.device, tokens)
+						.catch(args.device.error)
+						.then(args.device.log("Snapshot ready"))
 				}
 				return err;
 			})
@@ -60,8 +59,8 @@ class CameraDriver extends Homey.Driver {
 
 	async getLastCredentials(device) {
 		await device.setSettings({
-			username: this.lastUsername,
-			password: this.lastPassword
+			'username': this.lastUsername,
+			'password': this.lastPassword
 		});
 		await device.setStoreValue('initialised', true);
 		Homey.app.updateLog("Saved Credentials");
@@ -79,8 +78,9 @@ class CameraDriver extends Homey.Driver {
 
 		socket.on('list_devices_selection', (data, callback) => {
 			// User selected a device so cache the information required to validate it when the credentials are set
-			this.lastHostName = data[0].data.id;
-			this.lastPort = data[0].data.port;
+			console.log("list_devices_selection: ", data);
+			this.lastHostName = data[0].settings.id;
+			this.lastPort = data[0].settings.port;
 			callback();
 		});
 
@@ -105,6 +105,66 @@ class CameraDriver extends Homey.Driver {
 					callback(err);
 				});
 		});
+	}
+
+	async onRepair(socket, device) {
+		// Argument socket is an EventEmitter, similar to Driver.onPair
+		// Argument device is a Homey.Device that's being repaired
+
+		device.repairing = true;
+
+		socket.on('login', async (data, callback) => {
+			await device.setSettings({
+				'username': data.username,
+				'password': data.password
+			});
+
+			let settings = device.getSettings();
+			let devices = await Homey.app.discoverCameras();
+
+			console.log("Discovered devices: ", devices);
+
+			devices.forEach(async function (discoveredDevice) {
+				try {
+					let cam = await Homey.app.connectCamera(
+						discoveredDevice.settings.ip,
+						discoveredDevice.settings.port,
+						settings.username,
+						settings.password
+					);
+
+					let info = {};
+					try {
+						info = await Homey.app.getDeviceInformation(cam);
+						Homey.app.updateLog("Camera Information: " + JSON.stringify(info, null, 2));
+					} catch (err) {
+						Homey.app.updateLog("Get camera info error: " + JSON.stringify(err, null, 2), true);
+						return;
+					}
+
+					if ((info.serialNumber === settings.serialNumber) && (info.model === settings.model)) {
+						// found it
+						await device.setSettings({
+							'ip': discoveredDevice.settings.ip,
+							'port': discoveredDevice.settings.port
+						});
+						device.cam = cam;
+
+						Homey.app.updateLog("Found the camera: " + JSON.stringify(info, null, 2));
+					}
+
+				} catch (err) {
+					Homey.app.updateLog("Get camera info error: " + JSON.stringify(err, null, 2), true);
+				}
+			});
+			callback(null, true);
+		});
+
+		socket.on('disconnect', () => {
+			// Cleanup
+			device.repairing = false;
+		})
+
 	}
 }
 

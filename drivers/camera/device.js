@@ -6,14 +6,25 @@ var fs = require('fs');
 
 class CameraDevice extends Homey.Device {
 
-	onInit() {
+	async onInit() {
 		Homey.app.updateLog("Initialising CameraDevice");
+		this.repairing = false;
 		this.cam = null;
 		this.eventImage = null;
 		this.nowImage = null;
 		this.eventTime = this.getStoreValue('eventTime');
 		this.alarmTime = this.getStoreValue('alarmTime');
 		this.cameraTime = null;
+
+		// Upgrade old device settings where the ip and port where part of the data
+		const settings = this.getSettings();
+		if (!settings.ip) {
+			const devData = this.getData();
+			await this.setSettings({
+				'ip': devData.id,
+				'port': devData.port.toString()
+			})
+		}
 
 		this.connectCamera(false)
 			.catch(err => {
@@ -95,15 +106,17 @@ class CameraDevice extends Homey.Device {
 	}
 
 	async connectCamera(addingCamera) {
-		if (this.getStoreValue('initialised')) {
-			const devData = this.getData();
-			Homey.app.updateLog("Dev Data: " + JSON.stringify(devData, null, 2));
+		if (this.repairing) {
+			// Wait while repairing and try again later
+			this.checkTimerId = setTimeout(this.connectCamera.bind(this, addingCamera), 2000);
+		}
+		else if (this.getStoreValue('initialised')) {
 			let settings = this.getSettings();
 
 			try {
 				this.cam = await Homey.app.connectCamera(
-					devData.id,
-					devData.port,
+					settings.ip,
+					settings.port,
 					settings.username,
 					settings.password
 				);
@@ -174,40 +187,46 @@ class CameraDevice extends Homey.Device {
 				this.checkTimerId = setTimeout(this.checkCamera, 10000);
 				this.setCapabilityValue('alarm_tamper', false);
 			} catch (err) {
-				Homey.app.updateLog("Connect to camera error: " + err, true);
-				this.setUnavailable();
-				this.checkTimerId = setTimeout(this.connectCamera.bind(this, addingCamera), 1000);
+				if (!this.repairing) {
+					Homey.app.updateLog("Connect to camera error: " + err, true);
+					this.setUnavailable();
+				}
+				this.checkTimerId = setTimeout(this.connectCamera.bind(this, addingCamera), 2000);
 				this.setCapabilityValue('alarm_tamper', false);
 			}
 		}
 	}
 
 	async checkCamera() {
-		this.cam.getSystemDateAndTime(function (err, date, xml) {
-			if (err) {
-				err = String(err);
-				Homey.app.updateLog("Check Camera Error: " + JSON.stringify(err, null, 2), true);
-				if (err.indexOf("EHOSTUNREACH") >= 0) {
-					this.setUnavailable();
-				} else if (err.indexOf("Network timeout") >= 0) {
+		if (!this.repairing) {
+			this.cam.getSystemDateAndTime(function (err, date, xml) {
+				if (err) {
+					err = String(err);
+					Homey.app.updateLog("Check Camera Error: " + JSON.stringify(err, null, 2), true);
+
 					if (!this.getCapabilityValue('alarm_tamper')) {
 						this.setCapabilityValue('alarm_tamper', true);
 						this.alarmTime = new Date(Date.now());
 						this.setStoreValue('alarmTime', this.alarmTime);
 						this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, this.getSettings()));
 					}
+
+					if (err.indexOf("EHOSTUNREACH") >= 0) {
+						this.setUnavailable();
+					}
+				} else if (this.getCapabilityValue('alarm_tamper')) {
+					Homey.app.updateLog("Check Camera: back online");
+					this.setCapabilityValue('alarm_tamper', false);
+					this.setAvailable();
+				} else {
+					this.cameraTime = date;
+					this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, this.getSettings()));
 				}
-			} else if (this.getCapabilityValue('alarm_tamper')) {
-				this.setCapabilityValue('alarm_tamper', false);
-				this.setAvailable();
-			} else {
-				this.cameraTime = date;
-				this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, this.getSettings()));
-			}
-		}.bind(this));
+			}.bind(this));
+		}
 
 		this.checkCamera = this.checkCamera.bind(this);
-		this.checkTimerId = setTimeout(this.checkCamera, this.getCapabilityValue('alarm_tamper') ? 30000 : 100000);
+		this.checkTimerId = setTimeout(this.checkCamera, this.getCapabilityValue('alarm_tamper') ? 5000 : 10000);
 	}
 
 	convertDate(date, settings) {
@@ -350,8 +369,6 @@ class CameraDevice extends Homey.Device {
 			Homey.app.updateLog("SnapShot URL = " + publicSnapURL);
 
 			await this.setSettings({
-				"ip": devData.id,
-				"port": devData.port.toString(),
 				"url": publicSnapURL
 			})
 

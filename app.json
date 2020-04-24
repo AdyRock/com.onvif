@@ -186,6 +186,12 @@
           "template": "add_devices"
         }
       ],
+      "repair": [
+        {
+          "id": "login",
+          "template": "login_credentials"
+        }
+      ],
       "settings": [
         {
           "type": "group",

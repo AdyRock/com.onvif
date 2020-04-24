@@ -24,7 +24,7 @@
         "en": "Set the camera time to Homey's time."
       }
     },
-    "alarm_tamper":{
+    "alarm_tamper": {
       "title": {
         "en": "Offline"
       }
@@ -50,6 +50,10 @@
       "template": "add_devices"
     }
   ],
+  "repair": [{
+    "id": "login",
+    "template": "login_credentials"
+  }],
 
   "settings": [{
       "type": "group",
@@ -129,8 +133,7 @@
           "hint": {
             "en": "The format to show the time capabilities."
           },
-          "values": [
-            {
+          "values": [{
               "id": "raw",
               "label": {
                 "en": "Direct From Camera"
@@ -149,7 +152,7 @@
               }
             }
           ]
-    }
+        }
       ]
     },
     {

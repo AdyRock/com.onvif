@@ -34,10 +34,10 @@ class MyApp extends Homey.App {
 					// function will be called as soon as NVT responds
 					Homey.app.updateLog('Reply from ' + JSON.stringify(cam, null, 2));
 
+					let discoverTime = new Date(Date.now());
 					var data = {};
 					data = {
-						"id": cam.hostname,
-						"port": cam.port,
+						"id": cam.hostname + discoverTime.toJSON(),
 					};
 					this.discoveredDevices.push({
 						"name": cam.hostname,
@@ -47,6 +47,8 @@ class MyApp extends Homey.App {
 							// so the user can change them later
 							"username": "",
 							"password": "",
+							"ip": cam.hostname,
+							"port": cam.port.toString(),
 						}
 					})
 				} catch (err) {
@@ -85,7 +87,7 @@ class MyApp extends Homey.App {
 					hostname: hostName,
 					username: username,
 					password: password,
-					port: port,
+					port: parseInt(port),
 					timeout: 5000,
 				}, function (err) {
 					if (err) {
