@@ -79,7 +79,7 @@ class CameraDriver extends Homey.Driver {
 		socket.on('list_devices_selection', (data, callback) => {
 			// User selected a device so cache the information required to validate it when the credentials are set
 			console.log("list_devices_selection: ", data);
-			this.lastHostName = data[0].settings.id;
+			this.lastHostName = data[0].settings.ip;
 			this.lastPort = data[0].settings.port;
 			callback();
 		});
