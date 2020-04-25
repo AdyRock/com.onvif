@@ -22,5 +22,8 @@
   },
   "0.0.12": {
     "en": "Fixed error when discovery returns a null port"
+  },
+  "0.0.13": {
+    "en": "Add more log messages to image registration"
   }
 }
