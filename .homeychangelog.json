@@ -25,5 +25,8 @@
   },
   "0.0.13": {
     "en": "Add more log messages to image registration"
+  },
+  "0.0.14": {
+    "en": "Added user name and password if missing from the returned snapshot URI"
   }
 }
