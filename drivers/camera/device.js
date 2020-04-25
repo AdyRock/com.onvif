@@ -109,8 +109,7 @@ class CameraDevice extends Homey.Device {
 		if (this.repairing) {
 			// Wait while repairing and try again later
 			this.checkTimerId = setTimeout(this.connectCamera.bind(this, addingCamera), 2000);
-		}
-		else if (this.getStoreValue('initialised')) {
+		} else if (this.getStoreValue('initialised')) {
 			let settings = this.getSettings();
 
 			try {
@@ -372,42 +371,52 @@ class CameraDevice extends Homey.Device {
 				"url": publicSnapURL
 			})
 
-			if (settings.hasMotion) {
-				const imageFilename = 'eventImage' + devData.id;
-				this.eventImageFilename = imageFilename.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-				this.eventImageFilename += ".jpg";
-				Homey.app.updateLog("SnapShot save file = " + this.eventImageFilename);
+			try {
+				if (settings.hasMotion) {
+					const imageFilename = 'eventImage' + devData.id;
+					this.eventImageFilename = imageFilename.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+					this.eventImageFilename += ".jpg";
+					Homey.app.updateLog("SnapShot save file = " + this.eventImageFilename);
 
-				const eventImagePath = Homey.app.getUserDataPath(this.eventImageFilename);
-				if (!fs.existsSync(eventImagePath)) {
-					Homey.app.updateLog("Initialising event image");
-					// Initialise the event image with the current snapshot
-					const storageStream = fs.createWriteStream(eventImagePath);
-					const res = await fetch(snapURL.uri);
-					if (!res.ok) throw new Error(res.statusText);
-					res.body.pipe(storageStream);
-					storageStream.on('error', function (err) {
-						Homey.app.updateLog(JSON.stringify(err, null, 2));
-					});
-				}
+					const eventImagePath = Homey.app.getUserDataPath(this.eventImageFilename);
+					if (!fs.existsSync(eventImagePath)) {
+						Homey.app.updateLog("Initialising event image");
+						// Initialise the event image with the current snapshot
+						const storageStream = fs.createWriteStream(eventImagePath);
+						Homey.app.updateLog("Fetching event image");
+						const res = await fetch(snapURL.uri);
+						if (!res.ok) throw new Error(res);
+						res.body.pipe(storageStream);
 
-				if (!this.eventImage) {
-					this.eventImage = new Homey.Image();
-					this.eventImage.setPath(eventImagePath);
-					this.eventImage.register()
-						.then(() => {
-							Homey.app.updateLog("register")
-							this.setCameraImage('Event', 'Motion Event', this.eventImage);
-						})
-						.catch(this.error);
+						storageStream.on('error', function (err) {
+							Homey.app.updateLog("Fetch event image error: " + JSON.stringify(err, null, 2));
+						});
+					}
+
+					if (!this.eventImage) {
+						Homey.app.updateLog("Registering event image");
+						this.eventImage = new Homey.Image();
+						this.eventImage.setPath(eventImagePath);
+						this.eventImage.register()
+							.then(() => {
+								Homey.app.updateLog("register")
+								this.setCameraImage('Event', 'Motion Event', this.eventImage);
+							})
+							.catch((err) => {
+								Homey.app.updateLog("Register event image error: " + JSON.stringify(err, null, 2));
+							});
+					}
 				}
+			} catch (err) {
+				Homey.app.updateLog("Event SnapShot error: " + JSON.stringify(err, null, 2), true);
 			}
 
 			if (!this.nowImage) {
+				Homey.app.updateLog("Registering now image");
 				this.nowImage = new Homey.Image();
 				this.nowImage.setStream(async (stream) => {
 					const res = await fetch(snapURL.uri);
-					if (!res.ok) throw new Error(res.statusText);
+					if (!res.ok) throw new Error(res);
 					res.body.pipe(stream);
 				});
 
@@ -415,8 +424,10 @@ class CameraDevice extends Homey.Device {
 					.then(() => {
 						this.setCameraImage('Now', 'Now', this.nowImage);
 					})
-					.catch(this.error);
-			}
+					.catch((err) => {
+						Homey.app.updateLog("Register now image error: " + JSON.stringify(err, null, 2));
+					});
+	}
 		} catch (err) {
 			Homey.app.updateLog("SnapShot error: " + JSON.stringify(err, null, 2), true);
 		}
