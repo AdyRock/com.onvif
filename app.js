@@ -48,7 +48,7 @@ class MyApp extends Homey.App {
 							"username": "",
 							"password": "",
 							"ip": cam.hostname,
-							"port": cam.port.toString(),
+							"port": cam.port ? cam.port.toString() : "",
 						}
 					})
 				} catch (err) {
