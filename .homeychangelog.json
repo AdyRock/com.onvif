@@ -19,5 +19,8 @@
   },
   "0.0.11": {
     "en": "Fixed pairing that was broken by last test version"
+  },
+  "0.0.12": {
+    "en": "Fixed error when discovery returns a null port"
   }
 }
