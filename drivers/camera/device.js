@@ -360,12 +360,28 @@ class CameraDevice extends Homey.Device {
 	async setupImages() {
 		try {
 			const snapURL = await Homey.app.getSnapshotURL(this.cam);
+			Homey.app.updateLog("Snap URL: " + JSON.stringify(snapURL, null, 2, true));
+			var snapUri = snapURL.uri;
 
 			const devData = this.getData();
-
 			const settings = this.getSettings();
-			const publicSnapURL = snapURL.uri.replace(settings.password, "YOUR_PASSWORD");
-			Homey.app.updateLog("SnapShot URL = " + publicSnapURL);
+
+			// Make sure the URL has the user name and password
+			if ((snapUri.search("usr=") < 0) && (snapUri.search("user=") < 0)) {
+				let firstChar = "&";
+				if (snapUri.search("?") < 0) {
+					firstChar = "?"
+				}
+				// add the password
+				snapUri = snapUri + firstChar + "usr=" + settings.username;
+			}
+			if ((snapUri.search("pwd=") < 0) && (snapUri.search("password=") < 0)) {
+				// add the password
+				snapUri = snapUri + "&pwd=" + settings.password;
+			}
+
+			const publicSnapURL = snapUri.replace(settings.password, "YOUR_PASSWORD");
+			Homey.app.updateLog("SnapShot URI = " + publicSnapURL);
 
 			await this.setSettings({
 				"url": publicSnapURL
@@ -384,7 +400,7 @@ class CameraDevice extends Homey.Device {
 						// Initialise the event image with the current snapshot
 						const storageStream = fs.createWriteStream(eventImagePath);
 						Homey.app.updateLog("Fetching event image");
-						const res = await fetch(snapURL.uri);
+						const res = await fetch(snapUri);
 						if (!res.ok) throw new Error(res);
 						res.body.pipe(storageStream);
 
@@ -415,7 +431,7 @@ class CameraDevice extends Homey.Device {
 				Homey.app.updateLog("Registering now image");
 				this.nowImage = new Homey.Image();
 				this.nowImage.setStream(async (stream) => {
-					const res = await fetch(snapURL.uri);
+					const res = await fetch(snapUri);
 					if (!res.ok) throw new Error(res);
 					res.body.pipe(stream);
 				});
@@ -427,7 +443,7 @@ class CameraDevice extends Homey.Device {
 					.catch((err) => {
 						Homey.app.updateLog("Register now image error: " + JSON.stringify(err, null, 2));
 					});
-	}
+			}
 		} catch (err) {
 			Homey.app.updateLog("SnapShot error: " + JSON.stringify(err, null, 2), true);
 		}

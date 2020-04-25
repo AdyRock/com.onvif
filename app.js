@@ -242,10 +242,13 @@ class MyApp extends Homey.App {
 
 		this.log(newMessage);
 		var oldText = Homey.ManagerSettings.get('diagLog');
-		if (oldText.length > 5000) {
+		if (oldText.length > 15000) {
 			oldText = "";
 		}
+		const dt = new Date(Date.now());
 		oldText += "* ";
+		oldText += dt.toJSON();
+		oldText += ": "
 		oldText += newMessage;
 		oldText += "\r\n";
 		Homey.ManagerSettings.set('diagLog', oldText);

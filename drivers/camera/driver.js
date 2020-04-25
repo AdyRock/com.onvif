@@ -149,6 +149,7 @@ class CameraDriver extends Homey.Driver {
 							'port': discoveredDevice.settings.port
 						});
 						device.cam = cam;
+						device.setupImages()
 
 						Homey.app.updateLog("Found the camera: " + JSON.stringify(info, null, 2));
 					}
