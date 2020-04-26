@@ -28,5 +28,8 @@
   },
   "0.0.14": {
     "en": "Added user name and password if missing from the returned snapshot URI"
+  },
+  "0.0.15": {
+    "en": "Improved error reporting and fixed a typo from last build"
   }
 }
