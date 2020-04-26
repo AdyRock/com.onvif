@@ -32,7 +32,7 @@ class MyApp extends Homey.App {
 			onvif.Discovery.on('device', function (cam, rinfo, xml) {
 				try {
 					// function will be called as soon as NVT responds
-					Homey.app.updateLog('Reply from ' + JSON.stringify(cam, null, 2));
+					Homey.app.updateLog('Reply from ' + Homey.app.varToString(cam));
 
 					var data = {};
 					data = {
@@ -52,14 +52,14 @@ class MyApp extends Homey.App {
 						}
 					})
 				} catch (err) {
-					Homey.app.updateLog("Discovery error: " + JSON.stringify(err, null, 2), true);
+					Homey.app.updateLog("Discovery error: " + err.stack, true);
 				}
 			}.bind(this))
 
 			onvif.Discovery.on('error', function (msg, xml) {
-				Homey.app.updateLog("Discovery error: " + JSON.stringify(msg, null, 2), true);
+				Homey.app.updateLog("Discovery error: " + Homey.app.varToString(msg), true);
 				if (xml) {
-					Homey.app.updateLog("xml: " + JSON.stringify(xml, null, 2));
+					Homey.app.updateLog("xml: " + Homey.app.varToString(xml));
 				}
 			}.bind(this))
 		}
@@ -99,6 +99,7 @@ class MyApp extends Homey.App {
 					}
 				});
 			} catch (err) {
+				Homey.app.updateLog("Connect to camera error: " + err.stack, true);
 				reject(err);
 			}
 		});
@@ -235,6 +236,23 @@ class MyApp extends Homey.App {
 		return path.join(__dirname, 'userdata', filename);
 	}
 
+	varToString(source){
+		if (source === null) {
+			return "null";
+		}
+		if (source === undefined) {
+			return "undefined";
+		}
+		if (typeof(source) === "object") {
+			return JSON.stringify(source, null, 2);
+		}
+		if (typeof(source) === "string") {
+			return source;
+		}
+
+		return source.toString();
+	}
+
 	updateLog(newMessage, ignoreSetting) {
 		if (!ignoreSetting && !Homey.ManagerSettings.get('logEnabled')) {
 			return;
@@ -287,7 +305,7 @@ class MyApp extends Homey.App {
 			// Preview only available when sending through an Ethereal account
 			console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
 		} catch (err) {
-			console.log("Send log error: ", err);
+			Homey.app.updateLog("Send log error: " + err.stack);
 			return err;
 		};
 	}

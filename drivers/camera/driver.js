@@ -69,7 +69,7 @@ class CameraDriver extends Homey.Driver {
 	onPair(socket) {
 		socket.on('list_devices', (data, callback) => {
 			Homey.app.discoverCameras().then(devices => {
-				Homey.app.updateLog("Discovered: " + JSON.stringify(devices, null, 2));
+				Homey.app.updateLog("Discovered: " + Homey.app.varToString(devices, null, 2));
 				callback(null, devices);
 			}).catch(function (err) {
 				callback(new Error("Connection Failed" + err), []);
@@ -101,7 +101,7 @@ class CameraDriver extends Homey.Driver {
 					callback(null, true);
 				})
 				.catch(err => {
-					Homey.app.updateLog("Failed: " + JSON.stringify(err, null, 2), true);
+					Homey.app.updateLog("Failed: " + Homey.app.varToString(err), true);
 					callback(err);
 				});
 		});
@@ -136,9 +136,9 @@ class CameraDriver extends Homey.Driver {
 					let info = {};
 					try {
 						info = await Homey.app.getDeviceInformation(cam);
-						Homey.app.updateLog("Camera Information: " + JSON.stringify(info, null, 2));
+						Homey.app.updateLog("Camera Information: " + Homey.app.varToString(info));
 					} catch (err) {
-						Homey.app.updateLog("Get camera info error: " + JSON.stringify(err, null, 2), true);
+						Homey.app.updateLog("Get camera info error: " + err.stack, true);
 						return;
 					}
 
@@ -151,11 +151,11 @@ class CameraDriver extends Homey.Driver {
 						device.cam = cam;
 						device.setupImages()
 
-						Homey.app.updateLog("Found the camera: " + JSON.stringify(info, null, 2));
+						Homey.app.updateLog("Found the camera: " + Homey.app.varToString(info));
 					}
 
 				} catch (err) {
-					Homey.app.updateLog("Get camera info error: " + JSON.stringify(err, null, 2), true);
+					Homey.app.updateLog("Get camera info error: " + err.stack, true);
 				}
 			});
 			callback(null, true);
