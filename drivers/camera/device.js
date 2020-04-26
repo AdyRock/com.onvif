@@ -170,16 +170,17 @@ class CameraDevice extends Homey.Device {
 						if (this.hasCapability('event_time')) {
 							this.removeCapability('event_time');
 						}
-					} else {
-						if (this.getCapabilityValue('motion_enabled')) {
-							// Motion detection is enabled so listen for events
-							this.listenForEvents(this.cam);
-						}
 					}
 					addingCamera = false;
 				}
-
 				await this.setupImages();
+
+				if (settings.hasMotion) {
+					if (this.getCapabilityValue('motion_enabled')) {
+						// Motion detection is enabled so listen for events
+						this.listenForEvents(this.cam);
+					}
+				}
 
 				this.setAvailable();
 				this.checkCamera = this.checkCamera.bind(this);
@@ -253,7 +254,7 @@ class CameraDevice extends Homey.Device {
 		this.cam.removeAllListeners('event');
 
 		Homey.app.updateLog('######    Waiting for events   ######');
-		const camSnapPath = await Homey.app.getSnapshotURL(this.cam);
+		var camSnapURL = await Homey.app.getSnapshotURL(this.cam);
 		const eventImage = this.eventImage;
 
 		cam_obj.on('event', async (camMessage, xml) => {
@@ -307,7 +308,10 @@ class CameraDevice extends Homey.Device {
 									await new Promise(resolve => setTimeout(resolve, settings.delay * 1000));
 								}
 								const storageStream = fs.createWriteStream(Homey.app.getUserDataPath(this.eventImageFilename));
-								const res = await fetch(camSnapPath.uri);
+								if (camSnapURL.invalidAfterConnect) {
+									camSnapURL = await Homey.app.getSnapshotURL(this.cam);
+								}
+								const res = await fetch(camSnapURL.uri);
 								if (!res.ok) throw new Error(res.statusText);
 								res.body.pipe(storageStream);
 								storageStream.on('error', function (err) {
