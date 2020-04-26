@@ -31,5 +31,8 @@
   },
   "0.0.15": {
     "en": "Improved error reporting and fixed a typo from last build"
+  },
+  "0.0.16": {
+    "en": "Fetch snapshot URI before each image fetch if the \"invalidAfterConnect\" is true"
   }
 }
