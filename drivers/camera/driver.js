@@ -101,7 +101,7 @@ class CameraDriver extends Homey.Driver {
 					callback(null, true);
 				})
 				.catch(err => {
-					Homey.app.updateLog("Failed: " + Homey.app.varToString(err), true);
+					Homey.app.updateLog("Failed: " + err.stack, true);
 					callback(err);
 				});
 		});
