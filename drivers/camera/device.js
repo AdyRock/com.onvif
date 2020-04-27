@@ -109,7 +109,7 @@ class CameraDevice extends Homey.Device {
 			// refresh image settings after exiting this callback
 			this.setupImages = this.setupImages.bind(this);
 			setTimeout(this.setupImages, 2000);
-	}
+		}
 	}
 
 	async connectCamera(addingCamera) {
@@ -416,9 +416,11 @@ class CameraDevice extends Homey.Device {
 							await Homey.app.getSnapshotURL(this.cam)
 						}
 						const res = await fetch(this.snapUri, {
-							headers: {'Authorization': 'Basic ' + Buffer.from(settings.username + ":" + settings.password).toString('base64')}
+							headers: {
+								'Authorization': 'Basic ' + Buffer.from(settings.username + ":" + settings.password).toString('base64')
+							}
 						});
-						
+
 						if (!res.ok) throw new Error(res.statusText);
 						res.body.pipe(storageStream);
 
@@ -453,10 +455,12 @@ class CameraDevice extends Homey.Device {
 						await Homey.app.getSnapshotURL(this.cam)
 					}
 
-					console.log("Snap URI: ", this.snapUri);
+					//console.log("Snap URI: ", this.snapUri);
 
 					const res = await fetch(this.snapUri, {
-						headers: {'Authorization': 'Basic ' + Buffer.from(settings.username + ":" + settings.password).toString('base64')}
+						headers: {
+							'Authorization': 'Basic ' + Buffer.from(settings.username + ":" + settings.password).toString('base64')
+						}
 					});
 
 					if (!res.ok) throw new Error(res.statusText);
@@ -490,13 +494,13 @@ class CameraDevice extends Homey.Device {
 				if (!fs.existsSync(eventImagePath)) {
 					fs.unlink(eventImagePath, (err) => {
 						if (!err) {
-							console.log('successfully deleted: ', this.eventImageFilename);
+							//console.log('successfully deleted: ', this.eventImageFilename);
 						}
 					});
 				}
 			}
 		} catch (err) {
-			console.log("Delete device error", err);
+			//console.log("Delete device error", err);
 		}
 	}
 }
