@@ -264,6 +264,17 @@
               }
             },
             {
+              "id": "userSnapUrl",
+              "type": "text",
+              "label": {
+                "en": "Override ONVIF snapshot URL with"
+              },
+              "value": "",
+              "hint": {
+                "en": "Leave blank to use ONVIF URL. Enter the URL to capture the snapshot. #USERNAME# and #PASSWORD# can be used as placeholders that are replaced when used"
+              }
+            },
+            {
               "id": "timeFormat",
               "type": "dropdown",
               "label": {
@@ -354,7 +365,7 @@
               "id": "url",
               "type": "label",
               "label": {
-                "en": "Snapshot URL"
+                "en": "ONVIF Snapshot URL"
               },
               "value": ""
             }
