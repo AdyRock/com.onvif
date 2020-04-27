@@ -37,5 +37,8 @@
   },
   "0.0.17": {
     "en": "Added option to change the snapshot URL in advanced settings"
+  },
+  "0.0.18": {
+    "en": "Added Authorization header to image fetch"
   }
 }
