@@ -40,5 +40,8 @@
   },
   "0.0.18": {
     "en": "Added Authorization header to image fetch"
+  },
+  "0.0.19": {
+    "en": "Added option to set Authorization html headers to image fetch. Included Authorization option for event image."
   }
 }
