@@ -2,7 +2,7 @@
 
 const Homey = require('homey');
 const fetch = require('node-fetch');
-var fs = require('fs');
+const fs = require('fs');
 
 class CameraDevice extends Homey.Device {
 
@@ -415,7 +415,10 @@ class CameraDevice extends Homey.Device {
 							// Suggestions on the internet say this has to be called before getting the snapshot if invalidAfterConnect = true
 							await Homey.app.getSnapshotURL(this.cam)
 						}
-						const res = await fetch(this.snapUri);
+						const res = await fetch(this.snapUri, {
+							headers: {'Authorization': 'Basic ' + Buffer.from(settings.username + ":" + settings.password).toString('base64')}
+						});
+						
 						if (!res.ok) throw new Error(res.statusText);
 						res.body.pipe(storageStream);
 
@@ -449,8 +452,13 @@ class CameraDevice extends Homey.Device {
 					if (invalidAfterConnect) {
 						await Homey.app.getSnapshotURL(this.cam)
 					}
+
 					console.log("Snap URI: ", this.snapUri);
-					const res = await fetch(this.snapUri);
+
+					const res = await fetch(this.snapUri, {
+						headers: {'Authorization': 'Basic ' + Buffer.from(settings.username + ":" + settings.password).toString('base64')}
+					});
+
 					if (!res.ok) throw new Error(res.statusText);
 					res.body.pipe(stream);
 				});

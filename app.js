@@ -12,13 +12,11 @@ class MyApp extends Homey.App {
 		this.log('MyApp is running...');
 		this.discoveredDevices = [];
 		this.discoveryInitialised = false;
-		Homey.ManagerSettings.set('diagLog', "App Started");
+		Homey.ManagerSettings.set('diagLog', "");
 		Homey.ManagerSettings.set('sendLog', "");
 
-        Homey.ManagerSettings.on( 'set', function( setting )
-        {
-            if (setting === 'sendLog' && (Homey.ManagerSettings.get('sendLog') === "send") && (Homey.ManagerSettings.get('diagLog') !== ""))
-            {
+		Homey.ManagerSettings.on('set', function (setting) {
+			if (setting === 'sendLog' && (Homey.ManagerSettings.get('sendLog') === "send") && (Homey.ManagerSettings.get('diagLog') !== "")) {
 				return Homey.app.sendLog();
 			}
 		});
@@ -236,17 +234,17 @@ class MyApp extends Homey.App {
 		return path.join(__dirname, 'userdata', filename);
 	}
 
-	varToString(source){
+	varToString(source) {
 		if (source === null) {
 			return "null";
 		}
 		if (source === undefined) {
 			return "undefined";
 		}
-		if (typeof(source) === "object") {
+		if (typeof (source) === "object") {
 			return JSON.stringify(source, null, 2);
 		}
-		if (typeof(source) === "string") {
+		if (typeof (source) === "string") {
 			return source;
 		}
 
@@ -263,7 +261,18 @@ class MyApp extends Homey.App {
 		if (oldText.length > 15000) {
 			oldText = "";
 		}
+
 		const dt = new Date(Date.now());
+
+		if (oldText.length == 0) {
+			oldText = "Log ID: ";
+			oldText += dt.toJSON();
+			oldText += "\r\n";
+			oldText += "App version ";
+			oldText += Homey.manifest.version;
+			oldText += "\r\n\r\n";
+		}
+
 		oldText += "* ";
 		oldText += dt.toJSON();
 		oldText += ": "
