@@ -2,6 +2,7 @@
 
 const Homey = require('homey');
 const fetch = require('node-fetch');
+const Headers = require('node-fetch');
 const fs = require('fs');
 
 class CameraDevice extends Homey.Device {
@@ -86,6 +87,7 @@ class CameraDevice extends Homey.Device {
 		if (changedKeysArr.indexOf("hasMotion") >= 0) {
 			if (newSettingsObj.hasMotion) {
 				// hasMotion switched on so add the motion capabilities
+				this.hasMotion = true;
 				this.addCapability('motion_enabled');
 				this.addCapability('alarm_motion');
 				this.addCapability('event_time');
@@ -93,6 +95,7 @@ class CameraDevice extends Homey.Device {
 				setTimeout(this.setupImages().bind(this), 2000);
 			} else {
 				// hasMotion turned off
+				this.hasMotion = false;
 				this.removeCapability('motion_enabled');
 				this.removeCapability('alarm_motion');
 				this.removeCapability('event_time');
@@ -105,7 +108,7 @@ class CameraDevice extends Homey.Device {
 			this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, newSettingsObj));
 		}
 
-		if (changedKeysArr.indexOf("userSnapUrl") >= 0) {
+		if ((changedKeysArr.indexOf("userSnapUrl") >= 0) || (changedKeysArr.indexOf("useAuthHeader") >= 0)) {
 			// refresh image settings after exiting this callback
 			this.setupImages = this.setupImages.bind(this);
 			setTimeout(this.setupImages, 2000);
@@ -322,7 +325,7 @@ class CameraDevice extends Homey.Device {
 
 								Homey.app.updateLog("Event snapshot URL: " + Homey.app.varToString(this.snapUri).replace(settings.password, "YOUR_PASSWORD"));
 
-								const res = await fetch(this.snapUri);
+								var res = await this.doFetch();
 								if (!res.ok) throw new Error(res.statusText);
 								res.body.pipe(storageStream);
 								storageStream.on('error', function (err) {
@@ -376,6 +379,10 @@ class CameraDevice extends Homey.Device {
 		try {
 			const devData = this.getData();
 			const settings = this.getSettings();
+			this.password = settings.password
+			this.username = settings.username;
+			this.useAuthHeader = settings.useAuthHeader;
+			this.hasMotion = settings.hasMotion;
 
 			var invalidAfterConnect = false;
 			this.snapUri = settings.userSnapUrl;
@@ -385,20 +392,20 @@ class CameraDevice extends Homey.Device {
 				this.snapUri = snapURL.uri;
 				invalidAfterConnect = snapURL.invalidAfterConnect;
 
-				const publicSnapURL = this.snapUri.replace(settings.password, "YOUR_PASSWORD");
+				const publicSnapURL = this.snapUri.replace(this.password, "YOUR_PASSWORD");
 				await this.setSettings({
 					"url": publicSnapURL
 				})
 			} else {
 				// Use user specified snapshot URI
-				this.snapUri = this.snapUri.replace("#PASSWORD#", settings.password);
-				this.snapUri = this.snapUri.replace("#USERNAME#", settings.username);
+				this.snapUri = this.snapUri.replace("#PASSWORD#", this.password);
+				this.snapUri = this.snapUri.replace("#USERNAME#", this.username);
 			}
 
-			Homey.app.updateLog("Snapshot URL: " + Homey.app.varToString(this.snapUri).replace(settings.password, "YOUR_PASSWORD"));
+			Homey.app.updateLog("Snapshot URL: " + Homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
 
 			try {
-				if (settings.hasMotion) {
+				if (this.hasMotion) {
 					const imageFilename = 'eventImage' + devData.id;
 					this.eventImageFilename = imageFilename.replace(/[^a-z0-9]/gi, '_').toLowerCase();
 					this.eventImageFilename += ".jpg";
@@ -415,12 +422,8 @@ class CameraDevice extends Homey.Device {
 							// Suggestions on the internet say this has to be called before getting the snapshot if invalidAfterConnect = true
 							await Homey.app.getSnapshotURL(this.cam)
 						}
-						const res = await fetch(this.snapUri, {
-							headers: {
-								'Authorization': 'Basic ' + Buffer.from(settings.username + ":" + settings.password).toString('base64')
-							}
-						});
 
+						var res = await this.doFetch();
 						if (!res.ok) throw new Error(res.statusText);
 						res.body.pipe(storageStream);
 
@@ -448,25 +451,18 @@ class CameraDevice extends Homey.Device {
 			}
 
 			if (!this.nowImage) {
-				Homey.app.updateLog("Registering now image");
 				this.nowImage = new Homey.Image();
 				this.nowImage.setStream(async (stream) => {
 					if (invalidAfterConnect) {
 						await Homey.app.getSnapshotURL(this.cam)
 					}
 
-					//console.log("Snap URI: ", this.snapUri);
-
-					const res = await fetch(this.snapUri, {
-						headers: {
-							'Authorization': 'Basic ' + Buffer.from(settings.username + ":" + settings.password).toString('base64')
-						}
-					});
-
+					var res = await this.doFetch();
 					if (!res.ok) throw new Error(res.statusText);
 					res.body.pipe(stream);
 				});
 
+				Homey.app.updateLog("Registering now image");
 				this.nowImage.register()
 					.then(() => {
 						Homey.app.updateLog("registered now image")
@@ -480,6 +476,42 @@ class CameraDevice extends Homey.Device {
 			//Homey.app.updateLog("SnapShot error: " + Homey.app.varToString(err), true);
 			Homey.app.updateLog("SnapShot error: " + err.stack, true);
 		}
+	}
+
+	async doFetch() {
+		var res = {};
+		try {
+			if (this.useAuthHeader) {
+				let myHeaders = {
+					'Authorization': 'Basic ' + Buffer.from(this.username + ":" + this.password).toString('base64'),
+					'Accept-Encoding': 'gzip,deflate',
+					'Accept': '*/*',
+					'Connection': 'close',
+					'Transfer-Encoding': 'chunked',
+					'User-Agent': 'node-fetch',
+				}
+
+				Homey.app.updateLog("Fetching image with headers: " + myHeaders + " From: " + this.snapUri);
+
+				res = await fetch(this.snapUri, {
+					method: 'GET',
+					headers: myHeaders,
+					credentials: 'include'
+				});
+			} else {
+				Homey.app.updateLog("Fetching image from: " + this.snapUri);
+				res = await fetch(this.snapUri);
+			}
+		} catch (err) {
+			//Homey.app.updateLog("SnapShot error: " + Homey.app.varToString(err), true);
+			Homey.app.updateLog("SnapShot error: " + err.stack, true);
+			res = {
+				'ok': false,
+				'statusText': err.message
+			};
+		}
+
+		return res;
 	}
 
 	onDeleted() {

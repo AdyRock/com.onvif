@@ -135,6 +135,17 @@
           }
         },
         {
+          "id": "useAuthHeader",
+          "type": "checkbox",
+          "label": {
+            "en": "Add Authorization header"
+          },
+          "value": false,
+          "hint": {
+            "en": "Add the Authorization header to image fetch. Set if you have no credentials in the URL"
+          }
+        },
+        {
           "id": "timeFormat",
           "type": "dropdown",
           "label": {
