@@ -1,1 +1,6 @@
-{}
+{
+    "settings": {
+        "diagnosticsLog": "Diagnostics Log",
+        "logEnabled": "Log Enabled"
+    }
+}

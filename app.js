@@ -86,7 +86,7 @@ class MyApp extends Homey.App {
 					username: username,
 					password: password,
 					port: parseInt(port),
-					timeout: 5000,
+					timeout: 20000,
 				}, function (err) {
 					if (err) {
 						Homey.app.updateLog('Connection Failed for ' + hostName + ' Port: ' + port + ' Username: ' + username, true);
@@ -258,24 +258,32 @@ class MyApp extends Homey.App {
 
 		this.log(newMessage);
 		var oldText = Homey.ManagerSettings.get('diagLog');
-		if (oldText.length > 15000) {
+		if (oldText.length > 30000) {
 			oldText = "";
 		}
 
-		const dt = new Date(Date.now());
+		const nowTime = new Date(Date.now());
 
 		if (oldText.length == 0) {
 			oldText = "Log ID: ";
-			oldText += dt.toJSON();
+			oldText += nowTime.toJSON();
 			oldText += "\r\n";
 			oldText += "App version ";
 			oldText += Homey.manifest.version;
 			oldText += "\r\n\r\n";
+			this.logLastTime = nowTime;
 		}
 
-		oldText += "* ";
-		oldText += dt.toJSON();
-		oldText += ": "
+		let dt = new Date(nowTime.getTime() - this.logLastTime.getTime());
+		this.logLastTime = nowTime;
+
+		oldText += "+";
+		oldText += (dt.getHours() - 1);
+		oldText += ":";
+		oldText += dt.getMinutes();
+		oldText += ":";
+		oldText += dt.getMilliseconds();
+		oldText += ": ";
 		oldText += newMessage;
 		oldText += "\r\n";
 		Homey.ManagerSettings.set('diagLog', oldText);
