@@ -90,17 +90,6 @@
         "en": "Motion Trigger"
       },
       "children": [{
-          "id": "hasMotion",
-          "type": "checkbox",
-          "label": {
-            "en": "Has Motion"
-          },
-          "value": true,
-          "hint": {
-            "en": "Turn on if the device supports motion. When turning off, the last event image will remain until the App is restarted"
-          }
-        },
-        {
           "id": "single",
           "type": "checkbox",
           "label": {
@@ -121,28 +110,6 @@
           "units": "seconds",
           "hint": {
             "en": "Delay before image capture after motion triggered."
-          }
-        },
-        {
-          "id": "userSnapUrl",
-          "type": "text",
-          "label": {
-            "en": "Override ONVIF snapshot URL with"
-          },
-          "value": "",
-          "hint": {
-            "en": "Leave blank to use ONVIF URL. Enter the URL to capture the snapshot. #USERNAME# and #PASSWORD# can be used as placeholders that are replaced when used"
-          }
-        },
-        {
-          "id": "useAuthHeader",
-          "type": "checkbox",
-          "label": {
-            "en": "Add Authorization header"
-          },
-          "value": false,
-          "hint": {
-            "en": "Add the Authorization header to image fetch. Set if you have no credentials in the URL"
           }
         },
         {

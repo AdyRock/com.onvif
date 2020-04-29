@@ -1,8 +1,8 @@
 'use strict';
 
 const Homey = require('homey');
-const fetch = require('node-fetch');
-const Headers = require('node-fetch');
+const DigestFetch  = require('digest-fetch');
+const fetch  = require('node-fetch');
 const fs = require('fs');
 
 class CameraDevice extends Homey.Device {
@@ -17,6 +17,7 @@ class CameraDevice extends Homey.Device {
 		this.eventTime = this.getStoreValue('eventTime');
 		this.alarmTime = this.getStoreValue('alarmTime');
 		this.cameraTime = null;
+		this.authType = 0;
 
 		// Upgrade old device settings where the ip and port where part of the data
 		const settings = this.getSettings();
@@ -93,31 +94,13 @@ class CameraDevice extends Homey.Device {
 			this.password = newSettingsObj.password;
 		}
 
-		if (changedKeysArr.indexOf("hasMotion") >= 0) {
-			if (newSettingsObj.hasMotion) {
-				// hasMotion switched on so add the motion capabilities
-				this.hasMotion = true;
-				this.addCapability('motion_enabled');
-				this.addCapability('alarm_motion');
-				this.addCapability('event_time');
-				// refresh image settings after exiting this callback
-				setTimeout(this.setupImages().bind(this), 2000);
-			} else {
-				// hasMotion turned off
-				this.hasMotion = false;
-				this.removeCapability('motion_enabled');
-				this.removeCapability('alarm_motion');
-				this.removeCapability('event_time');
-			}
-		}
-
 		if (changedKeysArr.indexOf("timeFormat") >= 0) {
 			this.setCapabilityValue('event_time', this.convertDate(this.eventTime, newSettingsObj));
 			this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, newSettingsObj));
 			this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, newSettingsObj));
 		}
 
-		if ((changedKeysArr.indexOf("userSnapUrl") >= 0) || (changedKeysArr.indexOf("useAuthHeader") >= 0)) {
+		if (changedKeysArr.indexOf("userSnapUrl") >= 0) {
 			// refresh image settings after exiting this callback
 			this.setupImages = this.setupImages.bind(this);
 			setTimeout(this.setupImages, 2000);
@@ -416,7 +399,6 @@ class CameraDevice extends Homey.Device {
 			const settings = this.getSettings();
 			this.password = settings.password
 			this.username = settings.username;
-			this.useAuthHeader = settings.useAuthHeader;
 			this.hasMotion = settings.hasMotion;
 
 			var invalidAfterConnect = false;
@@ -538,27 +520,38 @@ class CameraDevice extends Homey.Device {
 	async doFetch(name) {
 		var res = {};
 		try {
-			if (this.useAuthHeader) {
-				//let pw = Buffer.from(this.password).toString('base64');
-				let myHeaders = {
-					'Authorization': 'Basic ' + Buffer.from(this.username + ":" + this.password).toString('base64'),
-					'Accept-Encoding': 'gzip,deflate',
-					'Accept': '*/*',
-					'Connection': 'close',
-					'Transfer-Encoding': 'chunked',
-					'User-Agent': 'node-fetch',
-				}
-
-				Homey.app.updateLog("Fetching " + name + " image with headers: " + Homey.app.varToString(myHeaders) + " From: " + this.snapUri);
-
-				res = await fetch(this.snapUri, {
-					method: 'GET',
-					headers: myHeaders,
-					credentials: 'include'
-				});
-			} else {
-				Homey.app.updateLog("Fetching image from: " + this.snapUri);
+			if (this.authType == 0) {
+				Homey.app.updateLog("Fetching " + name + " image from: " + this.snapUri);
 				res = await fetch(this.snapUri);
+				if (res.status == 401)
+				{
+					// Try Basic Authentication
+					this.authType = 1;
+				}
+			}
+
+			if (this.authType == 1) {
+				Homey.app.updateLog("Fetching " + name + " image with Basic Auth. From: " + this.snapUri);
+
+				const client = new DigestFetch(this.username, this.password, { basic: true });
+				res = await client.fetch(this.snapUri);
+				if (res.status == 401)
+				{
+					// Try Digest Authentication
+					this.authType = 2;
+				}
+			}
+			
+			if (this.authType >= 2) {
+				Homey.app.updateLog("Fetching " + name + " image with Digest Auth. From: " + this.snapUri);
+
+				const client = new DigestFetch(this.username, this.password, { algorithm: 'MD5' });
+				res = await client.fetch(this.snapUri);
+				if (res.status == 401)
+				{
+					// Go back to no Authentication
+					this.authType = 0;
+				}
 			}
 		} catch (err) {
 			//Homey.app.updateLog("SnapShot error: " + Homey.app.varToString(err), true);
