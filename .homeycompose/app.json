@@ -1,6 +1,6 @@
 {
   "id": "com.onvif",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "compatibility": ">=3.0.0",
   "sdk": 2,
   "name": {
