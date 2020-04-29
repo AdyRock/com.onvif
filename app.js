@@ -1,8 +1,8 @@
 'use strict';
 
 const Homey = require('homey');
-var onvif = require('onvif');
-let Cam = require('onvif').Cam;
+var onvif = require('/lib/onvif');
+let Cam = require('/lib/onvif').Cam;
 var path = require('path');
 const nodemailer = require("/lib/nodemailer");
 

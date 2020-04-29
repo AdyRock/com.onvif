@@ -85,6 +85,14 @@ class CameraDevice extends Homey.Device {
 
 	async onSettings(oldSettingsObj, newSettingsObj, changedKeysArr) {
 		//console.log("Settings: ", oldSettingsObj, newSettingsObj, changedKeysArr);
+		if (changedKeysArr.indexOf("username") >= 0) {
+			this.username = newSettingsObj.username;
+		}
+
+		if (changedKeysArr.indexOf("password") >= 0) {
+			this.password = newSettingsObj.password;
+		}
+
 		if (changedKeysArr.indexOf("hasMotion") >= 0) {
 			if (newSettingsObj.hasMotion) {
 				// hasMotion switched on so add the motion capabilities
@@ -454,7 +462,7 @@ class CameraDevice extends Homey.Device {
 
 						var res = await this.doFetch("Motion Event");
 						if (!res.ok) {
-							Homey.app.updateLog(Homey.app.varToString(res));
+							Homey.app.updateLog("Fetch MOTION error: " + Homey.app.varToString(res));
 							this.updatingEventImage = false;
 							throw new Error(res.statusText);
 						}
@@ -502,7 +510,9 @@ class CameraDevice extends Homey.Device {
 
 					var res = await this.doFetch("NOW");
 					if (!res.ok) {
-						Homey.app.updateLog(Homey.app.varToString(res));
+						Homey.app.updateLog("Fetch NOW error: " + res.statusText);
+						console.log(res);
+						console.log(res.headers.raw());
 						throw new Error(res.statusText);
 					}
 
@@ -529,6 +539,7 @@ class CameraDevice extends Homey.Device {
 		var res = {};
 		try {
 			if (this.useAuthHeader) {
+				//let pw = Buffer.from(this.password).toString('base64');
 				let myHeaders = {
 					'Authorization': 'Basic ' + Buffer.from(this.username + ":" + this.password).toString('base64'),
 					'Accept-Encoding': 'gzip,deflate',
