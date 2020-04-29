@@ -402,22 +402,16 @@ class CameraDevice extends Homey.Device {
 			this.hasMotion = settings.hasMotion;
 
 			var invalidAfterConnect = false;
-			this.snapUri = settings.userSnapUrl;
-			if (this.snapUri === "") {
-				// Use ONVIF snapshot URL
-				const snapURL = await Homey.app.getSnapshotURL(this.cam);
-				this.snapUri = snapURL.uri;
-				invalidAfterConnect = snapURL.invalidAfterConnect;
+			
+			// Use ONVIF snapshot URL
+			const snapURL = await Homey.app.getSnapshotURL(this.cam);
+			this.snapUri = snapURL.uri;
+			invalidAfterConnect = snapURL.invalidAfterConnect;
 
-				const publicSnapURL = this.snapUri.replace(this.password, "YOUR_PASSWORD");
-				await this.setSettings({
-					"url": publicSnapURL
-				})
-			} else {
-				// Use user specified snapshot URI
-				this.snapUri = this.snapUri.replace("#PASSWORD#", this.password);
-				this.snapUri = this.snapUri.replace("#USERNAME#", this.username);
-			}
+			const publicSnapURL = this.snapUri.replace(this.password, "YOUR_PASSWORD");
+			await this.setSettings({
+				"url": publicSnapURL
+			})
 
 			Homey.app.updateLog("Snapshot URL: " + Homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
 
