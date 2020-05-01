@@ -79,14 +79,14 @@
       {
         "id": "eventShotReadyTrigger",
         "title": {
-          "en": "Event snapshot ready"
+          "en": "Motion snapshot ready"
         },
         "tokens": [
           {
             "name": "eventImage",
             "type": "image",
             "title": {
-              "en": "Event Image"
+              "en": "Motion Image"
             }
           }
         ],
