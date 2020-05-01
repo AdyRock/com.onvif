@@ -49,5 +49,8 @@
   },
   "0.0.21": {
     "en": "Fixed error in last build where the user URI was removed that prevented the image appearing in newly added cameras."
+  },
+  "0.0.22": {
+    "en": "Added push event handling (partial implementaion). Added Motion snapshot ready trigger card."
   }
 }
