@@ -8,12 +8,15 @@ const nodemailer = require("/lib/nodemailer");
 
 class MyApp extends Homey.App {
 
-	onInit() {
+	async onInit() {
 		this.log('MyApp is running...');
 		this.discoveredDevices = [];
 		this.discoveryInitialised = false;
 		Homey.ManagerSettings.set('diagLog', "");
 		Homey.ManagerSettings.set('sendLog', "");
+
+		this.homeyId = await Homey.ManagerCloud.getHomeyId();
+		this.homeyIP = await Homey.ManagerCloud.getLocalAddress();
 
 		Homey.ManagerSettings.on('set', function (setting) {
 			if (setting === 'sendLog' && (Homey.ManagerSettings.get('sendLog') === "send") && (Homey.ManagerSettings.get('diagLog') !== "")) {
@@ -151,6 +154,22 @@ class MyApp extends Homey.App {
 		});
 	}
 
+	async getServices(cam_obj) {
+		return new Promise(function (resolve, reject) {
+			try {
+				cam_obj.getServices(true, function (err, info, xml) {
+					if (err) {
+						reject(err);
+					} else {
+						resolve(info);
+					}
+				});
+			} catch (err) {
+				reject(err);
+			}
+		});
+	}
+
 	async getSnapshotURL(cam_obj) {
 		return new Promise(function (resolve, reject) {
 			try {
@@ -176,6 +195,7 @@ class MyApp extends Homey.App {
 						reject(err);
 					} else {
 						// Display the available Topics
+						//console.log( "ONVIF Event Properties: ", xml);
 						let parseNode = function (node, topicPath, nodeName) {
 							// loop over all the child nodes in this node
 							for (const child in node) {
@@ -184,7 +204,6 @@ class MyApp extends Homey.App {
 								} else if (child == "messageDescription") {
 									// we have found the details that go with an event
 									supportedEvents.push(nodeName.toUpperCase());
-									Homey.app.updateLog('Found Event - ' + nodeName)
 									return;
 								} else {
 									// descend into the child node, looking for the messageDescription
@@ -202,13 +221,23 @@ class MyApp extends Homey.App {
 		});
 	}
 
-	hasPullSupport(capabilities) {
+	hasPullSupport(capabilities, id) {
 		if (capabilities.events && capabilities.events.WSPullPointSupport && capabilities.events.WSPullPointSupport == true) {
-			Homey.app.updateLog('Camera supports WSPullPoint');
+			Homey.app.updateLog('Camera (' + id + ') supports PullPoint');
 			return true;
 		}
 
-		Homey.app.updateLog('This camera/NVT does not support PullPoint Events', true);
+		Homey.app.updateLog('Camera (' + id + ') does NOT support PullPoint Events', true);
+		return false
+	}
+
+	hasBaseEvents(services, id) {
+		if (services.Capabilities && services.Capabilities.MaxNotificationProducers > 0) {
+			Homey.app.updateLog('Camera (' + id + ') supports Push Events');
+			return true;
+		}
+
+		Homey.app.updateLog('This camera (' + id + ') does NOT support Push Events', true);
 		return false
 	}
 

@@ -45,9 +45,9 @@
     "en": "Added option to set Authorization html headers to image fetch. Included Authorization option for event image."
   },
   "0.0.20": {
-    "en": "Added Digest Authorization with auto authorization mode. Rmoved a few advanced options as the auto detection is now better."
+    "en": "Added Digest Authorization with auto authorization mode. Removed a few advanced options as the auto detection is now better."
   },
   "0.0.21": {
-    "en": "Fixed error in last build where the user URI was removed that prevented the iage appearing in newly added cameras."
+    "en": "Fixed error in last build where the user URI was removed that prevented the image appearing in newly added cameras."
   }
 }

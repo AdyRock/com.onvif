@@ -75,6 +75,28 @@
             "filter": "driver_id=camera"
           }
         ]
+      },
+      {
+        "id": "eventShotReadyTrigger",
+        "title": {
+          "en": "Event snapshot ready"
+        },
+        "tokens": [
+          {
+            "name": "eventImage",
+            "type": "image",
+            "title": {
+              "en": "Event Image"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          }
+        ]
       }
     ],
     "conditions": [
@@ -344,6 +366,22 @@
               "type": "label",
               "label": {
                 "en": "ONVIF Snapshot URL"
+              },
+              "value": ""
+            },
+            {
+              "id": "notificationMethods",
+              "type": "label",
+              "label": {
+                "en": "ONVIF Notification methods"
+              },
+              "value": ""
+            },
+            {
+              "id": "notificationTypes",
+              "type": "label",
+              "label": {
+                "en": "ONVIF Notification types"
               },
               "value": ""
             }

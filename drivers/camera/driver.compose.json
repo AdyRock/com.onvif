@@ -204,6 +204,22 @@
             "en": "ONVIF Snapshot URL"
           },
           "value": ""
+        },
+        {
+          "id": "notificationMethods",
+          "type": "label",
+          "label": {
+            "en": "ONVIF Notification methods"
+          },
+          "value": ""
+        },
+        {
+          "id": "notificationTypes",
+          "type": "label",
+          "label": {
+            "en": "ONVIF Notification types"
+          },
+          "value": ""
         }
       ]
     }
