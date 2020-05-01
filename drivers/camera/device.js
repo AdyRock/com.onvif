@@ -359,7 +359,7 @@ class CameraDevice extends Homey.Device {
 						this.eventShotReadyTrigger
 							.trigger(this, tokens)
 							.catch(this.error)
-							.then(this.log("Event Snapshot ready"))
+							.then(this.log("Event Snapshot ready (" + this.id + ")"))
 
 						this.updatingEventImage = false;
 					}.bind(this));

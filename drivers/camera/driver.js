@@ -51,7 +51,7 @@ class CameraDriver extends Homey.Driver {
 					args.device.snapshotReadyTrigger
 						.trigger(args.device, tokens)
 						.catch(args.device.error)
-						.then(args.device.log("Now Snapshot ready"))
+						.then(args.device.log("Now Snapshot ready (" + args.device.id + ")"))
 				}
 				return err;
 			})
