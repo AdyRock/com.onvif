@@ -71,7 +71,7 @@ class CameraDriver extends Homey.Driver {
 			Homey.app.discoverCameras().then(devices => {
 				Homey.app.updateLog("Discovered: " + Homey.app.varToString(devices, null, 2));
 				callback(null, devices);
-			}).catch(function (err) {
+			}).catch((err) => {
 				callback(new Error("Connection Failed" + err), []);
 			});
 		});

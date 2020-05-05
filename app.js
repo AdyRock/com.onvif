@@ -3,13 +3,18 @@
 const Homey = require('homey');
 var onvif = require('/lib/onvif');
 let Cam = require('/lib/onvif').Cam;
-var path = require('path');
+const parseSOAPString = require('/lib/onvif/lib/utils').parseSOAPString;
+const linerase = require('/lib/onvif/lib/utils').linerase;
+const path = require('path');
 const nodemailer = require("/lib/nodemailer");
+
+const http = require('http');
 
 class MyApp extends Homey.App {
 
 	async onInit() {
 		this.log('MyApp is running...');
+		this.pushServerPort = 9998;
 		this.discoveredDevices = [];
 		this.discoveryInitialised = false;
 		Homey.ManagerSettings.set('diagLog', "");
@@ -17,12 +22,88 @@ class MyApp extends Homey.App {
 
 		this.homeyId = await Homey.ManagerCloud.getHomeyId();
 		this.homeyIP = await Homey.ManagerCloud.getLocalAddress();
+		this.homeyIP = (this.homeyIP.split(":"))[0];
 
-		Homey.ManagerSettings.on('set', function (setting) {
+		Homey.ManagerSettings.on('set', (setting) => {
 			if (setting === 'sendLog' && (Homey.ManagerSettings.get('sendLog') === "send") && (Homey.ManagerSettings.get('diagLog') !== "")) {
 				return Homey.app.sendLog();
 			}
 		});
+
+		this.runsListener();
+	}
+
+	async runsListener() {
+		const requestListener = (request, response) => {
+			let pathParts = request.url.split(/\?|=/);
+
+			if ((pathParts[1] === 'deviceId') && request.method === 'POST') {
+				if (request.headers['content-type'].startsWith('application/soap+xml')) {
+					let body = '';
+					request.on('data', chunk => {
+						body += chunk.toString(); // convert Buffer to string
+					});
+					request.on('end', () => {
+						parseSOAPString(body, (err, res, xml) => {
+							if (!err && res) {
+								var data = linerase(res).notify;
+
+								if (data && data.notificationMessage) {
+									if (!Array.isArray(data.notificationMessage)) {
+										data.notificationMessage = [data.notificationMessage];
+									}
+
+									// Find the referenced device
+									const driver = Homey.ManagerDrivers.getDriver('camera');
+									var theDevice = null;
+									if (driver) {
+										let devices = driver.getDevices();
+										for (var i = 0; i < devices.length; i++) {
+											var device = devices[i];
+											if (device.getData().id == pathParts[2]) {
+												Homey.app.updateLog("Push Event found Device: " + pathParts[2]);
+												theDevice = device;
+												break;
+											}
+										}
+									}
+
+									console.log(" ");
+
+									data.notificationMessage.forEach((message) => {
+										/**
+										 * Indicates message from device.
+										 * @event Cam#event
+										 * @type {Cam~NotificationMessage}
+										 */
+										theDevice.processCamEventMessage(message);
+									})
+								}
+							} else {
+								this.updateLog("Push data error: " + err, true);
+								response.writeHead(406);
+								response.end('Not Acceptable');
+								return;
+							}
+						});
+
+						response.writeHead(200);
+						response.end('ok');
+					});
+				} else {
+					this.updateLog("Push data invalid content type: " + request.headers['content-type'], true);
+					response.writeHead(415);
+					response.end('Unsupported Media Type');
+				}
+			} else {
+				this.updateLog("Push data error: " + request.url + ": METHOD = " + request.method, true);
+				response.writeHead(405);
+				response.end('Method not allowed');
+			}
+		}
+
+		const server = http.createServer(requestListener);
+		server.listen(this.pushServerPort);
 	}
 
 	async discoverCameras() {
@@ -30,7 +111,7 @@ class MyApp extends Homey.App {
 		Homey.app.updateLog('====  Discovery Starting  ====');
 		if (!this.discoveryInitialised) {
 			this.discoveryInitialised = true;
-			onvif.Discovery.on('device', function (cam, rinfo, xml) {
+			onvif.Discovery.on('device', (cam, rinfo, xml) => {
 				try {
 					// function will be called as soon as NVT responds
 					Homey.app.updateLog('Reply from ' + Homey.app.varToString(cam));
@@ -55,14 +136,14 @@ class MyApp extends Homey.App {
 				} catch (err) {
 					Homey.app.updateLog("Discovery error: " + err.stack, true);
 				}
-			}.bind(this))
+			})
 
-			onvif.Discovery.on('error', function (msg, xml) {
+			onvif.Discovery.on('error', (msg, xml) => {
 				Homey.app.updateLog("Discovery error: " + Homey.app.varToString(msg), true);
 				if (xml) {
 					Homey.app.updateLog("xml: " + Homey.app.varToString(xml));
 				}
-			}.bind(this))
+			})
 		}
 
 		// Start the discovery process running
@@ -79,7 +160,7 @@ class MyApp extends Homey.App {
 	}
 
 	async connectCamera(hostName, port, username, password) {
-		return new Promise(function (resolve, reject) {
+		return new Promise((resolve, reject) => {
 			try {
 				Homey.app.updateLog("--------------------------");
 				Homey.app.updateLog('Connect to Camera ' + hostName + ':' + port + " - " + username);
@@ -90,113 +171,112 @@ class MyApp extends Homey.App {
 					password: password,
 					port: parseInt(port),
 					timeout: 20000,
-				}, function (err) {
+				}, (err) => {
 					if (err) {
 						Homey.app.updateLog('Connection Failed for ' + hostName + ' Port: ' + port + ' Username: ' + username, true);
-						reject(err);
+						return reject(err);
 					} else {
-						Homey.app.updateLog('CONNECTED');
-						resolve(cam);
+						Homey.app.updateLog('CONNECTED to ' + hostName);
+						return resolve(cam);
 					}
 				});
 			} catch (err) {
-				Homey.app.updateLog("Connect to camera error: " + err.stack, true);
-				reject(err);
+				Homey.app.updateLog("Connect to camera " + hostName + " error: " + err.stack, true);
+				return reject(err);
 			}
 		});
 	}
 
 	async getDateAndTime(cam_obj) {
-		return new Promise(function (resolve, reject) {
+		return new Promise((resolve, reject) => {
 			try {
-				cam_obj.getSystemDateAndTime(function (err, date, xml) {
+				cam_obj.getSystemDateAndTime((err, date, xml) => {
 					if (err) {
-						reject(err);
+						return reject(err);
 					} else {
-						resolve(date);
+						return resolve(date);
 					}
 				});
 			} catch (err) {
-				reject(err);
+				return reject(err);
 			}
 		});
 	}
 
 	async getDeviceInformation(cam_obj) {
-		return new Promise(function (resolve, reject) {
+		return new Promise((resolve, reject) => {
 			try {
-				cam_obj.getDeviceInformation(function (err, info, xml) {
+				cam_obj.getDeviceInformation((err, info, xml) => {
 					if (err) {
-						reject(err);
+						return reject(err);
 					} else {
-						resolve(info);
+						return resolve(info);
 					}
 				});
 			} catch (err) {
-				reject(err);
+				return reject(err);
 			}
 		});
 	}
 
 	async getCapabilities(cam_obj) {
-		return new Promise(function (resolve, reject) {
+		return new Promise((resolve, reject) => {
 			try {
-				cam_obj.getCapabilities(function (err, info, xml) {
+				cam_obj.getCapabilities((err, info, xml) => {
 					if (err) {
-						reject(err);
+						return reject(err);
 					} else {
-						resolve(info);
+						return resolve(info);
 					}
 				});
 			} catch (err) {
-				reject(err);
+				return reject(err);
 			}
 		});
 	}
 
 	async getServices(cam_obj) {
-		return new Promise(function (resolve, reject) {
+		return new Promise((resolve, reject) => {
 			try {
-				cam_obj.getServices(true, function (err, info, xml) {
+				cam_obj.getServices(true, (err, info, xml)  => {
 					if (err) {
-						reject(err);
+						return reject(err);
 					} else {
-						resolve(info);
+						return resolve(info);
 					}
 				});
 			} catch (err) {
-				reject(err);
+				return reject(err);
 			}
 		});
 	}
 
 	async getSnapshotURL(cam_obj) {
-		return new Promise(function (resolve, reject) {
+		return new Promise((resolve, reject) => {
 			try {
-				cam_obj.getSnapshotUri(function (err, info, xml) {
+				cam_obj.getSnapshotUri((err, info, xml) => {
 					if (err) {
-						reject(err);
+						return reject(err);
 					} else {
-						resolve(info);
+						return resolve(info);
 					}
 				});
 			} catch (err) {
-				reject(err);
+				return reject(err);
 			}
 		});
 	}
 
 	async hasEventTopics(cam_obj) {
-		return new Promise(function (resolve, reject) {
+		return new Promise((resolve, reject) => {
 			try {
 				let supportedEvents = [];
-				cam_obj.getEventProperties(function (err, data, xml) {
+				cam_obj.getEventProperties((err, data, xml) => {
 					if (err) {
-						reject(err);
+						return reject(err);
 					} else {
 						// Display the available Topics
-						//console.log( "ONVIF Event Properties: ", xml);
-						let parseNode = function (node, topicPath, nodeName) {
+						let parseNode = (node, topicPath, nodeName) => {
 							// loop over all the child nodes in this node
 							for (const child in node) {
 								if (child == "$") {
@@ -213,10 +293,10 @@ class MyApp extends Homey.App {
 						}
 						parseNode(data.topicSet, '', '')
 					}
-					resolve(supportedEvents);
+					return resolve(supportedEvents);
 				});
 			} catch (err) {
-				reject(err);
+				return reject(err);
 			}
 		});
 	}
