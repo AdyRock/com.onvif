@@ -55,5 +55,8 @@
   },
   "0.0.23": {
     "en": "Updated push event method"
+  },
+  "0.0.24": {
+    "en": "Added motion alarm to device tile."
   }
 }
