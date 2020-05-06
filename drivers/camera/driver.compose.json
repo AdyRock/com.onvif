@@ -4,7 +4,7 @@
     "en": "Camera"
   },
 
-  "class": "camera",
+  "class": "sensor",
   "capabilities": [
     "motion_enabled",
     "alarm_motion",

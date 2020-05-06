@@ -36,6 +36,11 @@ class CameraDevice extends Homey.Device {
 			this.setCapabilityValue('alarm_motion', false);
 		}
 
+		if (this.getClass() != 'sensor')
+		{
+			this.setClass('sensor');
+		}
+
 		this.connectCamera(false)
 			.catch(err => {
 				Homey.app.updateLog("Check Camera Error (" + this.id + "): " + Homey.app.varToString(err), true);
