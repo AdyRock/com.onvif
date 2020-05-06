@@ -52,5 +52,8 @@
   },
   "0.0.22": {
     "en": "Added push event handling (partial implementaion). Added Motion snapshot ready trigger card."
+  },
+  "0.0.23": {
+    "en": "Updated push event method"
   }
 }
