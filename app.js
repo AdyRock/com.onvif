@@ -42,6 +42,14 @@ class MyApp extends Homey.App {
 					let body = '';
 					request.on('data', chunk => {
 						body += chunk.toString(); // convert Buffer to string
+						if (body.length > 10000)
+						{
+							this.updateLog("Push data error: Payload too large", true);
+							response.writeHead(413);
+							response.end('Payload Too Large');
+							body = '';
+							return;
+						}
 					});
 					request.on('end', () => {
 						parseSOAPString(body, (err, res, xml) => {
@@ -70,14 +78,19 @@ class MyApp extends Homey.App {
 
 									console.log(" ");
 
-									data.notificationMessage.forEach((message) => {
-										/**
-										 * Indicates message from device.
-										 * @event Cam#event
-										 * @type {Cam~NotificationMessage}
-										 */
-										theDevice.processCamEventMessage(message);
-									})
+									if (theDevice) {
+										data.notificationMessage.forEach((message) => {
+											/**
+											 * Indicates message from device.
+											 * @event Cam#event
+											 * @type {Cam~NotificationMessage}
+											 */
+											theDevice.processCamEventMessage(message);
+										})
+									}
+									else{
+										Homey.app.updateLog("Push Event unknown Device: " + pathParts[2]);
+									}
 								}
 							} else {
 								this.updateLog("Push data error: " + err, true);
@@ -238,7 +251,7 @@ class MyApp extends Homey.App {
 	async getServices(cam_obj) {
 		return new Promise((resolve, reject) => {
 			try {
-				cam_obj.getServices(true, (err, info, xml)  => {
+				cam_obj.getServices(true, (err, info, xml) => {
 					if (err) {
 						return reject(err);
 					} else {
@@ -297,6 +310,26 @@ class MyApp extends Homey.App {
 				});
 			} catch (err) {
 				return reject(err);
+			}
+		});
+	}
+
+	async unsubscribe(cam_obj, unsubscribeRef) {
+		return new Promise((resolve, reject) => {
+			if (unsubscribeRef) {
+				Homey.app.updateLog('Unsubscribe push event (' + cam_obj.hostname + '): ' + unsubscribeRef);
+				cam_obj.UnsubscribePushEventSubscription(unsubscribeRef, (err, info, xml) => {
+					if (err) {
+						Homey.app.updateLog("Push unsubscribe error (" + cam_obj.hostname + "): " + err, true);
+						return reject(err);
+					}
+
+					return resolve(null);
+				});
+			} else {
+				Homey.app.updateLog('Unsubscribe Pull event (' + cam_obj.hostname + ')');
+				cam_obj.removeAllListeners('event');
+				return resolve(null);
 			}
 		});
 	}

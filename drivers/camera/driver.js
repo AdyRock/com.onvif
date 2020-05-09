@@ -23,9 +23,9 @@ class CameraDriver extends Homey.Driver {
 		this.motionEnabledAction
 			.register()
 			.registerRunListener(async (args, state) => {
-
-				args.device.onCapabilityMotionEnable(true, null);
-				return await args.device.setCapabilityValue('motion_enabled', true); // Promise<void>
+				console.log("motionEnabledAction");
+				// args.device.onCapabilityMotionEnable(true, null);
+				// return await args.device.setCapabilityValue('motion_enabled', true); // Promise<void>
 			})
 
 		this.motionDisabledAction = new Homey.FlowCardAction('motionDisableAction');
@@ -33,8 +33,9 @@ class CameraDriver extends Homey.Driver {
 			.register()
 			.registerRunListener(async (args, state) => {
 
-				args.device.onCapabilityMotionEnable(false, null);
-				return await args.device.setCapabilityValue('motion_enabled', false); // Promise<void>
+				console.log("motionDisabledAction");
+				// args.device.onCapabilityMotionEnable(false, null);
+				// return await args.device.setCapabilityValue('motion_enabled', false); // Promise<void>
 			})
 
 		this.snapshotAction = new Homey.FlowCardAction('snapshotAction');

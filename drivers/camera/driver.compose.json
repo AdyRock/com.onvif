@@ -113,6 +113,17 @@
           }
         },
         {
+          "id": "preferPullEvents",
+          "type": "checkbox",
+          "label": {
+            "en": "Prefer Pull Events"
+          },
+          "value": false,
+          "hint": {
+            "en": "If both Pull and Push events are available then choose Pull when checked. Push is more efficient but may not work on some network setups."
+          }
+        },
+        {
           "id": "timeFormat",
           "type": "dropdown",
           "label": {

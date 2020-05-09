@@ -1,6 +1,16 @@
 {
     "settings": {
         "diagnosticsLog": "Diagnostics Log",
-        "logEnabled": "Log Enabled"
-    }
+        "logEnabled": "Log Enabled",
+        "ClearLog": "Clear Log",
+        "SendLog": "Send Log"
+    },
+    "Push_Pull_Supported": "Push and Pull supported: ",
+    "Using_Pull": "Using Pull",
+    "Using_Push": "Using Push",
+    "Only_Pull_Supported": "Only Pull supported",
+    "Only_Push_Supported": "Only Push supported",
+    "Not_Supported": "Not supported",
+    "Motion_Event": "Motion Event",
+    "Now": "Now"
 }

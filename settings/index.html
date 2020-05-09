@@ -11,17 +11,17 @@
 <body>
     <!-- Tab links -->
     <div class="tab">
-        <button class="tablinks" onclick="setPage(event, 'log')" id="defaultOpen">Diagnostics Log</button>
+        <button class="tablinks" onclick="setPage(event, 'log')" id="defaultOpen"><span data-i18n="settings.diagnosticsLog"></span></button>
     </div>
 
     <!-- LOG PAGE -->
     <div id="log" class="tabcontent">
         <div class="field row">
-            <label for="logEnabled">Log Enabled</label>
+            <label for="logEnabled"><span data-i18n="settings.logEnabled"></span></label>
             <input id="logEnabled" type="checkbox" value="logEnabled" />
             <P></P>
         </div>
-        <p><button id="clearLog">Clear Log</button> <button id="sendLog">Send Log</button></p>
+        <p><button id="clearLog"><span data-i18n="settings.ClearLog"></span></button> <button id="sendLog"><span data-i18n="settings.SendLog"></span></button></p>
         <div class="field row">
             <textarea id="diagLog"></textarea>
         </div>
