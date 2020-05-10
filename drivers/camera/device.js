@@ -213,7 +213,7 @@ class CameraDevice extends Homey.Device {
 				} else if (this.hasPullPoints) {
 					notificationMethods += Homey.__("Only_Pull_Supported"); //"Only Pull supported";
 				} else if (this.supportPushEvent) {
-					notificationMethods += Homey.__("OnlyPush_Supported");// "Only Push supported";
+					notificationMethods += Homey.__("OnlyPush_Supported"); // "Only Push supported";
 				} else {
 					notificationMethods = Homey.__("Not_Supported"); //"Not supported";
 				}
@@ -324,6 +324,52 @@ class CameraDevice extends Homey.Device {
 		return strDate;
 	}
 
+	async readEventImage() {
+		const storageStream = fs.createWriteStream(Homey.app.getUserDataPath(this.eventImageFilename));
+
+		if (this.invalidAfterConnect) {
+			// Suggestions on the internet say this has to be called before getting the snapshot if invalidAfterConnect = true
+			const snapURL = await Homey.app.getSnapshotURL(this.cam);
+			this.snapUri = snapURL.uri;
+		}
+
+		const settings = this.getSettings();
+		Homey.app.updateLog("Event snapshot URL (" + this.id + "): " + Homey.app.varToString(this.snapUri).replace(settings.password, "YOUR_PASSWORD"));
+
+		var res = await this.doFetch("MOTION EVENT");
+		if (!res.ok) {
+			Homey.app.updateLog(Homey.app.varToString(res));
+			throw new Error(res.statusText);
+		}
+
+		return new Promise((resolve, reject) => {
+			res.body.pipe(storageStream);
+			storageStream.on('error', (err) => {
+				Homey.app.updateLog(Homey.app.varToString(err));
+				return reject(err);
+				//throw new Error(err);
+			})
+			storageStream.on('finish', () => {
+				this.eventImage.update();
+				Homey.app.updateLog("Event Image Updated (" + this.id + ")");
+
+				let tokens = {
+					'eventImage': this.eventImage
+				}
+
+				this.eventShotReadyTrigger
+					.trigger(this, tokens)
+					.catch(err => {
+						Homey.app.updateLog("Snapshot error (" + this.id + "): " + Homey.app.varToString(err), true);
+						return reject(err);
+					})
+					.then(() => {
+						return resolve(true);
+					})
+			});
+		});
+	}
+
 	async triggerPushEvent(dataName, dataValue) {
 		const settings = this.getSettings();
 		this.setAvailable();
@@ -338,7 +384,7 @@ class CameraDevice extends Homey.Device {
 		}
 		if (this.getCapabilityValue('motion_enabled')) {
 			if (!settings.single || dataValue != this.getCapabilityValue('alarm_motion')) {
-				Homey.app.updateLog("Event Processing" + dataName + " = " + dataValue);
+				Homey.app.updateLog("Event Processing (" + this.id + "):" + dataName + " = " + dataValue);
 				this.setCapabilityValue('alarm_motion', dataValue);
 				if (dataValue) {
 					if (!this.updatingEventImage) {
@@ -356,42 +402,16 @@ class CameraDevice extends Homey.Device {
 							await new Promise(resolve => setTimeout(resolve, settings.delay * 1000));
 						}
 
-						const storageStream = fs.createWriteStream(Homey.app.getUserDataPath(this.eventImageFilename));
-
-						var camSnapURL = await Homey.app.getSnapshotURL(this.cam);
-						if (camSnapURL.invalidAfterConnect) {
-							await Homey.app.getSnapshotURL(this.cam);
-						}
-
-						Homey.app.updateLog("Event snapshot URL (" + this.id + "): " + Homey.app.varToString(this.snapUri).replace(settings.password, "YOUR_PASSWORD"));
-
-						var res = await this.doFetch("MOTION EVENT");
-						if (!res.ok) {
-							Homey.app.updateLog(Homey.app.varToString(res));
-							this.updatingEventImage = false;
-							throw new Error(res.statusText);
-						}
-						res.body.pipe(storageStream);
-						storageStream.on('error', (err) => {
-							Homey.app.updateLog(Homey.app.varToString(err));
-							this.updatingEventImage = false;
-							throw new Error(err);
-						})
-						storageStream.on('finish', () => {
-							this.eventImage.update();
-							Homey.app.updateLog("Event Image Updated (" + this.id + ")");
-
-							let tokens = {
-								'eventImage': this.eventImage
+						for (let retries = 3; retries > 0; retries--) {
+							try {
+								await this.readEventImage();
+								break;
+							} catch (err) {
+								Homey.app.updateLog("Event image error (" + this.id + "): " + err);
 							}
+						}
 
-							this.eventShotReadyTrigger
-								.trigger(this, tokens)
-								.catch(this.error)
-								.then(this.log("Event Snapshot ready (" + this.id + ")"))
-
-							this.updatingEventImage = false;
-						});
+						this.updatingEventImage = false;
 					} else {
 						Homey.app.updateLog("** Event STILL Processing last image (" + this.id + ") **", true);
 					}
@@ -566,12 +586,12 @@ class CameraDevice extends Homey.Device {
 			this.password = settings.password
 			this.username = settings.username;
 
-			var invalidAfterConnect = false;
+			this.invalidAfterConnect = false;
 
 			// Use ONVIF snapshot URL
 			const snapURL = await Homey.app.getSnapshotURL(this.cam);
 			this.snapUri = snapURL.uri;
-			invalidAfterConnect = snapURL.invalidAfterConnect;
+			this.invalidAfterConnect = snapURL.invalidAfterConnect;
 
 			const publicSnapURL = this.snapUri.replace(this.password, "YOUR_PASSWORD");
 			await this.setSettings({
@@ -596,7 +616,7 @@ class CameraDevice extends Homey.Device {
 						const storageStream = fs.createWriteStream(eventImagePath);
 						Homey.app.updateLog("Fetching event image (" + this.id + ")");
 
-						if (invalidAfterConnect) {
+						if (this.invalidAfterConnect) {
 							// Suggestions on the internet say this has to be called before getting the snapshot if invalidAfterConnect = true
 							await Homey.app.getSnapshotURL(this.cam)
 						}
@@ -645,7 +665,7 @@ class CameraDevice extends Homey.Device {
 			if (!this.nowImage) {
 				this.nowImage = new Homey.Image();
 				this.nowImage.setStream(async (stream) => {
-					if (invalidAfterConnect) {
+					if (this.invalidAfterConnect) {
 						await Homey.app.getSnapshotURL(this.cam)
 					}
 
