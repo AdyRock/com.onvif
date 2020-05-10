@@ -61,5 +61,8 @@
   },
   "0.0.25": {
     "en": "Added option to switch between push and pull events when both are available. Tidy up of switching events on and off. Added features required for supporting other languages once I have some translations."
+  },
+  "0.0.26": {
+    "en": "Added retries to event image capture."
   }
 }
