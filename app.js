@@ -424,6 +424,8 @@ class MyApp extends Homey.App {
 		oldText += ":";
 		oldText += dt.getMinutes();
 		oldText += ":";
+		oldText += dt.getSeconds();
+		oldText += ".";
 		oldText += dt.getMilliseconds();
 		oldText += ": ";
 		oldText += newMessage;
