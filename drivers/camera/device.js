@@ -391,9 +391,9 @@ class CameraDevice extends Homey.Device {
 						this.updatingEventImage = true;
 
 						// Safeguard against flag not being reset for some reason
-						setTimeout(() => {
+						let timerId = setTimeout(() => {
 							this.updatingEventImage = false
-						}, settings.delay * 1000 + 5000);
+						}, settings.delay * 1000 + 20000);
 
 						this.eventTime = new Date(Date.now());
 						this.setStoreValue('eventTime', this.eventTime);
@@ -408,6 +408,10 @@ class CameraDevice extends Homey.Device {
 								break;
 							} catch (err) {
 								Homey.app.updateLog("Event image error (" + this.id + "): " + err);
+								clearTimeout(timerId);
+								timerId = setTimeout(() => {
+									this.updatingEventImage = false
+								}, 20000);
 							}
 						}
 
