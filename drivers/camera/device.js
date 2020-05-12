@@ -287,11 +287,21 @@ class CameraDevice extends Homey.Device {
 
 					if (err.indexOf("EHOSTUNREACH") >= 0) {
 						this.setUnavailable();
+						this.unsubscribeRef = null;
 					}
 				} else if (this.getCapabilityValue('alarm_tamper')) {
 					Homey.app.updateLog("Check Camera (" + this.id + "): back online");
 					this.setCapabilityValue('alarm_tamper', false);
 					this.setAvailable();
+
+					if (this.hasMotion && this.getCapabilityValue('motion_enabled')) {
+						//Restart event monitoring
+						this.unsubscribeRef = null;
+						setImmediate(() => {
+							this.listenForEvents(this.cam);
+							return;
+						});
+					}
 				} else {
 					this.setAvailable();
 					this.cameraTime = date;
@@ -428,6 +438,28 @@ class CameraDevice extends Homey.Device {
 		}
 	}
 
+	async triggerTamperEvent(dataName, dataValue) {
+		clearTimeout(this.checkTimerId);
+		const settings = this.getSettings();
+		this.setAvailable();
+
+		if (dataValue != this.getCapabilityValue('alarm_tamper')) {
+			Homey.app.updateLog("Event Processing (" + this.id + "):" + dataName + " = " + dataValue);
+			this.setCapabilityValue('alarm_tamper', dataValue);
+			if (dataValue) {
+				this.alarmTime = new Date(Date.now());
+				this.setStoreValue('alarmTime', this.alarmTime);
+				this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, this.getSettings()));
+			}
+
+			this.checkCamera = this.checkCamera.bind(this);
+			this.checkTimerId = setTimeout(this.checkCamera, 10000);
+
+		} else {
+			Homey.app.updateLog("Ignoring unchanged event (" + this.id + ") " + dataName + " = " + dataValue);
+		}
+	}
+
 	async subscribeToCamPushEvents(cam_obj) {
 		clearTimeout(this.eventSubscriptionRenewTimerId);
 
@@ -551,6 +583,8 @@ class CameraDevice extends Homey.Device {
 					Homey.app.updateLog("Event data: (" + this.id + ") " + eventTopic + ": " + dataName + " = " + dataValue);
 					if ((dataName === "IsMotion") || (dataName === "IsInside")) {
 						this.triggerMotionEvent(dataName, dataValue);
+					} else if (dataName === "IsTamper") {
+						this.triggerTamperEvent(dataName, dataValue);
 					} else {
 						Homey.app.updateLog("Ignoring event type (" + this.id + ") " + eventTopic + ": " + dataName + " = " + dataValue);
 					}

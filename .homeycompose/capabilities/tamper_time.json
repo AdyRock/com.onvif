@@ -1,7 +1,7 @@
 {
     "type": "string",
     "title": {
-        "en": "Offline Time"
+        "en": "Offline / Tamper Time"
     },
     "icon": "/assets/tamper_time.svg",
     "getable": true,

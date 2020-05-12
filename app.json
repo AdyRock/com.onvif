@@ -184,7 +184,7 @@
         },
         "alarm_tamper": {
           "title": {
-            "en": "Offline"
+            "en": "Offline / Tamper Alarm"
           }
         }
       },
@@ -437,7 +437,7 @@
     "tamper_time": {
       "type": "string",
       "title": {
-        "en": "Offline Time"
+        "en": "Offline / Tamper Time"
       },
       "icon": "/assets/tamper_time.svg",
       "getable": true,
