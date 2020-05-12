@@ -183,7 +183,7 @@ class MyApp extends Homey.App {
 					username: username,
 					password: password,
 					port: parseInt(port),
-					timeout: 20000,
+					timeout: 70000,
 				}, (err) => {
 					if (err) {
 						Homey.app.updateLog('Connection Failed for ' + hostName + ' Port: ' + port + ' Username: ' + username, true);
