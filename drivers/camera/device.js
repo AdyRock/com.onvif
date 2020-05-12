@@ -370,7 +370,7 @@ class CameraDevice extends Homey.Device {
 		});
 	}
 
-	async triggerPushEvent(dataName, dataValue) {
+	async triggerMotionEvent(dataName, dataValue) {
 		const settings = this.getSettings();
 		this.setAvailable();
 
@@ -429,38 +429,62 @@ class CameraDevice extends Homey.Device {
 	}
 
 	async subscribeToCamPushEvents(cam_obj) {
+		clearTimeout(this.eventSubscriptionRenewTimerId);
+
 		if (this.getCapabilityValue('motion_enabled')) {
-			const url = "http://" + Homey.app.homeyIP + ":" + Homey.app.pushServerPort + "/onvif/events?deviceId=" + this.id;
-			Homey.app.updateLog("Setting up Push events (" + this.id + ") on: " + url);
+			if (this.unsubscribeRef) {
+				Homey.app.updateLog("Renew previous events: " + this.unsubscribeRef);
+				cam_obj.RenewPushEventSubscription(this.unsubscribeRef, (err, info, xml) => {
+					if (err) {
+						Homey.app.updateLog("Renew subscription err (" + this.id + "): " + err);
+						console.log(err);
+						// Refresh was probably too late so subscribe again
+						this.unsubscribeRef = null;
+						setTimeout(this.subscribeToCamPushEvents.bind(this, cam_obj), 0);
+					} else {
 
-			cam_obj.SubscribeToPushEvents(url, (err, info, xml) => {
-				if (err) {
-					Homey.app.updateLog("Subscribe err (" + this.id + "): " + err);
-				} else {
-					if (this.unsubscribeRef) {
-						Homey.app.updateLog("unsubscribing from previous events: " + this.unsubscribeRef);
-						cam_obj.UnsubscribePushEventSubscription(this.unsubscribeRef);
+						Homey.app.updateLog("Renew subscription response (" + this.id + "): " + cam_obj.hostname + "info: " + info);
+						let startTime = info[0].renewResponse[0].currentTime[0];
+						let endTime = info[0].renewResponse[0].terminationTime[0];
+						var d1 = new Date(startTime);
+						var d2 = new Date(endTime);
+						var refreshTime = ((d2.valueOf() - d1.valueOf())) - 5000;
+
+						console.log("Push renew every (" + this.id + "): ", refreshTime);
+						if (refreshTime < 5000) {
+							refreshTime = 5000;
+						}
+
+						this.eventSubscriptionRenewTimerId = setTimeout(this.subscribeToCamPushEvents.bind(this, cam_obj), refreshTime);
 					}
+				});
+			} else {
+				const url = "http://" + Homey.app.homeyIP + ":" + Homey.app.pushServerPort + "/onvif/events?deviceId=" + this.id;
+				Homey.app.updateLog("Setting up Push events (" + this.id + ") on: " + url);
+				cam_obj.SubscribeToPushEvents(url, (err, info, xml) => {
+					if (err) {
+						Homey.app.updateLog("Subscribe err (" + this.id + "): " + err);
+					} else {
 
-					Homey.app.updateLog("Subscribe response (" + this.id + "): " + cam_obj.hostname + "Info: " + info[0].subscribeResponse[0].subscriptionReference[0].address);
-					this.unsubscribeRef = info[0].subscribeResponse[0].subscriptionReference[0].address[0];
-					console.log("Unsubscribe ref: ", this.unsubscribeRef, "\r\n");
+						Homey.app.updateLog("Subscribe response (" + this.id + "): " + cam_obj.hostname + "Info: " + info[0].subscribeResponse[0].subscriptionReference[0].address);
+						this.unsubscribeRef = info[0].subscribeResponse[0].subscriptionReference[0].address[0];
+						console.log("Unsubscribe ref: ", this.unsubscribeRef, "\r\n");
 
-					let startTime = info[0].subscribeResponse[0].currentTime[0];
-					let endTime = info[0].subscribeResponse[0].terminationTime[0];
-					var d1 = new Date(startTime);
-					var d2 = new Date(endTime);
-					var refreshTime = (d2.valueOf() - d1.valueOf());
+						let startTime = info[0].subscribeResponse[0].currentTime[0];
+						let endTime = info[0].subscribeResponse[0].terminationTime[0];
+						var d1 = new Date(startTime);
+						var d2 = new Date(endTime);
+						var refreshTime = ((d2.valueOf() - d1.valueOf())) - 5000;
 
-					console.log("Push renew every (" + this.id + "): ", refreshTime);
-					if (refreshTime < 30000) {
-						refreshTime = 30000;
+						console.log("Push renew every (" + this.id + "): ", refreshTime);
+						if (refreshTime < 5000) {
+							refreshTime = 5000;
+						}
+
+						this.eventSubscriptionRenewTimerId = setTimeout(this.subscribeToCamPushEvents.bind(this, cam_obj), refreshTime);
 					}
-
-					clearTimeout(this.eventSubscriptionRenewTimerId);
-					this.eventSubscriptionRenewTimerId = setTimeout(this.subscribeToCamPushEvents.bind(this, cam_obj), refreshTime);
-				}
-			});
+				});
+			}
 		}
 	}
 
@@ -526,7 +550,7 @@ class CameraDevice extends Homey.Device {
 				if (dataName) {
 					Homey.app.updateLog("Event data: (" + this.id + ") " + eventTopic + ": " + dataName + " = " + dataValue);
 					if ((dataName === "IsMotion") || (dataName === "IsInside")) {
-						this.triggerPushEvent(dataName, dataValue);
+						this.triggerMotionEvent(dataName, dataValue);
 					} else {
 						Homey.app.updateLog("Ignoring event type (" + this.id + ") " + eventTopic + ": " + dataName + " = " + dataValue);
 					}
