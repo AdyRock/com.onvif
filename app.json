@@ -252,6 +252,31 @@
           },
           "children": [
             {
+              "id": "classType",
+              "type": "dropdown",
+              "label": {
+                "en": "Device Class"
+              },
+              "value": "sensor",
+              "hint": {
+                "en": "When set to Sensor an icon appears on the device tile when motion is detected. When set to Camera the image is handled 'homeydash.com'"
+              },
+              "values": [
+                {
+                  "id": "sensor",
+                  "label": {
+                    "en": "Sensor"
+                  }
+                },
+                {
+                  "id": "camera",
+                  "label": {
+                    "en": "Camera"
+                  }
+                }
+              ]
+            },
+            {
               "id": "single",
               "type": "checkbox",
               "label": {

@@ -39,8 +39,9 @@ class CameraDevice extends Homey.Device {
 			this.setCapabilityValue('alarm_motion', false);
 		}
 
-		if (this.getClass() != 'sensor') {
-			this.setClass('sensor');
+		let requiredClass = settings.classType;
+		if (this.getClass() != requiredClass) {
+			this.setClass(requiredClass);
 		}
 
 		this.connectCamera(false)
@@ -139,6 +140,10 @@ class CameraDevice extends Homey.Device {
 					return;
 				});
 			}
+		}
+
+		if (changedKeysArr.indexOf("classType") >= 0) {
+			this.setClass(newSettingsObj.classType);
 		}
 	}
 
