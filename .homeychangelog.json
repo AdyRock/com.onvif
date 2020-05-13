@@ -67,5 +67,8 @@
   },
   "0.0.27": {
     "en": "Implemented Push Events Refresh instead of unsubscribing and subscribing. Now detects IsTamper event and set the 'Offline / Tamper alarm'. Optimised network timeout for pull events. Re-enable events when camera comes back online."
+  },
+  "0.0.28": {
+    "en": "Made device class settable between camera and sensor in Advanced Settings."
   }
 }
