@@ -1,7 +1,7 @@
 'use strict';
 
 const Homey = require('homey');
-const DigestFetch = require('digest-fetch');
+const DigestFetch = require('/lib/digest-fetch');
 const fetch = require('node-fetch');
 const fs = require('fs');
 

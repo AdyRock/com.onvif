@@ -38,7 +38,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/agsh/onvif.git"
+    "url": "https://github.com/AdyRock/com.onvif/tree/master/lib/onvif"
   },
   "dependencies": {
     "lodash.get": "^4.4.2",

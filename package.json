@@ -3,15 +3,19 @@
   "version": "0.0.29",
   "main": "app.js",
   "devDependencies": {
-    "homey": "^2.3.1"
+    "homey": "^2.3.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AdyRock/com.onvif"
   },
   "dependencies": {
-    "digest-fetch": "^1.1.1",
+    "base-64": "^0.1.0",
     "crypto-js": "^3.1.9",
     "lodash.get": "^4.4.2",
-    "nimble": "0.0.2",
     "node-fetch": "^2.6.0",
-    "xml2js": "^0.4.23",
-    "nodemailer": "^6.4.6"
-  }
+    "nodemailer": "^6.4.6",
+    "xml2js": "^0.4.23"
+  },
+  "license": "GPL-3.0"
 }

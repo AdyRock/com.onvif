@@ -2,4 +2,4 @@ env.json
 node_modules/
 example*
 test.js
-bfg.jar
+.vscode/
