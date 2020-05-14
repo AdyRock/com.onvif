@@ -70,5 +70,8 @@
   },
   "0.0.28": {
     "en": "Made device class settable between camera and sensor in Advanced Settings."
+  },
+  "0.0.29": {
+    "en": "Optimized libraries to considerably reduce the size of the app."
   }
 }
