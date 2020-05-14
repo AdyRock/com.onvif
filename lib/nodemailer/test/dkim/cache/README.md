@@ -1,3 +1,0 @@
-# cacheDir
-
-Temporary cache files

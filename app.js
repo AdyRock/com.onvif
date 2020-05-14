@@ -6,7 +6,7 @@ let Cam = require('/lib/onvif').Cam;
 const parseSOAPString = require('/lib/onvif/lib/utils').parseSOAPString;
 const linerase = require('/lib/onvif/lib/utils').linerase;
 const path = require('path');
-const nodemailer = require("/lib/nodemailer");
+const nodemailer = require("nodemailer");
 
 const http = require('http');
 
