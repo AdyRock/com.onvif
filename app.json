@@ -259,7 +259,7 @@
               },
               "value": "sensor",
               "hint": {
-                "en": "When set to Sensor an icon appears on the device tile when motion is detected. When set to Camera the image is handled 'homeydash.com'"
+                "en": "When set to Sensor an icon appears on the device tile when motion is detected. When set to Camera, the image might be displayed in other dashboards"
               },
               "values": [
                 {
