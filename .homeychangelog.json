@@ -73,5 +73,8 @@
   },
   "0.0.29": {
     "en": "Optimized libraries to considerably reduce the size of the app."
+  },
+  "0.0.30": {
+    "en": "Extra diagnostics and possible fix for invalid video source object"
   }
 }
