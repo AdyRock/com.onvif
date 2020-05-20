@@ -1,6 +1,6 @@
 {
   "id": "com.onvif",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "compatibility": ">=3.0.0",
   "sdk": 2,
   "name": {
@@ -33,7 +33,8 @@
     "email": "ady@rockall.plus.com"
   },
   "contributors": {
-    "translators": [{
+    "translators": [
+      {
         "name": "🇩🇪 - Markus Mahr"
       },
       {

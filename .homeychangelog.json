@@ -79,5 +79,8 @@
   },
   "0.0.31": {
     "en": "Extra diagnostics for connect cammera function"
+  },
+  "0.0.32": {
+    "en": "Added German, Dutch and Italian. Try getSystemDateAndTime with credentials if it fails without."
   }
 }
