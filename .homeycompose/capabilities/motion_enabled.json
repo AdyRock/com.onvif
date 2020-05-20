@@ -2,7 +2,9 @@
     "type": "boolean",
     "title": {
         "en": "Motion detection",
-        "de": "Bewegung erkannt"
+        "de": "Bewegung erkannt",
+        "nl": "Beweging gedetecteerd",
+        "it": "Rilevamento Movimento"
     },
     "getable": true,
     "setable": true,

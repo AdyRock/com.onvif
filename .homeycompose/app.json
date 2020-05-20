@@ -5,11 +5,15 @@
   "sdk": 2,
   "name": {
     "en": "ONVIF Camera",
-    "de": "ONVIF Kamera"
+    "de": "ONVIF Kamera",
+    "nl": "ONVIF Camera",
+    "it": "ONVIF Camera"
   },
   "description": {
     "en": "Support for ONVIF compatible cameras",
-    "de": "Unterstützung für ONVIF kompatible Kameras"
+    "de": "Unterstützung für ONVIF kompatible Kameras",
+    "nl": "Ondersteuning voor ONVIF-compatibele camera's",
+    "it": "Supporto per fotocamere compatibili ONVIF"
   },
   "category": [
     "video"
@@ -29,10 +33,15 @@
     "email": "ady@rockall.plus.com"
   },
   "contributors": {
-    "translators": [
-        {
-            "name": "🇩🇪 - Markus Mahr"
-        }
+    "translators": [{
+        "name": "🇩🇪 - Markus Mahr"
+      },
+      {
+        "name": "nl - Ton Lemmen"
+      },
+      {
+        "name": "it - Andrea Mascioni"
+      }
     ]
   }
 }

@@ -3,28 +3,36 @@
             "id": "motionEnabledTrigger",
             "title": {
                 "en": "Motion enabled",
-                "de": "Bewegung eingeschaltet"
+                "de": "Bewegung eingeschaltet",
+                "nl": "Beweging actief",
+                "it": "Motion abilitato,"
             }
         },
         {
             "id": "motionDisabledTrigger",
             "title": {
                 "en": "Motion disabled",
-                "de": "Bewegung abgeschaltet"      
+                "de": "Bewegung abgeschaltet"  ,
+                "nl": "Beweging inactief",
+                "it": "Motion disabilitato,"
             }
         },
         {
             "id": "snapshotReadyTrigger",
             "title": {
                 "en": "Now snapshot ready",
-                "de": "Keine Standbilder bereit"
+                "de": "Keine Standbilder bereit",
+                "nl": "Snapshot beschikbaar",
+                "it": "Immagine Istantanea pronta,"
             },
             "tokens": [{
                 "name": "image",
                 "type": "image",
                 "title": {
                     "en": "Now Image",
-                    "de": "Standbild erstellen"
+                    "de": "Standbild erstellen",
+                    "nl": "Snapshot",
+                    "it": "Immagine Istantanea,"
                 }
             }]
         },
@@ -32,14 +40,18 @@
             "id": "eventShotReadyTrigger",
             "title": {
                 "en": "Motion snapshot ready",
-                "de": "Momentaufnahme bereit"
+                "de": "Momentaufnahme bereit",
+                "nl": "Bewegings snapshot beschikbaar",
+                "it": "Immagine di Movimento pronta,"
             },
             "tokens": [{
                 "name": "eventImage",
                 "type": "image",
                 "title": {
                     "en": "Motion Image",
-                    "de": "Momentaufnahme"
+                    "de": "Momentaufnahme",
+                    "nl": "Bewegings snapshot",
+                    "it": "Immagine di Movimento,"
                 }
             }]
         }
@@ -48,28 +60,36 @@
         "id": "motionEnabledCondition",
         "title": {
             "en": "Motion is !{{enabled|disabled}}",
-            "de": "Bewegung ist !{{eingeschaltet|abgeschaltet}}"
+            "de": "Bewegung ist !{{eingeschaltet|abgeschaltet}}",
+            "nl": "Beweging is !{{actief|inactief}}",
+            "it": "Movimento è !{{abilitato|disabilitato}},"
         }
     }],
     "actions": [{
             "id": "motionEnableAction",
             "title": {
                 "en": "Enable motion",
-                "de": "Bewegung einschalten"
+                "de": "Bewegung einschalten",
+                "nl": "Beweging actief",
+                "it": "Movimento Abilitato,"
             }
         },
         {
             "id": "motionDisableAction",
             "title": {
                 "en": "Disable motion",
-                "de": "Bewegung abschalten"
+                "de": "Bewegung abschalten",
+                "nl": "Beweging inactief",
+                "it": "Movimento Disabilitato,"
             }
         },
         {
             "id": "snapshotAction",
             "title": {
                 "en": "Update Now snapshot",
-                "de": "Standbild jetzt erneuern"
+                "de": "Standbild jetzt erneuern",
+                "nl": "Ververs snapshot",
+                "it": "Aggiorna Immagine Istantanea"
             }
         }
     ]

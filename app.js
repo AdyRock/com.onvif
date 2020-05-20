@@ -42,8 +42,7 @@ class MyApp extends Homey.App {
 					let body = '';
 					request.on('data', chunk => {
 						body += chunk.toString(); // convert Buffer to string
-						if (body.length > 10000)
-						{
+						if (body.length > 10000) {
 							this.updateLog("Push data error: Payload too large", true);
 							response.writeHead(413);
 							response.end('Payload Too Large');
@@ -87,8 +86,7 @@ class MyApp extends Homey.App {
 											 */
 											theDevice.processCamEventMessage(message);
 										})
-									}
-									else{
+									} else {
 										Homey.app.updateLog("Push Event unknown Device: " + pathParts[2]);
 									}
 								}
@@ -435,40 +433,46 @@ class MyApp extends Homey.App {
 	}
 
 	async sendLog() {
-		try {
-			// create reusable transporter object using the default SMTP transport
-			let transporter = nodemailer.createTransport({
-				host: Homey.env.MAIL_HOST, //Homey.env.MAIL_HOST,
-				port: 25,
-				ignoreTLS: true,
-				secure: false, // true for 465, false for other ports
-				auth: {
-					user: Homey.env.MAIL_USER, // generated ethereal user
-					pass: Homey.env.MAIL_SECRET // generated ethereal password
-				},
-				tls: {
-					// do not fail on invalid certs
-					rejectUnauthorized: false
-				}
-			});
+		let tries = 5;
 
-			// send mail with defined transport object
-			let info = await transporter.sendMail({
-				from: '"Homey User" <' + Homey.env.MAIL_USER + '>', // sender address
-				to: Homey.env.MAIL_RECIPIENT, // list of receivers
-				subject: "ONVIF log", // Subject line
-				text: Homey.ManagerSettings.get('diagLog') // plain text body
-			});
+		while (tries-- > 0) {
+			try {
+				Homey.app.updateLog("Sending log");
+				// create reusable transporter object using the default SMTP transport
+				let transporter = nodemailer.createTransport({
+					host: Homey.env.MAIL_HOST, //Homey.env.MAIL_HOST,
+					port: 25,
+					ignoreTLS: true,
+					secure: false, // true for 465, false for other ports
+					auth: {
+						user: Homey.env.MAIL_USER, // generated ethereal user
+						pass: Homey.env.MAIL_SECRET // generated ethereal password
+					},
+					tls: {
+						// do not fail on invalid certs
+						rejectUnauthorized: false
+					}
+				});
 
-			console.log("Message sent: %s", info.messageId);
-			// Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+				// send mail with defined transport object
+				let info = await transporter.sendMail({
+					from: '"Homey User" <' + Homey.env.MAIL_USER + '>', // sender address
+					to: Homey.env.MAIL_RECIPIENT, // list of receivers
+					subject: "ONVIF log", // Subject line
+					text: Homey.ManagerSettings.get('diagLog') // plain text body
+				});
 
-			// Preview only available when sending through an Ethereal account
-			console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-		} catch (err) {
-			Homey.app.updateLog("Send log error: " + err.stack);
-			return err;
-		};
+				Homey.app.updateLog("Message sent: " + info.messageId);
+				// Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+
+				// Preview only available when sending through an Ethereal account
+				console.log("Preview URL: ", nodemailer.getTestMessageUrl(info));
+				return "";
+			} catch (err) {
+				Homey.app.updateLog("Send log error: " + err.stack);
+			};
+		}
+		Homey.app.updateLog("Send log FAILED");
 	}
 }
 

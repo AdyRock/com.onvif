@@ -2,7 +2,9 @@
     "type": "string",
     "title": {
         "en": "Camera Time",
-        "de": "Kamera Zeit"
+        "de": "Kamera Zeit",
+        "nl": "Camera tijd",
+        "it": "Orario Camera,"
     },
     "icon": "/assets/camera_time.svg",
     "getable": true,

@@ -2,7 +2,9 @@
     "type": "string",
     "title": {
         "en": "Offline / Tamper Time",
-        "de": "Offline / Manipulationszeit"
+        "de": "Offline / Manipulationszeit",
+        "nl": "Offline tijd",
+        "it": "Orario Offline"
     },
     "icon": "/assets/tamper_time.svg",
     "getable": true,
