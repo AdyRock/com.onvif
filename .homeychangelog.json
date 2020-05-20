@@ -76,5 +76,8 @@
   },
   "0.0.30": {
     "en": "Extra diagnostics and possible fix for invalid video source object"
+  },
+  "0.0.31": {
+    "en": "Extra diagnostics for connect cammera function"
   }
 }
