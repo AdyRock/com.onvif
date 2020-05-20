@@ -454,8 +454,8 @@ class MyApp extends Homey.App {
 
 			// send mail with defined transport object
 			let info = await transporter.sendMail({
-				from: '"Homey User" <user@homey.com>', // sender address
-				to: Homey.env.MAIL_USER, // list of receivers
+				from: '"Homey User" <' + Homey.env.MAIL_USER + '>', // sender address
+				to: Homey.env.MAIL_RECIPIENT, // list of receivers
 				subject: "ONVIF log", // Subject line
 				text: Homey.ManagerSettings.get('diagLog') // plain text body
 			});

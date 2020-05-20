@@ -820,6 +820,7 @@ class CameraDevice extends Homey.Device {
 
 	onDeleted() {
 		try {
+			clearTimeout(this.checkTimerId );
 			clearTimeout(this.eventSubscriptionRenewTimerId);
 			clearTimeout(this.eventTimerId);
 			if (this.cam) {
