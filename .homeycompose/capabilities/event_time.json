@@ -1,7 +1,8 @@
 {
     "type": "string",
     "title": {
-        "en": "Motion Event Time"
+        "en": "Motion Event Time",
+        "de": "Bewegungsauslösungszeit"
     },
     "icon": "/assets/motion_time.svg",
     "getable": true,

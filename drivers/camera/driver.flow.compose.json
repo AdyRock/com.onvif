@@ -2,38 +2,44 @@
     "triggers": [{
             "id": "motionEnabledTrigger",
             "title": {
-                "en": "Motion enabled"
+                "en": "Motion enabled",
+                "de": "Bewegung eingeschaltet"
             }
         },
         {
             "id": "motionDisabledTrigger",
             "title": {
-                "en": "Motion disabled"
+                "en": "Motion disabled",
+                "de": "Bewegung abgeschaltet"      
             }
         },
         {
             "id": "snapshotReadyTrigger",
             "title": {
-                "en": "Now snapshot ready"
+                "en": "Now snapshot ready",
+                "de": "Keine Standbilder bereit"
             },
             "tokens": [{
                 "name": "image",
                 "type": "image",
                 "title": {
-                    "en": "Now Image"
+                    "en": "Now Image",
+                    "de": "Standbild erstellen"
                 }
             }]
         },
         {
             "id": "eventShotReadyTrigger",
             "title": {
-                "en": "Motion snapshot ready"
+                "en": "Motion snapshot ready",
+                "de": "Momentaufnahme bereit"
             },
             "tokens": [{
                 "name": "eventImage",
                 "type": "image",
                 "title": {
-                    "en": "Motion Image"
+                    "en": "Motion Image",
+                    "de": "Momentaufnahme"
                 }
             }]
         }
@@ -41,25 +47,29 @@
     "conditions": [{
         "id": "motionEnabledCondition",
         "title": {
-            "en": "Motion is !{{enabled|disabled}}"
+            "en": "Motion is !{{enabled|disabled}}",
+            "de": "Bewegung ist !{{eingeschaltet|abgeschaltet}}"
         }
     }],
     "actions": [{
             "id": "motionEnableAction",
             "title": {
-                "en": "Enable motion"
+                "en": "Enable motion",
+                "de": "Bewegung einschalten"
             }
         },
         {
             "id": "motionDisableAction",
             "title": {
-                "en": "Disable motion"
+                "en": "Disable motion",
+                "de": "Bewegung abschalten"
             }
         },
         {
             "id": "snapshotAction",
             "title": {
-                "en": "Update Now snapshot"
+                "en": "Update Now snapshot",
+                "de": "Standbild jetzt erneuern"
             }
         }
     ]

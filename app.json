@@ -30,9 +30,9 @@
   },
   "contributors": {
     "translators": [
-        {
-            "name": "🇩🇪 - Markus Mahr"
-        }
+      {
+        "name": "🇩🇪 - Markus Mahr"
+      }
     ]
   },
   "flow": {
@@ -119,7 +119,7 @@
         "id": "motionEnabledCondition",
         "title": {
           "en": "Motion is !{{enabled|disabled}}",
-          "de": "Bewegung ist !{{eingeschaltet|abgeschaltet}}
+          "de": "Bewegung ist !{{eingeschaltet|abgeschaltet}}"
         },
         "args": [
           {
@@ -289,7 +289,7 @@
               },
               "value": "sensor",
               "hint": {
-                "en": "When set to Sensor an icon appears on the device tile when motion is detected. When set to Camera, the image might be displayed in other dashboards.",
+                "en": "When set to Sensor an icon appears on the device tile when motion is detected. When set to Camera, the image might be displayed in other dashboards",
                 "de": "Wenn Sensor ausgewählt wird, wird bei Bewegung ein Icon in der Gerätekachel angezeigt. When Kamera ausgewählt wird, wird ein Bild in anderen Dashboards dargestellt."
               },
               "values": [
