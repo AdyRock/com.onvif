@@ -4,10 +4,12 @@
   "compatibility": ">=3.0.0",
   "sdk": 2,
   "name": {
-    "en": "ONVIF Camera"
+    "en": "ONVIF Camera",
+    "de": "ONVIF Kamera"
   },
   "description": {
-    "en": "Support for ONVIF compatible cameras"
+    "en": "Support for ONVIF compatible cameras",
+    "de": "Unterstützung für ONVIF kompatible Kameras"
   },
   "category": [
     "video"
@@ -26,12 +28,20 @@
     "name": "Adrian Rockall",
     "email": "ady@rockall.plus.com"
   },
+  "contributors": {
+    "translators": [
+        {
+            "name": "🇩🇪 - Markus Mahr"
+        }
+    ]
+  },
   "flow": {
     "triggers": [
       {
         "id": "motionEnabledTrigger",
         "title": {
-          "en": "Motion enabled"
+          "en": "Motion enabled",
+          "de": "Bewegung eingeschaltet"
         },
         "args": [
           {
@@ -44,7 +54,8 @@
       {
         "id": "motionDisabledTrigger",
         "title": {
-          "en": "Motion disabled"
+          "en": "Motion disabled",
+          "de": "Bewegung abgeschaltet"
         },
         "args": [
           {
@@ -57,14 +68,16 @@
       {
         "id": "snapshotReadyTrigger",
         "title": {
-          "en": "Now snapshot ready"
+          "en": "Now snapshot ready",
+          "de": "Keine Standbilder bereit"
         },
         "tokens": [
           {
             "name": "image",
             "type": "image",
             "title": {
-              "en": "Now Image"
+              "en": "Now Image",
+              "de": "Standbild erstellen"
             }
           }
         ],
@@ -79,14 +92,16 @@
       {
         "id": "eventShotReadyTrigger",
         "title": {
-          "en": "Motion snapshot ready"
+          "en": "Motion snapshot ready",
+          "de": "Momentaufnahme bereit"
         },
         "tokens": [
           {
             "name": "eventImage",
             "type": "image",
             "title": {
-              "en": "Motion Image"
+              "en": "Motion Image",
+              "de": "Momentaufnahme"
             }
           }
         ],
@@ -103,7 +118,8 @@
       {
         "id": "motionEnabledCondition",
         "title": {
-          "en": "Motion is !{{enabled|disabled}}"
+          "en": "Motion is !{{enabled|disabled}}",
+          "de": "Bewegung ist !{{eingeschaltet|abgeschaltet}}
         },
         "args": [
           {
@@ -118,7 +134,8 @@
       {
         "id": "motionEnableAction",
         "title": {
-          "en": "Enable motion"
+          "en": "Enable motion",
+          "de": "Bewegung einschalten"
         },
         "args": [
           {
@@ -131,7 +148,8 @@
       {
         "id": "motionDisableAction",
         "title": {
-          "en": "Disable motion"
+          "en": "Disable motion",
+          "de": "Bewegung abschalten"
         },
         "args": [
           {
@@ -144,7 +162,8 @@
       {
         "id": "snapshotAction",
         "title": {
-          "en": "Update Now snapshot"
+          "en": "Update Now snapshot",
+          "de": "Standbild jetzt erneuern"
         },
         "args": [
           {
@@ -160,7 +179,8 @@
     {
       "id": "camera",
       "name": {
-        "en": "Camera"
+        "en": "Camera",
+        "de": "Kamera"
       },
       "class": "sensor",
       "capabilities": [
@@ -176,15 +196,18 @@
         "button.syncTime": {
           "maintenanceAction": true,
           "title": {
-            "en": "Sync. Time"
+            "en": "Sync. Time",
+            "de": "Sync. Uhrzeit"
           },
           "desc": {
-            "en": "Set the camera time to Homey's time."
+            "en": "Set the camera time to Homey's time.",
+            "de": "Setzte die Kamerazeit mit Homeys Zeit gleich"
           }
         },
         "alarm_tamper": {
           "title": {
-            "en": "Offline / Tamper Alarm"
+            "en": "Offline / Tamper Alarm",
+            "de": "Offline / Manipulationsalarm"
           }
         }
       },
@@ -218,29 +241,34 @@
         {
           "type": "group",
           "label": {
-            "en": "Credentials"
+            "en": "Credentials",
+            "de": "Zugangsdaten"
           },
           "children": [
             {
               "id": "username",
               "type": "text",
               "label": {
-                "en": "User Name"
+                "en": "User Name",
+                "de": "Benutzernamen"
               },
               "value": "",
               "hint": {
-                "en": "User name required to login to the camera."
+                "en": "User name required to login to the camera.",
+                "de": "Benutzername zum Zugang zur Kamera erforderlich."
               }
             },
             {
               "id": "password",
               "type": "password",
               "label": {
-                "en": "Password"
+                "en": "Password",
+                "de": "Passwort"
               },
               "value": "",
               "hint": {
-                "en": "Password required to login to the camera."
+                "en": "Password required to login to the camera.",
+                "de": "Passwort zum Zugang zur Kamera erforderlich."
               }
             }
           ]
@@ -248,30 +276,35 @@
         {
           "type": "group",
           "label": {
-            "en": "Motion Trigger"
+            "en": "Motion Trigger",
+            "de": "Bewegungsmelder"
           },
           "children": [
             {
               "id": "classType",
               "type": "dropdown",
               "label": {
-                "en": "Device Class"
+                "en": "Device Class",
+                "de": "Geräteklasse"
               },
               "value": "sensor",
               "hint": {
-                "en": "When set to Sensor an icon appears on the device tile when motion is detected. When set to Camera, the image might be displayed in other dashboards"
+                "en": "When set to Sensor an icon appears on the device tile when motion is detected. When set to Camera, the image might be displayed in other dashboards.",
+                "de": "Wenn Sensor ausgewählt wird, wird bei Bewegung ein Icon in der Gerätekachel angezeigt. When Kamera ausgewählt wird, wird ein Bild in anderen Dashboards dargestellt."
               },
               "values": [
                 {
                   "id": "sensor",
                   "label": {
-                    "en": "Sensor"
+                    "en": "Sensor",
+                    "de": "Sensor"
                   }
                 },
                 {
                   "id": "camera",
                   "label": {
-                    "en": "Camera"
+                    "en": "Camera",
+                    "de": "Kamera"
                   }
                 }
               ]
@@ -280,63 +313,74 @@
               "id": "single",
               "type": "checkbox",
               "label": {
-                "en": "Single"
+                "en": "Single",
+                "de": "Einzeln"
               },
               "value": true,
               "hint": {
-                "en": "Motion detection waits for no motion before triggering a new motion."
+                "en": "Motion detection waits for no motion before triggering a new motion.",
+                "de": "Bewegungserkennung wartet bis keine Bewegung mehr auftritt, bevor eine weitere Bewegung gemeldet wird."
               }
             },
             {
               "id": "delay",
               "type": "number",
               "label": {
-                "en": "Delay"
+                "en": "Delay",
+                "de": "Verzögerung"
               },
               "value": 0.5,
               "units": "seconds",
               "hint": {
-                "en": "Delay before image capture after motion triggered."
+                "en": "Delay before image capture after motion triggered.",
+                "de": "Verzögerung bei Bewegung, bevor ein Standbild aufgenommen wird."
               }
             },
             {
               "id": "preferPullEvents",
               "type": "checkbox",
               "label": {
-                "en": "Prefer Pull Events"
+                "en": "Prefer Pull Events",
+                "de": "Bevorzuge Empfangsmitteilungen"
               },
               "value": false,
               "hint": {
-                "en": "If both Pull and Push events are available then choose Pull when checked. Push is more efficient but may not work on some network setups."
+                "en": "If both Pull and Push events are available then choose Pull when checked. Push is more efficient but may not work on some network setups.",
+                "de": "Wenn beide Übertragungsmöglichkeiten vorhanden sind, wird der Empfang bevorzugt. Die Anfrage ist effizienter, kann aber in manchen Netzwerken nicht funktionieren."
               }
             },
             {
               "id": "timeFormat",
               "type": "dropdown",
               "label": {
-                "en": "Time Format"
+                "en": "Time Format",
+                "de": "Zeitformat"
               },
               "value": "mm_dd",
               "hint": {
-                "en": "The format to show the time capabilities."
+                "en": "The format to show the time capabilities.",
+                "de": "Zeitformat das zur Anzeige genutzt werden soll."
               },
               "values": [
                 {
                   "id": "raw",
                   "label": {
-                    "en": "Direct From Camera"
+                    "en": "Direct From Camera",
+                    "de": "Direkt von der Kamera"
                   }
                 },
                 {
                   "id": "system",
                   "label": {
-                    "en": "Local"
+                    "en": "Local",
+                    "de": "Lokal"
                   }
                 },
                 {
                   "id": "mm_dd",
                   "label": {
-                    "en": "Short HH:MM DD-MM"
+                    "en": "Short HH:MM DD-MM",
+                    "de": "Kurz HH:MM DD-MM"
                   }
                 }
               ]
@@ -346,14 +390,16 @@
         {
           "type": "group",
           "label": {
-            "en": "Camera Information"
+            "en": "Camera Information",
+            "de": "Kamera Informationen"
           },
           "children": [
             {
               "id": "manufacturer",
               "type": "label",
               "label": {
-                "en": "Manufacturer"
+                "en": "Manufacturer",
+                "de": "Hersteller"
               },
               "value": ""
             },
@@ -361,7 +407,8 @@
               "id": "model",
               "type": "label",
               "label": {
-                "en": "Model"
+                "en": "Model",
+                "de": "Model"
               },
               "value": ""
             },
@@ -369,7 +416,8 @@
               "id": "serialNumber",
               "type": "label",
               "label": {
-                "en": "Serial Number"
+                "en": "Serial Number",
+                "de": "Serial Nummer"
               },
               "value": ""
             },
@@ -377,7 +425,8 @@
               "id": "firmwareVersion",
               "type": "label",
               "label": {
-                "en": "Firmware Version"
+                "en": "Firmware Version",
+                "de": "Firmware Version"
               },
               "value": ""
             },
@@ -385,7 +434,8 @@
               "id": "ip",
               "type": "label",
               "label": {
-                "en": "IP Address"
+                "en": "IP Address",
+                "de": "IP-Addresse"
               },
               "value": ""
             },
@@ -393,7 +443,8 @@
               "id": "port",
               "type": "label",
               "label": {
-                "en": "Port"
+                "en": "Port",
+                "de": "Port"
               },
               "value": ""
             },
@@ -401,7 +452,8 @@
               "id": "url",
               "type": "label",
               "label": {
-                "en": "ONVIF Snapshot URL"
+                "en": "ONVIF Snapshot URL",
+                "de": "ONVIF Standbild URL"
               },
               "value": ""
             },
@@ -409,7 +461,8 @@
               "id": "notificationMethods",
               "type": "label",
               "label": {
-                "en": "ONVIF Notification methods"
+                "en": "ONVIF Notification methods",
+                "de": "ONVIF Mitteilungs Methode"
               },
               "value": ""
             },
@@ -417,7 +470,8 @@
               "id": "notificationTypes",
               "type": "label",
               "label": {
-                "en": "ONVIF Notification types"
+                "en": "ONVIF Notification types",
+                "de": "ONVIF Mitteilungs Typen"
               },
               "value": ""
             }
@@ -434,7 +488,8 @@
     "date_time": {
       "type": "string",
       "title": {
-        "en": "Camera Time"
+        "en": "Camera Time",
+        "de": "Kamera Zeit"
       },
       "icon": "/assets/camera_time.svg",
       "getable": true,
@@ -443,7 +498,8 @@
     "event_time": {
       "type": "string",
       "title": {
-        "en": "Motion Event Time"
+        "en": "Motion Event Time",
+        "de": "Bewegungsauslösungszeit"
       },
       "icon": "/assets/motion_time.svg",
       "getable": true,
@@ -452,7 +508,8 @@
     "motion_enabled": {
       "type": "boolean",
       "title": {
-        "en": "Motion detection"
+        "en": "Motion detection",
+        "de": "Bewegung erkannt"
       },
       "getable": true,
       "setable": true,
@@ -462,7 +519,8 @@
     "tamper_time": {
       "type": "string",
       "title": {
-        "en": "Offline / Tamper Time"
+        "en": "Offline / Tamper Time",
+        "de": "Offline / Manipulationszeit"
       },
       "icon": "/assets/tamper_time.svg",
       "getable": true,
