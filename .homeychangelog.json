@@ -82,5 +82,8 @@
   },
   "0.0.32": {
     "en": "Added German, Dutch and Italian. Try getSystemDateAndTime with credentials if it fails without."
+  },
+  "0.0.33": {
+    "en": "Added missing transltaion text. Added more diagnostics for a specific camera."
   }
 }
