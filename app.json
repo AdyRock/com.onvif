@@ -228,17 +228,23 @@
           "maintenanceAction": true,
           "title": {
             "en": "Sync. Time",
-            "de": "Sync. Uhrzeit"
+            "de": "Sync. Uhrzeit",
+            "nl": "Synchronisatie tijd",
+            "it": "Sinc. Orario"
           },
           "desc": {
             "en": "Set the camera time to Homey's time.",
-            "de": "Setzte die Kamerazeit mit Homeys Zeit gleich"
+            "de": "Setzte die Kamerazeit mit Homeys Zeit gleich",
+            "nl": "Synchroniseer de camera tijd met Homey",
+            "it": "Imposta l'ora camera come quella di Homey."
           }
         },
         "alarm_tamper": {
           "title": {
             "en": "Offline / Tamper Alarm",
-            "de": "Offline / Manipulationsalarm"
+            "de": "Offline / Manipulationsalarm",
+            "nl": "Offline / sabotage alarm",
+            "it": "Allarme Offline / Tamper"
           }
         }
       },
@@ -273,7 +279,9 @@
           "type": "group",
           "label": {
             "en": "Credentials",
-            "de": "Zugangsdaten"
+            "de": "Zugangsdaten",
+            "nl": "Inloggegevens",
+            "it": "Credenziali"
           },
           "children": [
             {
@@ -281,12 +289,16 @@
               "type": "text",
               "label": {
                 "en": "User Name",
-                "de": "Benutzernamen"
+                "de": "Benutzernamen",
+                "nl": "User Naam",
+                "it": "Nome Utente"
               },
               "value": "",
               "hint": {
                 "en": "User name required to login to the camera.",
-                "de": "Benutzername zum Zugang zur Kamera erforderlich."
+                "de": "Benutzername zum Zugang zur Kamera erforderlich.",
+                "nl": "User naam nodig om in te loggen in de camera",
+                "it": "Nome Utente richiesto per il login con la camera."
               }
             },
             {
@@ -294,12 +306,16 @@
               "type": "password",
               "label": {
                 "en": "Password",
-                "de": "Passwort"
+                "de": "Passwort",
+                "nl": "Password",
+                "it": "Password"
               },
               "value": "",
               "hint": {
                 "en": "Password required to login to the camera.",
-                "de": "Passwort zum Zugang zur Kamera erforderlich."
+                "de": "Passwort zum Zugang zur Kamera erforderlich.",
+                "nl": "Password nodig om in te loggen in de camera",
+                "it": "Password richiesta per il login con la camera."
               }
             }
           ]
@@ -606,8 +622,8 @@
       "title": {
         "en": "Offline / Tamper Time",
         "de": "Offline / Manipulationszeit",
-        "nl": "Offline tijd",
-        "it": "Orario Offline"
+        "nl": "Offline / sabotage tijd",
+        "it": "Ora Offline / Tamper "
       },
       "icon": "/assets/tamper_time.svg",
       "getable": true,
