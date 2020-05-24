@@ -88,5 +88,8 @@
   },
   "0.0.34": {
     "en": "Moved camera offline check to the app to smooth out processor demand when lots of cameras are added."
+  },
+  "0.0.35": {
+    "en": "Filter out devices that are not proper ONVIF cameras from search"
   }
 }
