@@ -31,6 +31,9 @@ class MyApp extends Homey.App {
 		});
 
 		this.runsListener();
+
+		this.checkCameras = this.checkCameras.bind(this);
+		this.checkTimerId = setTimeout(this.checkCameras, 30000);
 	}
 
 	async runsListener() {
@@ -196,6 +199,20 @@ class MyApp extends Homey.App {
 				return reject(err);
 			}
 		});
+	}
+
+	async checkCameras() {
+		const driver = Homey.ManagerDrivers.getDriver('camera');
+		if (driver) {
+			let devices = driver.getDevices();
+			for (var i = 0; i < devices.length; i++) {
+				var device = devices[i];
+				await device.checkCamera();
+			}
+		}
+
+		this.checkCameras = this.checkCameras.bind(this);
+		this.checkTimerId = setTimeout(this.checkCameras, 10000);
 	}
 
 	async getDateAndTime(cam_obj) {
@@ -424,7 +441,13 @@ class MyApp extends Homey.App {
 		oldText += ":";
 		oldText += dt.getSeconds();
 		oldText += ".";
-		oldText += dt.getMilliseconds();
+		let milliSeconds = dt.getMilliseconds().toString();
+		if (milliSeconds.length == 2) {
+			oldText += '0';
+		} else if (milliSeconds.length == 1) {
+			oldText += '00';
+		}
+		oldText += milliSeconds;
 		oldText += ": ";
 		oldText += newMessage;
 		oldText += "\r\n";

@@ -9,6 +9,7 @@ class CameraDevice extends Homey.Device {
 
 	async onInit() {
 		this.repairing = false;
+		this.isReady = false;
 		this.updatingEventImage = false;
 		this.cam = null;
 		this.eventImage = null;
@@ -261,8 +262,7 @@ class CameraDevice extends Homey.Device {
 				}
 
 				this.setAvailable();
-				this.checkCamera = this.checkCamera.bind(this);
-				this.checkTimerId = setTimeout(this.checkCamera, 10000);
+				this.isReady = true;
 				this.setCapabilityValue('alarm_tamper', false);
 				Homey.app.updateLog("Camera (" + this.id + ") is ready");
 			} catch (err) {
@@ -270,31 +270,18 @@ class CameraDevice extends Homey.Device {
 					Homey.app.updateLog("Connect to camera error (" + this.id + "): " + err.stack, true);
 					this.setUnavailable();
 				}
-				this.checkTimerId = setTimeout(this.connectCamera.bind(this, addingCamera), 2000);
+				this.checkTimerId = setTimeout(this.connectCamera.bind(this, addingCamera), 5000);
 				this.setCapabilityValue('alarm_tamper', false);
 			}
 		}
 	}
 
 	async checkCamera() {
-		if (!this.repairing) {
-			this.cam.getSystemDateAndTime((err, date, xml) => {
-				if (err) {
-					err = String(err);
-					Homey.app.updateLog("Check Camera Error (" + this.id + "): " + Homey.app.varToString(err), true);
+		if (!this.repairing && this.isReady) {
 
-					if (!this.getCapabilityValue('alarm_tamper')) {
-						this.setCapabilityValue('alarm_tamper', true);
-						this.alarmTime = new Date(Date.now());
-						this.setStoreValue('alarmTime', this.alarmTime);
-						this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, this.getSettings()));
-					}
-
-					if (err.indexOf("EHOSTUNREACH") >= 0) {
-						this.setUnavailable();
-						this.unsubscribeRef = null;
-					}
-				} else if (this.getCapabilityValue('alarm_tamper')) {
+			try {
+				let date = await Homey.app.getDateAndTime(this.cam);
+				if (this.getCapabilityValue('alarm_tamper')) {
 					Homey.app.updateLog("Check Camera (" + this.id + "): back online");
 					this.setCapabilityValue('alarm_tamper', false);
 					this.setAvailable();
@@ -312,11 +299,23 @@ class CameraDevice extends Homey.Device {
 					this.cameraTime = date;
 					this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, this.getSettings()));
 				}
-			});
-		}
+			} catch (err) {
+				err = String(err);
+				Homey.app.updateLog("Check Camera Error (" + this.id + "): " + Homey.app.varToString(err), true);
 
-		this.checkCamera = this.checkCamera.bind(this);
-		this.checkTimerId = setTimeout(this.checkCamera, this.getCapabilityValue('alarm_tamper') ? 5000 : 10000);
+				if (!this.getCapabilityValue('alarm_tamper')) {
+					this.setCapabilityValue('alarm_tamper', true);
+					this.alarmTime = new Date(Date.now());
+					this.setStoreValue('alarmTime', this.alarmTime);
+					this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, this.getSettings()));
+				}
+
+				if (err.indexOf("EHOSTUNREACH") >= 0) {
+					this.setUnavailable();
+					this.unsubscribeRef = null;
+				}
+			}
+		}
 	}
 
 	convertDate(date, settings) {
@@ -444,7 +443,6 @@ class CameraDevice extends Homey.Device {
 	}
 
 	async triggerTamperEvent(dataName, dataValue) {
-		clearTimeout(this.checkTimerId);
 		const settings = this.getSettings();
 		this.setAvailable();
 
@@ -456,10 +454,6 @@ class CameraDevice extends Homey.Device {
 				this.setStoreValue('alarmTime', this.alarmTime);
 				this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, this.getSettings()));
 			}
-
-			this.checkCamera = this.checkCamera.bind(this);
-			this.checkTimerId = setTimeout(this.checkCamera, 10000);
-
 		} else {
 			Homey.app.updateLog("Ignoring unchanged event (" + this.id + ") " + dataName + " = " + dataValue);
 		}
@@ -820,7 +814,7 @@ class CameraDevice extends Homey.Device {
 
 	onDeleted() {
 		try {
-			clearTimeout(this.checkTimerId );
+			clearTimeout(this.checkTimerId);
 			clearTimeout(this.eventSubscriptionRenewTimerId);
 			clearTimeout(this.eventTimerId);
 			if (this.cam) {
