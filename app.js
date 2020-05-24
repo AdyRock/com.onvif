@@ -130,23 +130,28 @@ class MyApp extends Homey.App {
 					// function will be called as soon as NVT responds
 					Homey.app.updateLog('Reply from ' + Homey.app.varToString(cam));
 
-					var data = {};
-					data = {
-						"id": cam.hostname,
-						"port": cam.port
-					};
-					this.discoveredDevices.push({
-						"name": cam.hostname,
-						data,
-						settings: {
-							// Store username & password in settings
-							// so the user can change them later
-							"username": "",
-							"password": "",
-							"ip": cam.hostname,
-							"port": cam.port ? cam.port.toString() : "",
-						}
-					})
+					if (cam.href && cam.href.indexOf("onvif") >= 0) {
+						var data = {};
+						data = {
+							"id": cam.hostname,
+							"port": cam.port
+						};
+						this.discoveredDevices.push({
+							"name": cam.hostname,
+							data,
+							settings: {
+								// Store username & password in settings
+								// so the user can change them later
+								"username": "",
+								"password": "",
+								"ip": cam.hostname,
+								"port": cam.port ? cam.port.toString() : "",
+							}
+						})
+					}
+					else{
+						Homey.app.updateLog("Discovery (" + cam.hostname + "): Invalid service URI");
+					}
 				} catch (err) {
 					Homey.app.updateLog("Discovery error: " + err.stack, true);
 				}

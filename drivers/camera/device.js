@@ -95,7 +95,7 @@ class CameraDevice extends Homey.Device {
 	}
 
 	async onAdded() {
-		Homey.app.updateLog('CameraDevice has been added (" + this.id + ")');
+		Homey.app.updateLog('CameraDevice has been added (' + this.id + ')');
 		//Allow some time for the validation check cam connection to disconnect
 		await new Promise(resolve => setTimeout(resolve, 2000));
 		await this.getDriver().getLastCredentials(this);
@@ -345,8 +345,15 @@ class CameraDevice extends Homey.Device {
 			// Suggestions on the internet say this has to be called before getting the snapshot if invalidAfterConnect = true
 			const snapURL = await Homey.app.getSnapshotURL(this.cam);
 			this.snapUri = snapURL.uri;
+			if (snapURL.uri.indexOf("http") < 0) {
+				this.snapUri = null;
+			}
 		}
 
+		if (!this.snapUri) {
+			Homey.app.updateLog("Invalid Snapshot URL, it must be http or https: " + Homey.app.varToString(snapURL.uri).replace(this.password, "YOUR_PASSWORD"));
+			return;
+		}
 		const settings = this.getSettings();
 		Homey.app.updateLog("Event snapshot URL (" + this.id + "): " + Homey.app.varToString(this.snapUri).replace(settings.password, "YOUR_PASSWORD"));
 
@@ -651,6 +658,11 @@ class CameraDevice extends Homey.Device {
 
 			// Use ONVIF snapshot URL
 			const snapURL = await Homey.app.getSnapshotURL(this.cam);
+			if (snapURL.uri.indexOf("http") < 0) {
+				this.snapUri = null;
+				Homey.app.updateLog("Invalid Snapshot URL, it must be http or https: " + Homey.app.varToString(snapURL.uri).replace(this.password, "YOUR_PASSWORD"));
+				return;
+			}
 			this.snapUri = snapURL.uri;
 			this.invalidAfterConnect = snapURL.invalidAfterConnect;
 
