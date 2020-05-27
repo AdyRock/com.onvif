@@ -91,5 +91,8 @@
   },
   "0.0.35": {
     "en": "Filter out devices that are not proper ONVIF cameras from search"
+  },
+  "0.0.36": {
+    "en": "Fixed case where the password was appearing in the log. Fixed issue with Sync Time function. A bad snapshot URI is rechecked during the camera check."
   }
 }
