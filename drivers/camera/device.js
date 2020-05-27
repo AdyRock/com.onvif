@@ -68,29 +68,33 @@ class CameraDevice extends Homey.Device {
 			// Set the Camera date to Homey's date
 			Homey.app.updateLog("Syncing time (" + this.id + ")");
 
-			Date.prototype.stdTimezoneOffset = () => {
+			Date.prototype.stdTimezoneOffset = function () {
 				var jan = new Date(this.getFullYear(), 0, 1);
 				var jul = new Date(this.getFullYear(), 6, 1);
 				return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
-			}
+			};
 
-			Date.prototype.isDstObserved = () => {
+			Date.prototype.isDstObserved = function () {
 				return this.getTimezoneOffset() < this.stdTimezoneOffset();
+			};
+
+			try {
+				var d = new Date();
+				var dls = d.isDstObserved();
+
+				this.cam.setSystemDateAndTime({
+						'dateTime': d,
+						'dateTimeType': 'Manual',
+						'daylightSavings': dls
+					},
+					(err, date, xml) => {
+						if (err) {
+							Homey.app.updateLog("Check Camera Error (" + this.id + "): " + Homey.app.varToString(err), true);
+						}
+					});
+			} catch (err) {
+				Homey.app.updateLog("Check Camera Error (" + this.id + "): " + err.stack, true);
 			}
-
-			var d = new Date();
-			var dls = d.isDstObserved();
-
-			this.cam.setSystemDateAndTime({
-					'dateTime': d,
-					'dateTimeType': 'Manual',
-					'daylightSavings': dls
-				},
-				(err, date, xml) => {
-					if (err) {
-						Homey.app.updateLog("Check Camera Error (" + this.id + "): " + Homey.app.varToString(err), true);
-					}
-				});
 		});
 	}
 
@@ -184,7 +188,7 @@ class CameraDevice extends Homey.Device {
 						}
 					});
 				} catch (err) {
-
+					Homey.app.updateLog("Get camera services error (" + this.id + "): " + err.stack, true);
 				}
 
 				//if (addingCamera) {
@@ -298,6 +302,11 @@ class CameraDevice extends Homey.Device {
 					this.setAvailable();
 					this.cameraTime = date;
 					this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, this.getSettings()));
+
+					if (!this.snapUri)
+					{
+						await this.setupImages();
+					}
 				}
 			} catch (err) {
 				err = String(err);
@@ -780,7 +789,7 @@ class CameraDevice extends Homey.Device {
 		var res = {};
 		try {
 			if (this.authType == 0) {
-				Homey.app.updateLog("Fetching (" + this.id + ") " + name + " image from: " + this.snapUri);
+				Homey.app.updateLog("Fetching (" + this.id + ") " + name + " image from: " + Homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
 				res = await fetch(this.snapUri);
 				if (res.status == 401) {
 					// Try Basic Authentication
@@ -789,7 +798,7 @@ class CameraDevice extends Homey.Device {
 			}
 
 			if (this.authType == 1) {
-				Homey.app.updateLog("Fetching (" + this.id + ") " + name + " image with Basic Auth. From: " + this.snapUri);
+				Homey.app.updateLog("Fetching (" + this.id + ") " + name + " image with Basic Auth. From: " + Homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
 
 				const client = new DigestFetch(this.username, this.password, {
 					basic: true
@@ -802,7 +811,7 @@ class CameraDevice extends Homey.Device {
 			}
 
 			if (this.authType >= 2) {
-				Homey.app.updateLog("Fetching (" + this.id + ") " + name + " image with Digest Auth. From: " + this.snapUri);
+				Homey.app.updateLog("Fetching (" + this.id + ") " + name + " image with Digest Auth. From: " + Homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
 
 				const client = new DigestFetch(this.username, this.password, {
 					algorithm: 'MD5'
