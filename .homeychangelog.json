@@ -78,13 +78,13 @@
     "en": "Extra diagnostics and possible fix for invalid video source object"
   },
   "0.0.31": {
-    "en": "Extra diagnostics for connect cammera function"
+    "en": "Extra diagnostics for connect camera function"
   },
   "0.0.32": {
     "en": "Added German, Dutch and Italian. Try getSystemDateAndTime with credentials if it fails without."
   },
   "0.0.33": {
-    "en": "Added missing transltaion text. Added more diagnostics for a specific camera."
+    "en": "Added missing translation text. Added more diagnostics for a specific camera."
   },
   "0.0.34": {
     "en": "Moved camera offline check to the app to smooth out processor demand when lots of cameras are added."
