@@ -94,5 +94,8 @@
   },
   "0.0.36": {
     "en": "Fixed case where the password was appearing in the log. Fixed issue with Sync Time function. A bad snapshot URI is rechecked during the camera check."
+  },
+  "0.0.37": {
+    "en": "Fix crash when Sync. Time fails"
   }
 }
