@@ -97,5 +97,8 @@
   },
   "0.0.37": {
     "en": "Fix crash when Sync. Time fails"
+  },
+  "0.0.38": {
+    "en": "send log change"
   }
 }

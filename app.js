@@ -469,9 +469,9 @@ class MyApp extends Homey.App {
 				// create reusable transporter object using the default SMTP transport
 				let transporter = nodemailer.createTransport({
 					host: Homey.env.MAIL_HOST, //Homey.env.MAIL_HOST,
-					port: 25,
-					ignoreTLS: true,
-					secure: false, // true for 465, false for other ports
+					port: 465,
+					ignoreTLS: false,
+					secure: true, // true for 465, false for other ports
 					auth: {
 						user: Homey.env.MAIL_USER, // generated ethereal user
 						pass: Homey.env.MAIL_SECRET // generated ethereal password
