@@ -100,5 +100,8 @@
   },
   "0.0.38": {
     "en": "send log change"
+  },
+  "0.0.39": {
+    "en": "Added a few more checks for bad data from cameras."
   }
 }
