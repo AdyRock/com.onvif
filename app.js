@@ -148,8 +148,7 @@ class MyApp extends Homey.App {
 								"port": cam.port ? cam.port.toString() : "",
 							}
 						})
-					}
-					else{
+					} else {
 						Homey.app.updateLog("Discovery (" + cam.hostname + "): Invalid service URI");
 					}
 				} catch (err) {
@@ -355,7 +354,7 @@ class MyApp extends Homey.App {
 	}
 
 	hasPullSupport(capabilities, id) {
-		if (capabilities.events && capabilities.events.WSPullPointSupport && capabilities.events.WSPullPointSupport == true) {
+		if (capabilities && capabilities.events && capabilities.events.WSPullPointSupport && capabilities.events.WSPullPointSupport == true) {
 			Homey.app.updateLog('Camera (' + id + ') supports PullPoint');
 			return true;
 		}
@@ -365,7 +364,7 @@ class MyApp extends Homey.App {
 	}
 
 	hasBaseEvents(services, id) {
-		if (services.Capabilities && services.Capabilities.MaxNotificationProducers > 0) {
+		if (services && services.Capabilities && services.Capabilities.MaxNotificationProducers > 0) {
 			Homey.app.updateLog('Camera (' + id + ') supports Push Events');
 			return true;
 		}
@@ -380,13 +379,15 @@ class MyApp extends Homey.App {
 		// For each part, remove any namespace
 		// Recombine parts that were split with '/'
 		let output = '';
-		let parts = topic.split('/')
-		for (let index = 0; index < parts.length; index++) {
-			let stringNoNamespace = parts[index].split(':').pop() // split on :, then return the last item in the array
-			if (output.length == 0) {
-				output += stringNoNamespace
-			} else {
-				output += '/' + stringNoNamespace
+		if (topic) {
+			let parts = topic.split('/')
+			for (let index = 0; index < parts.length; index++) {
+				let stringNoNamespace = parts[index].split(':').pop() // split on :, then return the last item in the array
+				if (output.length == 0) {
+					output += stringNoNamespace
+				} else {
+					output += '/' + stringNoNamespace
+				}
 			}
 		}
 		return output

@@ -4,6 +4,9 @@ const Homey = require('homey');
 const DigestFetch = require('/lib/digest-fetch');
 const fetch = require('node-fetch');
 const fs = require('fs');
+const {
+	isArray
+} = require('util');
 
 class CameraDevice extends Homey.Device {
 
@@ -177,16 +180,18 @@ class CameraDevice extends Homey.Device {
 				this.supportPushEvent = false;
 				try {
 					let services = await Homey.app.getServices(this.cam);
-					services.forEach((service) => {
-						let namespaceSplitted = service.namespace.split('.org/')[1].split('/');
-						if (namespaceSplitted[1] == 'events') {
-							let serviceCapabilities = service.capabilities.capabilities['$'];
-							if (serviceCapabilities['MaxNotificationProducers'] > 0) {
-								this.supportPushEvent = true;
-								Homey.app.updateLog("** PushEvent supported on " + this.id);
+					if (isArray(services)) {
+						services.forEach((service) => {
+							let namespaceSplitted = service.namespace.split('.org/')[1].split('/');
+							if ((namespaceSplitted[1] == 'events') && service.capabilities && service.capabilities.capabilities) {
+								let serviceCapabilities = service.capabilities.capabilities['$'];
+								if (serviceCapabilities['MaxNotificationProducers'] > 0) {
+									this.supportPushEvent = true;
+									Homey.app.updateLog("** PushEvent supported on " + this.id);
+								}
 							}
-						}
-					});
+						});
+					}
 				} catch (err) {
 					Homey.app.updateLog("Get camera services error (" + this.id + "): " + err.stack, true);
 				}
@@ -303,8 +308,7 @@ class CameraDevice extends Homey.Device {
 					this.cameraTime = date;
 					this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, this.getSettings()));
 
-					if (!this.snapUri)
-					{
+					if (!this.snapUri) {
 						await this.setupImages();
 					}
 				}
