@@ -10,8 +10,7 @@ Plus, if the camera supports motion detection:
 * Single or multiple alerts while motion triggered.
 * Enable / disable motion detection.
 
-An image is captured when a motion alert is generated and can be viewed in the device as well as a 'live' snapshot image.
+An image is captured when a motion alert is generated and can be viewed in the device as well as a 'live' snapshot image that is refreshed at will.
 Those images can also be accessed by flow tags to be sent to other devices by action cards.
 
-This app uses a modified version of the onvif library found here https://github.com/agsh/onvif
 
