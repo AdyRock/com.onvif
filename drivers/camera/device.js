@@ -686,6 +686,42 @@ class CameraDevice extends Homey.Device {
 
 			Homey.app.updateLog("Snapshot URL: " + Homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
 
+			if (!this.nowImage) {
+				this.nowImage = new Homey.Image();
+				this.nowImage.setStream(async (stream) => {
+					if (this.invalidAfterConnect) {
+						await Homey.app.getSnapshotURL(this.cam)
+					}
+
+					var res = await this.doFetch("NOW");
+					if (!res.ok) {
+						Homey.app.updateLog("Fetch NOW error (" + this.id + "): " + res.statusText);
+						console.log(res);
+						console.log(res.headers.raw());
+						throw new Error(res.statusText);
+					}
+
+					res.body.pipe(stream);
+
+					stream.on('error', (err) => {
+						Homey.app.updateLog("Fetch event image error (" + this.id + "): " + err.stack, true);
+					})
+					stream.on('finish', () => {
+						Homey.app.updateLog("Event Image Updated (" + this.id + ")");
+					});
+				});
+
+				Homey.app.updateLog("Registering now image (" + this.id + ")");
+				this.nowImage.register()
+					.then(() => {
+						Homey.app.updateLog("registered now image (" + this.id + ")")
+						this.setCameraImage('Now', Homey.__("Now"), this.nowImage);
+					})
+					.catch((err) => {
+						Homey.app.updateLog("Register now image error (" + this.id + "): " + err.stack, true);
+					});
+			}
+
 			try {
 				if (this.hasMotion) {
 					const imageFilename = 'eventImage' + devData.id;
@@ -746,42 +782,6 @@ class CameraDevice extends Homey.Device {
 			} catch (err) {
 				Homey.app.updateLog("Event SnapShot error (" + this.id + "): " + err.stack, true);
 				this.updatingEventImage = false;
-			}
-
-			if (!this.nowImage) {
-				this.nowImage = new Homey.Image();
-				this.nowImage.setStream(async (stream) => {
-					if (this.invalidAfterConnect) {
-						await Homey.app.getSnapshotURL(this.cam)
-					}
-
-					var res = await this.doFetch("NOW");
-					if (!res.ok) {
-						Homey.app.updateLog("Fetch NOW error (" + this.id + "): " + res.statusText);
-						console.log(res);
-						console.log(res.headers.raw());
-						throw new Error(res.statusText);
-					}
-
-					res.body.pipe(stream);
-
-					stream.on('error', (err) => {
-						Homey.app.updateLog("Fetch event image error (" + this.id + "): " + err.stack, true);
-					})
-					stream.on('finish', () => {
-						Homey.app.updateLog("Event Image Updated (" + this.id + ")");
-					});
-				});
-
-				Homey.app.updateLog("Registering now image (" + this.id + ")");
-				this.nowImage.register()
-					.then(() => {
-						Homey.app.updateLog("registered now image (" + this.id + ")")
-						this.setCameraImage('Now', Homey.__("Now"), this.nowImage);
-					})
-					.catch((err) => {
-						Homey.app.updateLog("Register now image error (" + this.id + "): " + err.stack, true);
-					});
 			}
 		} catch (err) {
 			//Homey.app.updateLog("SnapShot error: " + Homey.app.varToString(err), true);
