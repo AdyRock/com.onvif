@@ -103,5 +103,8 @@
   },
   "0.0.39": {
     "en": "Added a few more checks for bad data from cameras."
+  },
+  "0.0.40": {
+    "en": "Changed order of images so the 'Now' image is the default when the section is selected."
   }
 }
