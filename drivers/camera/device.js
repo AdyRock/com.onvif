@@ -404,6 +404,44 @@ class CameraDevice extends Homey.Device {
 		});
 	}
 
+	async updateMotionImage(delay) {
+		if (!this.updatingEventImage) {
+			this.updatingEventImage = true;
+
+			// Safeguard against flag not being reset for some reason
+			let timerId = setTimeout(() => {
+				this.updatingEventImage = false
+			}, delay * 1000 + 20000);
+
+			this.eventTime = new Date(Date.now());
+			this.setStoreValue('eventTime', this.eventTime);
+			const settings = this.getSettings();
+			this.setCapabilityValue('event_time', this.convertDate(this.eventTime, settings));
+			if (delay > 0) {
+				await new Promise(resolve => setTimeout(resolve, delay * 1000));
+			}
+
+			for (let retries = 3; retries > 0; retries--) {
+				try {
+					await this.readEventImage();
+					break;
+				} catch (err) {
+					Homey.app.updateLog("Event image error (" + this.id + "): " + err);
+					clearTimeout(timerId);
+					timerId = setTimeout(() => {
+						this.updatingEventImage = false
+					}, 20000);
+				}
+			}
+
+			this.updatingEventImage = false;
+			return true;
+		} else {
+			Homey.app.updateLog("** Event STILL Processing last image (" + this.id + ") **", true);
+			return false;
+		}
+	}
+
 	async triggerMotionEvent(dataName, dataValue) {
 		const settings = this.getSettings();
 		this.setAvailable();
@@ -421,38 +459,7 @@ class CameraDevice extends Homey.Device {
 				Homey.app.updateLog("Event Processing (" + this.id + "):" + dataName + " = " + dataValue);
 				this.setCapabilityValue('alarm_motion', dataValue);
 				if (dataValue) {
-					if (!this.updatingEventImage) {
-						this.updatingEventImage = true;
-
-						// Safeguard against flag not being reset for some reason
-						let timerId = setTimeout(() => {
-							this.updatingEventImage = false
-						}, settings.delay * 1000 + 20000);
-
-						this.eventTime = new Date(Date.now());
-						this.setStoreValue('eventTime', this.eventTime);
-						this.setCapabilityValue('event_time', this.convertDate(this.eventTime, settings));
-						if (settings.delay > 0) {
-							await new Promise(resolve => setTimeout(resolve, settings.delay * 1000));
-						}
-
-						for (let retries = 3; retries > 0; retries--) {
-							try {
-								await this.readEventImage();
-								break;
-							} catch (err) {
-								Homey.app.updateLog("Event image error (" + this.id + "): " + err);
-								clearTimeout(timerId);
-								timerId = setTimeout(() => {
-									this.updatingEventImage = false
-								}, 20000);
-							}
-						}
-
-						this.updatingEventImage = false;
-					} else {
-						Homey.app.updateLog("** Event STILL Processing last image (" + this.id + ") **", true);
-					}
+					await updateMotionImage(settings.delay);
 				} else {
 					clearTimeout(this.eventTimeoutId);
 				}
@@ -704,21 +711,21 @@ class CameraDevice extends Homey.Device {
 					res.body.pipe(stream);
 
 					stream.on('error', (err) => {
-						Homey.app.updateLog("Fetch event image error (" + this.id + "): " + err.stack, true);
+						Homey.app.updateLog("Fetch Now image error (" + this.id + "): " + err.stack, true);
 					})
 					stream.on('finish', () => {
-						Homey.app.updateLog("Event Image Updated (" + this.id + ")");
+						Homey.app.updateLog("Now Image Updated (" + this.id + ")");
 					});
 				});
 
-				Homey.app.updateLog("Registering now image (" + this.id + ")");
+				Homey.app.updateLog("Registering Now image (" + this.id + ")");
 				this.nowImage.register()
 					.then(() => {
-						Homey.app.updateLog("registered now image (" + this.id + ")")
+						Homey.app.updateLog("registered Now image (" + this.id + ")")
 						this.setCameraImage('Now', Homey.__("Now"), this.nowImage);
 					})
 					.catch((err) => {
-						Homey.app.updateLog("Register now image error (" + this.id + "): " + err.stack, true);
+						Homey.app.updateLog("Register Now image error (" + this.id + "): " + err.stack, true);
 					});
 			}
 

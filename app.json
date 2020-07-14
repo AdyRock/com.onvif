@@ -152,6 +152,32 @@
             "filter": "driver_id=camera"
           }
         ]
+      },
+      {
+        "id": "motionReadyCondition",
+        "title": {
+          "en": "Motion image is ready within..."
+        },
+        "titleFormatted": {
+          "en": "Motion image is !{{ready|not ready}} within [[waitTime]] seconds"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          },
+          {
+            "type": "number",
+            "name": "waitTime",
+            "value": 0,
+            "units": "seconds",
+            "min": 0,
+            "max": 30,
+            "step": 1,
+            "placeholder": "Seconds to wait"
+          }
+        ]
       }
     ],
     "actions": [
@@ -194,6 +220,23 @@
           "de": "Standbild jetzt erneuern",
           "nl": "Ververs snapshot",
           "it": "Aggiorna Immagine Istantanea"
+        },
+        "deprecated": true,
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          }
+        ]
+      },
+      {
+        "id": "updateMotionImageAction",
+        "title": {
+          "en": "Update Motion snapshot",
+          "de": "Motion-Snapshot aktualisieren",
+          "nl": "Bewegingssnapshot bijwerken",
+          "it": "Aggiorna istantanea in movimento"
         },
         "args": [
           {

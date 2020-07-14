@@ -19,6 +19,21 @@ class CameraDriver extends Homey.Driver {
 				return await args.device.getCapabilityValue('motion_enabled'); // Promise<boolean>
 			});
 
+		this.motionReadyCondition = new Homey.FlowCardCondition('motionReadyCondition');
+		this.motionReadyCondition
+			.register()
+			.registerRunListener(async (args, state) => {
+
+				let remainingTime = args.waitTime * 10;
+				while((remainingTime > 0) && args.device.updatingEventImage)
+				{
+					// Wait for image to update
+					await new Promise(resolve => setTimeout(resolve, 100));
+					remainingTime--;
+				}
+				return !args.device.updatingEventImage;
+			});
+
 		this.motionEnabledAction = new Homey.FlowCardAction('motionEnableAction');
 		this.motionEnabledAction
 			.register()
@@ -55,6 +70,14 @@ class CameraDriver extends Homey.Driver {
 						.then(args.device.log("Now Snapshot ready (" + args.device.id + ")"))
 				}
 				return err;
+			})
+
+		this.motionUpdateAction = new Homey.FlowCardAction('updateMotionImageAction');
+		this.motionUpdateAction
+			.register()
+			.registerRunListener(async (args, state) => {
+
+				return args.device.updateMotionImage(0);
 			})
 	}
 
