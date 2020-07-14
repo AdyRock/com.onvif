@@ -106,5 +106,8 @@
   },
   "0.0.40": {
     "en": "Changed order of images so the 'Now' image is the default when the section is selected."
+  },
+  "0.1.0": {
+    "en": "Added \"Motion image is ready within...\" flow condition, depricated \"Update Now snapshot\" flow action, added \"Update Motion snapshot\" flow action."
   }
 }
