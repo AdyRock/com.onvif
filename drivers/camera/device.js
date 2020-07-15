@@ -730,61 +730,59 @@ class CameraDevice extends Homey.Device {
 			}
 
 			try {
-				if (this.hasMotion) {
-					const imageFilename = 'eventImage' + devData.id;
-					this.eventImageFilename = imageFilename.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-					this.eventImageFilename += ".jpg";
-					Homey.app.updateLog("SnapShot save file (" + this.id + ") = " + this.eventImageFilename);
+				const imageFilename = 'eventImage' + devData.id;
+				this.eventImageFilename = imageFilename.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+				this.eventImageFilename += ".jpg";
+				Homey.app.updateLog("SnapShot save file (" + this.id + ") = " + this.eventImageFilename);
 
-					const eventImagePath = Homey.app.getUserDataPath(this.eventImageFilename);
-					if (!fs.existsSync(eventImagePath)) {
-						this.updatingEventImage = true;
+				const eventImagePath = Homey.app.getUserDataPath(this.eventImageFilename);
+				if (!fs.existsSync(eventImagePath)) {
+					this.updatingEventImage = true;
 
-						Homey.app.updateLog("Initialising event image (" + this.id + ")");
-						// Initialise the event image with the current snapshot
-						const storageStream = fs.createWriteStream(eventImagePath);
-						Homey.app.updateLog("Fetching event image (" + this.id + ")");
+					Homey.app.updateLog("Initialising event image (" + this.id + ")");
+					// Initialise the event image with the current snapshot
+					const storageStream = fs.createWriteStream(eventImagePath);
+					Homey.app.updateLog("Fetching event image (" + this.id + ")");
 
-						if (this.invalidAfterConnect) {
-							// Suggestions on the internet say this has to be called before getting the snapshot if invalidAfterConnect = true
-							await Homey.app.getSnapshotURL(this.cam)
-						}
+					if (this.invalidAfterConnect) {
+						// Suggestions on the internet say this has to be called before getting the snapshot if invalidAfterConnect = true
+						await Homey.app.getSnapshotURL(this.cam)
+					}
 
-						var res = await this.doFetch("Motion Event");
-						if (!res.ok) {
-							Homey.app.updateLog("Fetch MOTION error (" + this.id + "): " + Homey.app.varToString(res));
-							this.updatingEventImage = false;
-							throw new Error(res.statusText);
-						}
+					var res = await this.doFetch("Motion Event");
+					if (!res.ok) {
+						Homey.app.updateLog("Fetch MOTION error (" + this.id + "): " + Homey.app.varToString(res));
+						this.updatingEventImage = false;
+						throw new Error(res.statusText);
+					}
 
-						res.body.pipe(storageStream);
+					res.body.pipe(storageStream);
 
-						storageStream.on('error', (err) => {
-							Homey.app.updateLog("Fetch event image error (" + this.id + "): " + err.stack, true);
-							this.updatingEventImage = false;
+					storageStream.on('error', (err) => {
+						Homey.app.updateLog("Fetch event image error (" + this.id + "): " + err.stack, true);
+						this.updatingEventImage = false;
+					})
+					storageStream.on('finish', () => {
+						Homey.app.updateLog("Event Image Updated (" + this.id + ")");
+						this.updatingEventImage = false;
+					});
+
+					// Allow time for the image to download before setting up the view image
+					await new Promise(resolve => setTimeout(resolve, 2000));
+				}
+
+				if (!this.eventImage) {
+					Homey.app.updateLog("Registering event image (" + this.id + ")");
+					this.eventImage = new Homey.Image();
+					this.eventImage.setPath(eventImagePath);
+					this.eventImage.register()
+						.then(() => {
+							Homey.app.updateLog("registered event image (" + this.id + ")")
+							this.setCameraImage('Event', Homey.__("Motion_Event"), this.eventImage);
 						})
-						storageStream.on('finish', () => {
-							Homey.app.updateLog("Event Image Updated (" + this.id + ")");
-							this.updatingEventImage = false;
+						.catch((err) => {
+							Homey.app.updateLog("Register event image error (" + this.id + "): " + err.stack, true);
 						});
-
-						// Allow time for the image to download before setting up the view image
-						await new Promise(resolve => setTimeout(resolve, 2000));
-					}
-
-					if (!this.eventImage) {
-						Homey.app.updateLog("Registering event image (" + this.id + ")");
-						this.eventImage = new Homey.Image();
-						this.eventImage.setPath(eventImagePath);
-						this.eventImage.register()
-							.then(() => {
-								Homey.app.updateLog("registered event image (" + this.id + ")")
-								this.setCameraImage('Event', Homey.__("Motion_Event"), this.eventImage);
-							})
-							.catch((err) => {
-								Homey.app.updateLog("Register event image error (" + this.id + "): " + err.stack, true);
-							});
-					}
 				}
 			} catch (err) {
 				Homey.app.updateLog("Event SnapShot error (" + this.id + "): " + err.stack, true);
