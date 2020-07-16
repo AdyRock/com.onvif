@@ -109,5 +109,8 @@
   },
   "0.1.0": {
     "en": "Added \"Motion image is ready within...\" flow condition, depricated \"Update Now snapshot\" flow action, added \"Update Motion snapshot\" flow action."
+  },
+  "0.1.1": {
+    "en": "Motion image availabe even when camera does not support it so that the flow trigger can update it."
   }
 }
