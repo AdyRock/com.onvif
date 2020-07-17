@@ -108,9 +108,9 @@
     "en": "Changed order of images so the 'Now' image is the default when the section is selected."
   },
   "0.1.0": {
-    "en": "Added \"Motion image is ready within...\" flow condition, depricated \"Update Now snapshot\" flow action, added \"Update Motion snapshot\" flow action."
+    "en": "Added \"Motion image is ready within...\" flow condition, deprecated \"Update Now snapshot\" flow action, added \"Update Motion snapshot\" flow action."
   },
   "0.1.1": {
-    "en": "Motion image availabe even when camera does not support it so that the flow trigger can update it."
+    "en": "Motion image available even when camera does not support it so that the flow trigger can update it."
   }
 }

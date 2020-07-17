@@ -459,7 +459,8 @@ class CameraDevice extends Homey.Device {
 				Homey.app.updateLog("Event Processing (" + this.id + "):" + dataName + " = " + dataValue);
 				this.setCapabilityValue('alarm_motion', dataValue);
 				if (dataValue) {
-					await updateMotionImage(settings.delay);
+					Homey.app.updateLog( "Updating Motion Image in " + settings.delay + "seconds" );
+					await this.updateMotionImage(settings.delay);
 				} else {
 					clearTimeout(this.eventTimeoutId);
 				}
