@@ -112,5 +112,8 @@
   },
   "0.1.1": {
     "en": "Motion image available even when camera does not support it so that the flow trigger can update it."
+  },
+  "0.1.2": {
+    "en": "Fixed broken motion image update when motion detected"
   }
 }
