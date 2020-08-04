@@ -186,6 +186,17 @@
           }
         },
         {
+          "id": "channel",
+          "type": "number",
+          "label": {
+            "en": "Channel"
+          },
+          "value": 1,
+          "hint": {
+            "en": "Experimental channel selection."
+          }
+        },
+        {
           "id": "preferPullEvents",
           "type": "checkbox",
           "label": {

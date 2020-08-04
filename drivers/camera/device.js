@@ -35,6 +35,10 @@ class CameraDevice extends Homey.Device {
 
 		this.preferPullEvents = settings.preferPullEvents;
 		this.hasMotion = settings.hasMotion;
+		if (!settings.channel) {
+			settings.channel = 1;
+		}
+		this.channel = settings.channel;
 
 		this.id = devData.id;
 		Homey.app.updateLog("Initialising CameraDevice (" + this.id + ")");
@@ -124,6 +128,15 @@ class CameraDevice extends Homey.Device {
 			this.setCapabilityValue('event_time', this.convertDate(this.eventTime, newSettingsObj));
 			this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, newSettingsObj));
 			this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, newSettingsObj));
+		}
+
+		if (changedKeysArr.indexOf("channel") >= 0) {
+			this.channel = newSettingsObj.channel;
+			// refresh image settings after exiting this callback
+			setImmediate(() => {
+				this.setupImages();
+				return;
+			});
 		}
 
 		if (changedKeysArr.indexOf("userSnapUrl") >= 0) {
@@ -459,7 +472,7 @@ class CameraDevice extends Homey.Device {
 				Homey.app.updateLog("Event Processing (" + this.id + "):" + dataName + " = " + dataValue);
 				this.setCapabilityValue('alarm_motion', dataValue);
 				if (dataValue) {
-					Homey.app.updateLog( "Updating Motion Image in " + settings.delay + "seconds" );
+					Homey.app.updateLog("Updating Motion Image in " + settings.delay + "seconds");
 					await this.updateMotionImage(settings.delay);
 				} else {
 					clearTimeout(this.eventTimeoutId);
@@ -684,7 +697,16 @@ class CameraDevice extends Homey.Device {
 				Homey.app.updateLog("Invalid Snapshot URL, it must be http or https: " + Homey.app.varToString(snapURL.uri).replace(this.password, "YOUR_PASSWORD"));
 				return;
 			}
+
 			this.snapUri = snapURL.uri;
+
+			// Check if the uri has a channel number and replace it with the settings
+			let chanelPos = this.snapUri.indexOf("channel=")
+			if (chanelPos > 0) {
+				let tempStr = this.snapUri.substr(0, chanelPos + 8) + this.channel + this.snapUri.substr(chanelPos + 9);
+				this.snapUri = tempStr;
+			}
+
 			this.invalidAfterConnect = snapURL.invalidAfterConnect;
 
 			const publicSnapURL = this.snapUri.replace(this.password, "YOUR_PASSWORD");
