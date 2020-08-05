@@ -564,6 +564,8 @@ class CameraDevice extends Homey.Device {
 		//Stop listening for motion events before we add a new listener
 		this.cam.removeAllListeners('event');
 
+		this.log( "listenForEvents, flag = ", this.updatingEventImage);
+
 		if (this.getCapabilityValue('motion_enabled')) {
 			if (this.updatingEventImage) {
 				// Wait while repairing and try again later

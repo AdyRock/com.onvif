@@ -118,5 +118,8 @@
   },
   "0.1.3": {
     "en": "Added experimental channel selection"
+  },
+  "0.1.4": {
+    "en": "Added extra logging for push event to determine if channel is specified."
   }
 }
