@@ -588,7 +588,7 @@ class CameraDevice extends Homey.Device {
 		if (this.getCapabilityValue('motion_enabled')) {
 			try {
 				Homey.app.updateLog('\r\n--  Event detected (' + this.id + ')  --');
-				//Homey.app.updateLog(Homey.app.varToString(camMessage));
+				Homey.app.updateLog(Homey.app.varToString(camMessage));
 
 				this.setAvailable();
 

@@ -2,8 +2,10 @@
   "ExpandedNodes": [
     "",
     "\\drivers",
-    "\\drivers\\camera"
+    "\\drivers\\camera",
+    "\\lib",
+    "\\lib\\onvif"
   ],
-  "SelectedNode": "\\drivers\\camera\\driver.compose.json",
+  "SelectedNode": "\\lib\\onvif",
   "PreviewInSolutionExplorer": false
 }
