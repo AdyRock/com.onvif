@@ -9,13 +9,16 @@ const path = require('path');
 const nodemailer = require("nodemailer");
 
 const http = require('http');
+const {
+	captureMessage
+} = require('homey-log/lib/Log');
 const Log = require('homey-log').Log;
 
 class MyApp extends Homey.App {
 
 	async onInit() {
 		this.log('MyApp is running...');
-	
+
 		this.pushServerPort = 9998;
 		this.discoveredDevices = [];
 		this.discoveryInitialised = false;
@@ -36,6 +39,18 @@ class MyApp extends Homey.App {
 
 		this.checkCameras = this.checkCameras.bind(this);
 		this.checkTimerId = setTimeout(this.checkCameras, 30000);
+	}
+
+	getMessageToken(message) {
+		Homey.app.updateLog("Getting message token: " + Homey.app.varToString(message));
+		if (message.source && message.source.simpleItem) {
+			let simpleItem = message.source.simpleItem[0];
+			if (simpleItem && simpleItem["$"]) {
+				return message.source.simpleItem[0]["$"].Value;
+			}
+		}
+
+		return null;
 	}
 
 	async runsListener() {
@@ -72,10 +87,18 @@ class MyApp extends Homey.App {
 										let devices = driver.getDevices();
 										for (var i = 0; i < devices.length; i++) {
 											var device = devices[i];
-											if (device.getData().id == pathParts[2]) {
+											let settings = device.getSettings();
+											if (settings.ip == pathParts[2]) {
+												// Correct IP so check the token for multiple cameras on this IP
 												Homey.app.updateLog("Push Event found Device: " + pathParts[2]);
-												theDevice = device;
-												break;
+												let messageToken = this.getMessageToken(data.notificationMessage[0].message);
+												if (!messageToken || (messageToken == settings.token)) {
+													theDevice = device;
+													break;
+												}
+												else{
+													Homey.app.updateLog("Wrong channel token");
+												}
 											}
 										}
 									}
@@ -150,6 +173,8 @@ class MyApp extends Homey.App {
 								"password": "",
 								"ip": cam.hostname,
 								"port": cam.port ? cam.port.toString() : "",
+								"urn": cam.urn,
+								"channel": 1
 							}
 						})
 					} else {
@@ -178,7 +203,9 @@ class MyApp extends Homey.App {
 		Homey.app.updateLog('====  Discovery Finished  ====');
 		let devices = this.discoveredDevices;
 
-		Log.setExtra({"cams": cams});
+		Log.setExtra({
+			"cams": cams
+		});
 
 		this.discoveredDevices = [];
 		return devices;
@@ -465,7 +492,9 @@ class MyApp extends Homey.App {
 		oldText += newMessage;
 		oldText += "\r\n";
 		Homey.ManagerSettings.set('diagLog', oldText);
-		Log.setExtra({"diagLog": Homey.ManagerSettings.get('diagLog')});
+		Log.setExtra({
+			"diagLog": Homey.ManagerSettings.get('diagLog')
+		});
 		Homey.ManagerSettings.set('sendLog', "");
 	}
 

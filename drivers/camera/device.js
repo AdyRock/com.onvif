@@ -40,6 +40,11 @@ class CameraDevice extends Homey.Device {
 		}
 		this.channel = settings.channel;
 
+		if (!settings.token) {
+			settings.token = "";
+		}
+		this.token = settings.token;
+
 		this.id = devData.id;
 		Homey.app.updateLog("Initialising CameraDevice (" + this.id + ")");
 
@@ -115,13 +120,22 @@ class CameraDevice extends Homey.Device {
 	}
 
 	async onSettings(oldSettingsObj, newSettingsObj, changedKeysArr) {
+		let reconnect = false;
+
 		//console.log("Settings: ", oldSettingsObj, newSettingsObj, changedKeysArr);
 		if (changedKeysArr.indexOf("username") >= 0) {
 			this.username = newSettingsObj.username;
+			reconnect = true;
 		}
 
 		if (changedKeysArr.indexOf("password") >= 0) {
 			this.password = newSettingsObj.password;
+			reconnect = true;
+		}
+
+		if (reconnect)
+		{
+			await this.connectCamera(false);
 		}
 
 		if (changedKeysArr.indexOf("timeFormat") >= 0) {

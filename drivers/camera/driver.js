@@ -10,6 +10,7 @@ class CameraDriver extends Homey.Driver {
 		this.lastPassword = '';
 		this.lastHostName = '';
 		this.lastPort = 0;
+		this.lastURN = "";
 
 		this.motionCondition = new Homey.FlowCardCondition('motionEnabledCondition');
 		this.motionCondition
@@ -25,8 +26,7 @@ class CameraDriver extends Homey.Driver {
 			.registerRunListener(async (args, state) => {
 
 				let remainingTime = args.waitTime * 10;
-				while((remainingTime > 0) && args.device.updatingEventImage)
-				{
+				while ((remainingTime > 0) && args.device.updatingEventImage) {
 					// Wait for image to update
 					await new Promise(resolve => setTimeout(resolve, 100));
 					remainingTime--;
@@ -91,13 +91,61 @@ class CameraDriver extends Homey.Driver {
 	}
 
 	onPair(socket) {
+		let listDevices = 1;
+		let tempCam = null;
+
 		socket.on('list_devices', (data, callback) => {
-			Homey.app.discoverCameras().then(devices => {
-				Homey.app.updateLog("Discovered: " + Homey.app.varToString(devices, null, 2));
-				callback(null, devices);
-			}).catch((err) => {
-				callback(new Error("Connection Failed" + err), []);
-			});
+			if (listDevices == 1) {
+				listDevices = 2;
+				Homey.app.discoverCameras().then(devices => {
+					Homey.app.updateLog("Discovered: " + Homey.app.varToString(devices, null, 2));
+					callback(null, devices);
+				}).catch((err) => {
+					callback(new Error("Connection Failed" + err), []);
+				});
+			} else {
+				if (tempCam) {
+					Homey.app.updateLog("Multiple Sources ", cam.videoSources);
+
+					let devices = [];
+					for (const source in cam.videoSources) {
+						// There is more tha 1 video source so add a device for each
+						Homey.app.updateLog("Found video source. Adding " + source) + " to list";
+						console.log("Adding Source: ", source)
+						let token = "";
+						if (source["$"]) {
+							token = source["$"].token;
+						}
+						let channelSuf = "";
+						if (cam.videoSources.length > 1) {
+							channelSuf = " (Ch" + (devices.length + 1) + ")";
+						}
+						var data = {};
+						data = {
+							"id": this.lastURN + channelSuf,
+							"port": this.lastPort
+						};
+						devices.push({
+							"name": this.lastHostName + channelSuf,
+							data,
+							settings: {
+								// Store username & password in settings
+								// so the user can change them later
+								"username": "",
+								"password": "",
+								"ip": this.lastHostName,
+								"port": this.lastPort,
+								"urn": this.lastURN,
+								"channel": devices.length + 1,
+								"token": token
+							}
+						})
+					}
+					callback(null, devices);
+				} else {
+					socket.nextView();
+				}
+			}
 		});
 
 		socket.on('list_devices_selection', (data, callback) => {
@@ -105,6 +153,7 @@ class CameraDriver extends Homey.Driver {
 			console.log("list_devices_selection: ", data);
 			this.lastHostName = data[0].settings.ip;
 			this.lastPort = data[0].settings.port;
+			this.lastURN = data[0].settings.urn;
 			callback();
 		});
 
@@ -112,7 +161,8 @@ class CameraDriver extends Homey.Driver {
 			this.lastUsername = data.username;
 			this.lastPassword = data.password;
 
-			Homey.app.updateLog("Testing connection credentials");
+			// Homey.app.updateLog("Testing connection credentials");
+			console.log("Login data " + Homey.app.varToString(data));
 
 			Homey.app.connectCamera(
 					this.lastHostName,
@@ -121,13 +171,24 @@ class CameraDriver extends Homey.Driver {
 					this.lastPassword
 				)
 				.then(cam => {
-					Homey.app.updateLog("Valid");
+					Homey.app.updateLog("Credentials OK. Adding " + Homey.app.varToString(cam.videoSources));
+					if (cam.videoSources.length > 1) {
+						// There is more tha 1 video source so add a device for each
+						Homey.app.updateLog("Multiple source found. Adding " + cam.videoSources.length - 1 + " more devices");
+						tempCam = cam;
+					}
 					callback(null, true);
 				})
 				.catch(err => {
 					Homey.app.updateLog("Failed: " + err.stack, true);
 					callback(err);
 				});
+		});
+
+		// Received when a view has changed
+		socket.on('showView', (viewId, callback) => {
+			callback();
+			console.log('View: ' + viewId);
 		});
 	}
 

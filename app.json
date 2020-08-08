@@ -304,7 +304,20 @@
         },
         {
           "id": "login",
-          "template": "login_credentials"
+          "template": "login_credentials",
+          "navigation": {
+            "next": "list_devices2"
+          }
+        },
+        {
+          "id": "list_devices2",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_devices"
+          },
+          "options": {
+            "singular": false
+          }
         },
         {
           "id": "add_devices",
@@ -452,6 +465,17 @@
               }
             },
             {
+              "id": "token",
+              "type": "text",
+              "label": {
+                "en": "Token"
+              },
+              "value": "",
+              "hint": {
+                "en": "Experimental channel event token."
+              }
+            },
+            {
               "id": "preferPullEvents",
               "type": "checkbox",
               "label": {
@@ -525,6 +549,14 @@
             "it": "Informazioni sulla Camera,"
           },
           "children": [
+            {
+              "id": "urn",
+              "type": "label",
+              "label": {
+                "en": "URN"
+              },
+              "value": ""
+            },
             {
               "id": "manufacturer",
               "type": "label",
