@@ -105,23 +105,18 @@ class CameraDriver extends Homey.Driver {
 				});
 			} else {
 				if (tempCam) {
-					Homey.app.updateLog("Multiple Sources ", cam.videoSources);
+					Homey.app.updateLog("list_devices2: Multiple Sources ", cam.videoSources);
 
 					let devices = [];
 					for (const source in cam.videoSources) {
 						// There is more tha 1 video source so add a device for each
-						Homey.app.updateLog("Found video source. Adding " + source) + " to list";
-						console.log("Adding Source: ", source)
+						Homey.app.updateLog("Adding source " + source + " to list");
 						let token = "";
 						if (source["$"]) {
 							token = source["$"].token;
 						}
-						let channelSuf = "";
-						if (cam.videoSources.length > 1) {
-							channelSuf = " (Ch" + (devices.length + 1) + ")";
-						}
-						var data = {};
-						data = {
+						let channelSuf = " (Ch" + (devices.length + 1) + ")";
+						var data = {
 							"id": this.lastURN + channelSuf,
 							"port": this.lastPort
 						};
@@ -131,8 +126,8 @@ class CameraDriver extends Homey.Driver {
 							settings: {
 								// Store username & password in settings
 								// so the user can change them later
-								"username": "",
-								"password": "",
+								"username": this.lastUsername,
+								"password": this.lastPassword,
 								"ip": this.lastHostName,
 								"port": this.lastPort,
 								"urn": this.lastURN,
@@ -141,8 +136,10 @@ class CameraDriver extends Homey.Driver {
 							}
 						})
 					}
+					Homey.app.updateLog("list_devices2: Listing ", devices);
 					callback(null, devices);
 				} else {
+					Homey.app.updateLog("list_devices2: Single Sources ", cam.videoSources);
 					socket.nextView();
 				}
 			}
@@ -162,7 +159,7 @@ class CameraDriver extends Homey.Driver {
 			this.lastPassword = data.password;
 
 			// Homey.app.updateLog("Testing connection credentials");
-			console.log("Login data " + Homey.app.varToString(data));
+			Homey.app.updateLog("Login-----");
 
 			Homey.app.connectCamera(
 					this.lastHostName,
@@ -174,7 +171,7 @@ class CameraDriver extends Homey.Driver {
 					Homey.app.updateLog("Credentials OK. Adding " + Homey.app.varToString(cam.videoSources));
 					if (cam.videoSources.length > 1) {
 						// There is more tha 1 video source so add a device for each
-						Homey.app.updateLog("Multiple source found. Adding " + cam.videoSources.length - 1 + " more devices");
+						Homey.app.updateLog("Multiple source found. Adding " + cam.videoSources.length + " more devices");
 						tempCam = cam;
 					}
 					callback(null, true);
