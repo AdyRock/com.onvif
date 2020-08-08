@@ -124,5 +124,8 @@
   },
   "1.0.0": {
     "en": "Experimental!!!! Added support for multiple cameras on one IP via channels."
+  },
+  "1.0.1": {
+    "en": "Experimental!!!! Added support for multiple cameras on one IP via channels."
   }
 }
