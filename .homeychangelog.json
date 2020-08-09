@@ -129,7 +129,7 @@
     "en": "Experimental!!!! Added support for multiple cameras on one IP via channels."
   },
   "1.0.2": {
-    "en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fixed a bug when enunerating the channels"
+    "en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fixed a bug when enumerating the channels"
   },
   "1.0.3": {
     "en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix subscription for multiple channels"
