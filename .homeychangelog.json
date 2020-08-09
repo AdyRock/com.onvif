@@ -136,5 +136,8 @@
   },
   "1.0.4": {
     "en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix subscription for multiple channels"
+  },
+  "1.0.5": {
+    "en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix subscription for multiple channels"
   }
 }
