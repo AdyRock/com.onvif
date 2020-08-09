@@ -73,16 +73,22 @@ class MyApp extends Homey.App {
 						}
 					});
 					request.on('end', () => {
+						this.updateLog("Push Event detected: " + this.varToString(pathParts));
 						parseSOAPString(body, (err, res, xml) => {
 							if (!err && res) {
 								var data = linerase(res).notify;
+
+								this.updateLog("Push Event data: " + this.varToString(data));
 
 								if (data && data.notificationMessage) {
 									if (!Array.isArray(data.notificationMessage)) {
 										data.notificationMessage = [data.notificationMessage];
 									}
 
+									this.updateLog("Push Event token message: " + this.varToString(data.notificationMessage[0].message));
+
 									// Find the referenced device
+									this.updateLog("Push Event looking for: " + this.varToString(pathParts[2]));
 									const driver = Homey.ManagerDrivers.getDriver('camera');
 									var theDevice = null;
 									if (driver) {
@@ -90,12 +96,14 @@ class MyApp extends Homey.App {
 										for (var i = 0; i < devices.length; i++) {
 											var device = devices[i];
 											let settings = device.getSettings();
+											this.updateLog("Push Event comparing with ip: " + this.varToString(settings.ip));
 											if (settings.ip == pathParts[2]) {
 												// Correct IP so check the token for multiple cameras on this IP
 												this.updateLog("Push Event found Device: " + pathParts[2]);
 												let messageToken = this.getMessageToken(data.notificationMessage[0].message);
 												if (!messageToken || (messageToken == settings.token)) {
 													theDevice = device;
+													this.updateLog("Push Event found correct Device: " + settings.token);
 													break;
 												} else {
 													this.updateLog("Wrong channel token");
@@ -428,7 +436,7 @@ class MyApp extends Homey.App {
 					}
 				});
 			} else {
-				const url = "http://" + this.homeyIP + ":" + this.pushServerPort + "/onvif/events?deviceId=" + this.ip;
+				const url = "http://" + this.homeyIP + ":" + this.pushServerPort + "/onvif/events?deviceId=" + Device.cam.hostname;
 				this.updateLog("Setting up Push events (" + this.id + ") on: " + url);
 				Device.cam.SubscribeToPushEvents(url, (err, info, xml) => {
 					if (err) {
