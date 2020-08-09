@@ -21,7 +21,6 @@ class CameraDevice extends Homey.Device {
 		this.alarmTime = this.getStoreValue('alarmTime');
 		this.cameraTime = null;
 		this.authType = 0;
-		this.unsubscribeRef = null;
 
 		// Upgrade old device settings where the ip and port where part of the data
 		const settings = this.getSettings();
@@ -32,6 +31,8 @@ class CameraDevice extends Homey.Device {
 				'port': devData.port.toString()
 			})
 		}
+
+		this.ip = settings.ip;
 
 		this.preferPullEvents = settings.preferPullEvents;
 		this.hasMotion = settings.hasMotion;
@@ -133,8 +134,7 @@ class CameraDevice extends Homey.Device {
 			reconnect = true;
 		}
 
-		if (reconnect)
-		{
+		if (reconnect) {
 			await this.connectCamera(false);
 		}
 
@@ -166,8 +166,7 @@ class CameraDevice extends Homey.Device {
 			this.preferPullEvents = newSettingsObj.preferPullEvents;
 			if (this.hasMotion && this.getCapabilityValue('motion_enabled')) {
 				// Switch off the current even mode
-				await Homey.app.unsubscribe(this.cam, this.unsubscribeRef);
-				this.unsubscribeRef = null;
+				await Homey.app.unsubscribe(this);
 
 				// Turn on the new mode
 				setImmediate(() => {
@@ -324,7 +323,7 @@ class CameraDevice extends Homey.Device {
 
 					if (this.hasMotion && this.getCapabilityValue('motion_enabled')) {
 						//Restart event monitoring
-						this.unsubscribeRef = null;
+						await Homey.app.unsubscribe(this);
 						setImmediate(() => {
 							this.listenForEvents(this.cam);
 							return;
@@ -352,7 +351,7 @@ class CameraDevice extends Homey.Device {
 
 				if (err.indexOf("EHOSTUNREACH") >= 0) {
 					this.setUnavailable();
-					this.unsubscribeRef = null;
+					await Homey.app.unsubscribe(this);
 				}
 			}
 		}
@@ -514,63 +513,9 @@ class CameraDevice extends Homey.Device {
 		}
 	}
 
-	async subscribeToCamPushEvents(cam_obj) {
-		clearTimeout(this.eventSubscriptionRenewTimerId);
-
+	async subscribeToCamPushEvents() {
 		if (this.getCapabilityValue('motion_enabled')) {
-			if (this.unsubscribeRef) {
-				Homey.app.updateLog("Renew previous events: " + this.unsubscribeRef);
-				cam_obj.RenewPushEventSubscription(this.unsubscribeRef, (err, info, xml) => {
-					if (err) {
-						Homey.app.updateLog("Renew subscription err (" + this.id + "): " + err);
-						console.log(err);
-						// Refresh was probably too late so subscribe again
-						this.unsubscribeRef = null;
-						setTimeout(this.subscribeToCamPushEvents.bind(this, cam_obj), 0);
-					} else {
-
-						Homey.app.updateLog("Renew subscription response (" + this.id + "): " + cam_obj.hostname + "info: " + info);
-						let startTime = info[0].renewResponse[0].currentTime[0];
-						let endTime = info[0].renewResponse[0].terminationTime[0];
-						var d1 = new Date(startTime);
-						var d2 = new Date(endTime);
-						var refreshTime = ((d2.valueOf() - d1.valueOf())) - 5000;
-
-						console.log("Push renew every (" + this.id + "): ", refreshTime);
-						if (refreshTime < 5000) {
-							refreshTime = 5000;
-						}
-
-						this.eventSubscriptionRenewTimerId = setTimeout(this.subscribeToCamPushEvents.bind(this, cam_obj), refreshTime);
-					}
-				});
-			} else {
-				const url = "http://" + Homey.app.homeyIP + ":" + Homey.app.pushServerPort + "/onvif/events?deviceId=" + this.id;
-				Homey.app.updateLog("Setting up Push events (" + this.id + ") on: " + url);
-				cam_obj.SubscribeToPushEvents(url, (err, info, xml) => {
-					if (err) {
-						Homey.app.updateLog("Subscribe err (" + this.id + "): " + err);
-					} else {
-
-						Homey.app.updateLog("Subscribe response (" + this.id + "): " + cam_obj.hostname + "Info: " + info[0].subscribeResponse[0].subscriptionReference[0].address);
-						this.unsubscribeRef = info[0].subscribeResponse[0].subscriptionReference[0].address[0];
-						console.log("Unsubscribe ref: ", this.unsubscribeRef, "\r\n");
-
-						let startTime = info[0].subscribeResponse[0].currentTime[0];
-						let endTime = info[0].subscribeResponse[0].terminationTime[0];
-						var d1 = new Date(startTime);
-						var d2 = new Date(endTime);
-						var refreshTime = ((d2.valueOf() - d1.valueOf())) - 5000;
-
-						console.log("Push renew every (" + this.id + "): ", refreshTime);
-						if (refreshTime < 5000) {
-							refreshTime = 5000;
-						}
-
-						this.eventSubscriptionRenewTimerId = setTimeout(this.subscribeToCamPushEvents.bind(this, cam_obj), refreshTime);
-					}
-				});
-			}
+			Homey.app.subscribeToCamPushEvents(this);
 		}
 	}
 
@@ -578,7 +523,7 @@ class CameraDevice extends Homey.Device {
 		//Stop listening for motion events before we add a new listener
 		this.cam.removeAllListeners('event');
 
-		this.log( "listenForEvents, flag = ", this.updatingEventImage);
+		this.log("listenForEvents, flag = ", this.updatingEventImage);
 
 		if (this.getCapabilityValue('motion_enabled')) {
 			if (this.updatingEventImage) {
@@ -588,7 +533,7 @@ class CameraDevice extends Homey.Device {
 				if (this.supportPushEvent && !this.preferPullEvents) {
 					Homey.app.updateLog('\r\n## Waiting for Push events (' + this.id + ') ##');
 
-					this.subscribeToCamPushEvents(cam_obj);
+					this.subscribeToCamPushEvents();
 					return;
 				}
 
@@ -677,11 +622,9 @@ class CameraDevice extends Homey.Device {
 					Homey.app.updateLog("Switch motion detection Off (" + this.id + ")");
 
 					// Switch off the current even mode
-					await Homey.app.unsubscribe(this.cam, this.unsubscribeRef);
-					this.unsubscribeRef = null;
+					await Homey.app.unsubscribe(this);
 
 				} catch (err) {
-					this.unsubscribeRef = null;
 					Homey.app.updateLog(this.getName() + " onCapabilityOff Error (" + this.id + ") " + err.stack, true);
 				}
 
@@ -881,7 +824,7 @@ class CameraDevice extends Homey.Device {
 		return res;
 	}
 
-	onDeleted() {
+	async onDeleted() {
 		try {
 			clearTimeout(this.checkTimerId);
 			clearTimeout(this.eventSubscriptionRenewTimerId);
@@ -890,9 +833,7 @@ class CameraDevice extends Homey.Device {
 				//Stop listening for motion events
 				this.cam.removeAllListeners('event');
 
-				if (this.unsubscribeRef) {
-					this.cam.UnsubscribePushEventSubscription(this.unsubscribeRef);
-				}
+				await Homey.app.unsubscribe(this);
 			}
 
 			if (this.eventImageFilename) {

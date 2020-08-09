@@ -29,9 +29,11 @@ class MyApp extends Homey.App {
 		this.homeyIP = await Homey.ManagerCloud.getLocalAddress();
 		this.homeyIP = (this.homeyIP.split(":"))[0];
 
+		this.pushEvents = [];
+
 		Homey.ManagerSettings.on('set', (setting) => {
 			if (setting === 'sendLog' && (Homey.ManagerSettings.get('sendLog') === "send") && (Homey.ManagerSettings.get('diagLog') !== "")) {
-				return Homey.app.sendLog();
+				return this.sendLog();
 			}
 		});
 
@@ -42,7 +44,7 @@ class MyApp extends Homey.App {
 	}
 
 	getMessageToken(message) {
-		Homey.app.updateLog("Getting message token: " + Homey.app.varToString(message));
+		this.updateLog("Getting message token: " + this.varToString(message));
 		if (message.source && message.source.simpleItem) {
 			let simpleItem = message.source.simpleItem[0];
 			if (simpleItem && simpleItem["$"]) {
@@ -90,14 +92,13 @@ class MyApp extends Homey.App {
 											let settings = device.getSettings();
 											if (settings.ip == pathParts[2]) {
 												// Correct IP so check the token for multiple cameras on this IP
-												Homey.app.updateLog("Push Event found Device: " + pathParts[2]);
+												this.updateLog("Push Event found Device: " + pathParts[2]);
 												let messageToken = this.getMessageToken(data.notificationMessage[0].message);
 												if (!messageToken || (messageToken == settings.token)) {
 													theDevice = device;
 													break;
-												}
-												else{
-													Homey.app.updateLog("Wrong channel token");
+												} else {
+													this.updateLog("Wrong channel token");
 												}
 											}
 										}
@@ -115,7 +116,7 @@ class MyApp extends Homey.App {
 											theDevice.processCamEventMessage(message);
 										})
 									} else {
-										Homey.app.updateLog("Push Event unknown Device: " + pathParts[2]);
+										this.updateLog("Push Event unknown Device: " + pathParts[2]);
 									}
 								}
 							} else {
@@ -148,13 +149,13 @@ class MyApp extends Homey.App {
 	async discoverCameras() {
 		this.discoveredDevices = [];
 		let cams = [];
-		Homey.app.updateLog('====  Discovery Starting  ====');
+		this.updateLog('====  Discovery Starting  ====');
 		if (!this.discoveryInitialised) {
 			this.discoveryInitialised = true;
 			onvif.Discovery.on('device', (cam, rinfo, xml) => {
 				try {
 					// function will be called as soon as NVT responds
-					Homey.app.updateLog('Reply from ' + Homey.app.varToString(cam));
+					this.updateLog('Reply from ' + this.varToString(cam));
 					cams.push(cam);
 
 					if (cam.href && cam.href.indexOf("onvif") >= 0) {
@@ -178,17 +179,17 @@ class MyApp extends Homey.App {
 							}
 						})
 					} else {
-						Homey.app.updateLog("Discovery (" + cam.hostname + "): Invalid service URI");
+						this.updateLog("Discovery (" + cam.hostname + "): Invalid service URI");
 					}
 				} catch (err) {
-					Homey.app.updateLog("Discovery error: " + err.stack, true);
+					this.updateLog("Discovery error: " + err.stack, true);
 				}
 			})
 
 			onvif.Discovery.on('error', (msg, xml) => {
-				Homey.app.updateLog("Discovery error: " + Homey.app.varToString(msg), true);
+				this.updateLog("Discovery error: " + this.varToString(msg), true);
 				if (xml) {
-					Homey.app.updateLog("xml: " + Homey.app.varToString(xml));
+					this.updateLog("xml: " + this.varToString(xml));
 				}
 			})
 		}
@@ -200,7 +201,7 @@ class MyApp extends Homey.App {
 
 		// Allow time for the process to finish
 		await new Promise(resolve => setTimeout(resolve, 5000));
-		Homey.app.updateLog('====  Discovery Finished  ====');
+		this.updateLog('====  Discovery Finished  ====');
 		let devices = this.discoveredDevices;
 
 		Log.setExtra({
@@ -211,29 +212,29 @@ class MyApp extends Homey.App {
 		return devices;
 	}
 
-	async connectCamera(hostName, port, username, password) {
+	async connectCamera(hostname, port, username, password) {
 		return new Promise((resolve, reject) => {
 			try {
-				Homey.app.updateLog("--------------------------");
-				Homey.app.updateLog('Connect to Camera ' + hostName + ':' + port + " - " + username);
+				this.updateLog("--------------------------");
+				this.updateLog('Connect to Camera ' + hostname + ':' + port + " - " + username);
 
 				let cam = new Cam({
-					hostname: hostName,
+					hostname: hostname,
 					username: username,
 					password: password,
 					port: parseInt(port),
 					timeout: 70000,
 				}, (err) => {
 					if (err) {
-						Homey.app.updateLog('Connection Failed for ' + hostName + ' Port: ' + port + ' Username: ' + username, true);
+						this.updateLog('Connection Failed for ' + hostname + ' Port: ' + port + ' Username: ' + username, true);
 						return reject(err);
 					} else {
-						Homey.app.updateLog('CONNECTED to ' + hostName);
+						this.updateLog('CONNECTED to ' + hostname);
 						return resolve(cam);
 					}
 				});
 			} catch (err) {
-				Homey.app.updateLog("Connect to camera " + hostName + " error: " + err.stack, true);
+				this.updateLog("Connect to camera " + hostname + " error: " + err.stack, true);
 				return reject(err);
 			}
 		});
@@ -367,21 +368,137 @@ class MyApp extends Homey.App {
 		});
 	}
 
-	async unsubscribe(cam_obj, unsubscribeRef) {
+	async subscribeToCamPushEvents(Device) {
 		return new Promise((resolve, reject) => {
+
+			this.updateLog("App.subscribeToCamPushEvents: " + Device.id);
+
+			let unsubscribeRef = null
+			let pushEvent = this.pushEvents.find(element => element.cam_obj.hostname == Device.cam.hostname);
+			if (pushEvent) {
+				this.updateLog("App.subscribeToCamPushEvents: Found entry for " + Device.cam.hostname);
+				// An event is already registered for this IP address
+				clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
+				unsubscribeRef = pushEvent.unsubscribeRef;
+				pushEvent.eventSubscriptionRenewTimerId = null;
+
+				// see if this device is registered
+				if (!pushEvent.devices.find(element => element == Device)) {
+					this.updateLog("App.subscribeToCamPushEvents: Registering " + Device.id);
+					pushEvent.devices.push(Device);
+				}
+			} else {
+				this.updateLog("App.subscribeToCamPushEvents: Registering " + Device.cam.hostname);
+				pushEvent = {
+					"devices": [],
+					"refreshTime": 0,
+					"unsubscribeRef": unsubscribeRef,
+					"eventSubscriptionRenewTimerId": null
+				};
+				pushEvent.devices.push(Device);
+				this.pushEvents.push(pushEvent);
+			}
+
 			if (unsubscribeRef) {
-				Homey.app.updateLog('Unsubscribe push event (' + cam_obj.hostname + '): ' + unsubscribeRef);
-				cam_obj.UnsubscribePushEventSubscription(unsubscribeRef, (err, info, xml) => {
+				this.updateLog("Renew previous events: " + unsubscribeRef);
+				Device.cam.RenewPushEventSubscription(unsubscribeRef, (err, info, xml) => {
 					if (err) {
-						Homey.app.updateLog("Push unsubscribe error (" + cam_obj.hostname + "): " + err, true);
+						this.updateLog("Renew subscription err (" + this.id + "): " + err);
+						console.log(err);
+						// Refresh was probably too late so subscribe again
+						return resolve(false);
+					} else {
+
+						this.updateLog("Renew subscription response (" + this.id + "): " + Device.cam.hostname + "info: " + this.varToString(info));
+						let startTime = info[0].renewResponse[0].currentTime[0];
+						let endTime = info[0].renewResponse[0].terminationTime[0];
+						var d1 = new Date(startTime);
+						var d2 = new Date(endTime);
+						var refreshTime = ((d2.valueOf() - d1.valueOf())) - 5000;
+
+						console.log("Push renew every (" + this.id + "): ", refreshTime);
+						if (refreshTime < 5000) {
+							refreshTime = 5000;
+						}
+
+						pushEvent.refreshTime = refreshTime;
+						pushEvent.unsubscribeRef = unsubscribeRef;
+						pushEvent.eventSubscriptionRenewTimerId = setTimeout(this.subscribeToCamPushEvents.bind(this, Device), refreshTime);
+						return resolve(true);
+					}
+				});
+			} else {
+				const url = "http://" + this.homeyIP + ":" + this.pushServerPort + "/onvif/events?deviceId=" + this.ip;
+				this.updateLog("Setting up Push events (" + this.id + ") on: " + url);
+				Device.cam.SubscribeToPushEvents(url, (err, info, xml) => {
+					if (err) {
+						this.updateLog("Subscribe err (" + this.id + "): " + err);
+						return resolve(false);
+					} else {
+
+						this.updateLog("Subscribe response (" + this.id + "): " + Device.cam.hostname + "Info: " + info[0].subscribeResponse[0].subscriptionReference[0].address);
+						unsubscribeRef = info[0].subscribeResponse[0].subscriptionReference[0].address[0];
+						console.log("Unsubscribe ref: ", unsubscribeRef, "\r\n");
+
+						let startTime = info[0].subscribeResponse[0].currentTime[0];
+						let endTime = info[0].subscribeResponse[0].terminationTime[0];
+						var d1 = new Date(startTime);
+						var d2 = new Date(endTime);
+						var refreshTime = ((d2.valueOf() - d1.valueOf())) - 5000;
+
+						console.log("Push renew every (" + this.id + "): ", refreshTime);
+						if (refreshTime < 5000) {
+							refreshTime = 5000;
+						}
+						pushEvent.refreshTime = refreshTime;
+						pushEvent.unsubscribeRef = unsubscribeRef;
+						pushEvent.eventSubscriptionRenewTimerId = setTimeout(this.subscribeToCamPushEvents.bind(this, Device), refreshTime);
+						return resolve(true);
+					}
+				});
+			}
+		});
+	}
+
+	async unsubscribe(Device) {
+		return new Promise((resolve, reject) => {
+			this.updateLog("App.unsubscribe: " + Device.id);
+			let pushEvent = null;
+			let pushEventIdx = this.pushEvents.findIndex(element => element.Device.cam.hostname == Device.cam.hostname);
+			console.log("pushEvent Idx = ", pushEventIdx);
+			if (pushEventIdx >= 0) {
+				this.updateLog("App.unsubscribe: Found entry for " + Device.cam.hostname);
+				pushEvent = this.pushEvents[pushEventIdx]
+				// see if this device is registered
+				if (!pushEvent.devices.find(element => element == Device)) {
+					// Not registered so do nothing
+					this.updateLog("App.unsubscribe: No entry for " + Device.id);
+					return resolve(null);
+				}
+			} else {
+				return resolve(null);
+			}
+
+			// Remove this device reference
+			this.updateLog("App.unsubscribe: Unregister entry for " + Device.id);
+			pushEvent.devices.splice(pushEventIdx, 1);
+			if ((pushEvent.devices.length == 0) && pushEvent.unsubscribeRef) {
+				clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
+				this.updateLog('Unsubscribe push event (' + Device.cam.hostname + '): ' + pushEvent.unsubscribeRef);
+				Device.cam.UnsubscribePushEventSubscription(pushEvent.unsubscribeRef, (err, info, xml) => {
+					if (err) {
+						this.updateLog("Push unsubscribe error (" + Device.cam.hostname + "): " + err, true);
 						return reject(err);
 					}
 
+					pushEvent.eventSubscriptionRenewTimerId = null;
+					pushEvent.unsubscribeRef = null;
 					return resolve(null);
 				});
 			} else {
-				Homey.app.updateLog('Unsubscribe Pull event (' + cam_obj.hostname + ')');
-				cam_obj.removeAllListeners('event');
+				this.updateLog('App.unsubscribe: Keep subscription as devices are still registered');
+
+				Device.cam.removeAllListeners('event');
 				return resolve(null);
 			}
 		});
@@ -389,21 +506,21 @@ class MyApp extends Homey.App {
 
 	hasPullSupport(capabilities, id) {
 		if (capabilities && capabilities.events && capabilities.events.WSPullPointSupport && capabilities.events.WSPullPointSupport == true) {
-			Homey.app.updateLog('Camera (' + id + ') supports PullPoint');
+			this.updateLog('Camera (' + id + ') supports PullPoint');
 			return true;
 		}
 
-		Homey.app.updateLog('Camera (' + id + ') does NOT support PullPoint Events', true);
+		this.updateLog('Camera (' + id + ') does NOT support PullPoint Events', true);
 		return false
 	}
 
 	hasBaseEvents(services, id) {
 		if (services && services.Capabilities && services.Capabilities.MaxNotificationProducers > 0) {
-			Homey.app.updateLog('Camera (' + id + ') supports Push Events');
+			this.updateLog('Camera (' + id + ') supports Push Events');
 			return true;
 		}
 
-		Homey.app.updateLog('This camera (' + id + ') does NOT support Push Events', true);
+		this.updateLog('This camera (' + id + ') does NOT support Push Events', true);
 		return false
 	}
 
@@ -503,7 +620,7 @@ class MyApp extends Homey.App {
 
 		while (tries-- > 0) {
 			try {
-				Homey.app.updateLog("Sending log");
+				this.updateLog("Sending log");
 				// create reusable transporter object using the default SMTP transport
 				let transporter = nodemailer.createTransport({
 					host: Homey.env.MAIL_HOST, //Homey.env.MAIL_HOST,
@@ -528,17 +645,17 @@ class MyApp extends Homey.App {
 					text: Homey.ManagerSettings.get('diagLog') // plain text body
 				});
 
-				Homey.app.updateLog("Message sent: " + info.messageId);
+				this.updateLog("Message sent: " + info.messageId);
 				// Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
 
 				// Preview only available when sending through an Ethereal account
 				console.log("Preview URL: ", nodemailer.getTestMessageUrl(info));
 				return "";
 			} catch (err) {
-				Homey.app.updateLog("Send log error: " + err.stack);
+				this.updateLog("Send log error: " + err.stack);
 			};
 		}
-		Homey.app.updateLog("Send log FAILED");
+		this.updateLog("Send log FAILED");
 	}
 }
 
