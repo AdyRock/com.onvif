@@ -45,10 +45,12 @@ class MyApp extends Homey.App {
 
 	getMessageToken(message) {
 		this.updateLog("Getting message token: " + this.varToString(message));
+		this.updateLog("Getting message token source: " + this.varToString(message.source));
 		if (message.source && message.source.simpleItem) {
 			let simpleItem = message.source.simpleItem[0];
+			this.updateLog("Getting message token simpleItem: " + this.varToString(simpleItem));
 			if (simpleItem && simpleItem["$"]) {
-				return message.source.simpleItem[0]["$"].Value;
+				return simpleItem["$"].Value;
 			}
 		}
 
@@ -96,11 +98,12 @@ class MyApp extends Homey.App {
 										for (var i = 0; i < devices.length; i++) {
 											var device = devices[i];
 											let settings = device.getSettings();
-											this.updateLog("Push Event comparing with ip: " + this.varToString(settings.ip));
+											this.updateLog("Push Event comparing with ip: " + this.varToString(settings.ip) + " Message Token: " + settings.token);
 											if (settings.ip == pathParts[2]) {
 												// Correct IP so check the token for multiple cameras on this IP
 												this.updateLog("Push Event found Device: " + pathParts[2]);
 												let messageToken = this.getMessageToken(data.notificationMessage[0].message);
+												this.updateLog("Push Event Message Token: " + messageToken);
 												if (!messageToken || (messageToken == settings.token)) {
 													theDevice = device;
 													this.updateLog("Push Event found correct Device: " + settings.token);
