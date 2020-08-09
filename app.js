@@ -382,7 +382,7 @@ class MyApp extends Homey.App {
 			this.updateLog("App.subscribeToCamPushEvents: " + Device.id);
 
 			let unsubscribeRef = null
-			let pushEvent = this.pushEvents.find(element => element.cam_obj.hostname == Device.cam.hostname);
+			let pushEvent = this.pushEvents.find(element => element.devices[0].cam_obj.hostname == Device.cam.hostname);
 			if (pushEvent) {
 				this.updateLog("App.subscribeToCamPushEvents: Found entry for " + Device.cam.hostname);
 				// An event is already registered for this IP address
@@ -472,13 +472,14 @@ class MyApp extends Homey.App {
 		return new Promise((resolve, reject) => {
 			this.updateLog("App.unsubscribe: " + Device.id);
 			let pushEvent = null;
-			let pushEventIdx = this.pushEvents.findIndex(element => element.Device.cam.hostname == Device.cam.hostname);
+			let pushEventIdx = this.pushEvents.findIndex(element => element.Devices[0].cam.hostname == Device.cam.hostname);
 			console.log("pushEvent Idx = ", pushEventIdx);
 			if (pushEventIdx >= 0) {
 				this.updateLog("App.unsubscribe: Found entry for " + Device.cam.hostname);
 				pushEvent = this.pushEvents[pushEventIdx]
 				// see if this device is registered
-				if (!pushEvent.devices.find(element => element == Device)) {
+				let deviceIdx = pushEvent.devices.findIndex(element => element == Device);
+				if (deviceIdx < 0) {
 					// Not registered so do nothing
 					this.updateLog("App.unsubscribe: No entry for " + Device.id);
 					return resolve(null);
@@ -489,8 +490,10 @@ class MyApp extends Homey.App {
 
 			// Remove this device reference
 			this.updateLog("App.unsubscribe: Unregister entry for " + Device.id);
-			pushEvent.devices.splice(pushEventIdx, 1);
+			pushEvent.devices.splice(deviceIdx, 1);
+
 			if ((pushEvent.devices.length == 0) && pushEvent.unsubscribeRef) {
+				// No devices left so unregister the event
 				clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
 				this.updateLog('Unsubscribe push event (' + Device.cam.hostname + '): ' + pushEvent.unsubscribeRef);
 				Device.cam.UnsubscribePushEventSubscription(pushEvent.unsubscribeRef, (err, info, xml) => {
@@ -499,8 +502,8 @@ class MyApp extends Homey.App {
 						return reject(err);
 					}
 
-					pushEvent.eventSubscriptionRenewTimerId = null;
-					pushEvent.unsubscribeRef = null;
+					// remove the push event from the list
+					pushEvent.splice(pushEventIdx, 1);
 					return resolve(null);
 				});
 			} else {
