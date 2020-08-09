@@ -87,7 +87,7 @@ class MyApp extends Homey.App {
 										data.notificationMessage = [data.notificationMessage];
 									}
 
-									this.updateLog("Push Event token message: " + this.varToString(data.notificationMessage[0].message));
+									this.updateLog("Push Event token message: " + this.varToString(data.notificationMessage[0].message.message));
 
 									// Find the referenced device
 									this.updateLog("Push Event looking for: " + this.varToString(pathParts[2]));
@@ -102,7 +102,7 @@ class MyApp extends Homey.App {
 											if (settings.ip == pathParts[2]) {
 												// Correct IP so check the token for multiple cameras on this IP
 												this.updateLog("Push Event found Device: " + pathParts[2]);
-												let messageToken = this.getMessageToken(data.notificationMessage[0].message);
+												let messageToken = this.getMessageToken(data.notificationMessage[0].message.message);
 												this.updateLog("Push Event Message Token: " + messageToken);
 												if (!messageToken || (messageToken == settings.token)) {
 													theDevice = device;
