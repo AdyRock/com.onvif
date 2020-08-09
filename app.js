@@ -88,6 +88,8 @@ class MyApp extends Homey.App {
 									}
 
 									this.updateLog("Push Event token message: " + this.varToString(data.notificationMessage[0].message.message));
+									let messageToken = this.getMessageToken(data.notificationMessage[0].message.message);
+									this.updateLog("Push Event Message Token: " + messageToken);
 
 									// Find the referenced device
 									this.updateLog("Push Event looking for: " + this.varToString(pathParts[2]));
@@ -97,16 +99,13 @@ class MyApp extends Homey.App {
 										let devices = driver.getDevices();
 										for (var i = 0; i < devices.length; i++) {
 											var device = devices[i];
-											let settings = device.getSettings();
-											this.updateLog("Push Event comparing with ip: " + this.varToString(settings.ip) + " Message Token: " + settings.token);
-											if (settings.ip == pathParts[2]) {
+											this.updateLog("Push Event comparing with ip: " + this.varToString(device.ip) + " Message Token: " + device.token);
+											if (device.ip == pathParts[2]) {
 												// Correct IP so check the token for multiple cameras on this IP
 												this.updateLog("Push Event found Device: " + pathParts[2]);
-												let messageToken = this.getMessageToken(data.notificationMessage[0].message.message);
-												this.updateLog("Push Event Message Token: " + messageToken);
-												if (!messageToken || (messageToken == settings.token)) {
+												if (!messageToken || (messageToken == device.token)) {
 													theDevice = device;
-													this.updateLog("Push Event found correct Device: " + settings.token);
+													this.updateLog("Push Event found correct Device: " + device.token);
 													break;
 												} else {
 													this.updateLog("Wrong channel token");
