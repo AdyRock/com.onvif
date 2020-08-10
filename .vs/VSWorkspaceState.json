@@ -4,8 +4,9 @@
     "\\drivers",
     "\\drivers\\camera",
     "\\lib",
-    "\\lib\\onvif"
+    "\\lib\\onvif",
+    "\\lib\\onvif\\lib"
   ],
-  "SelectedNode": "\\lib\\onvif",
+  "SelectedNode": "\\lib\\onvif\\lib\\events.js",
   "PreviewInSolutionExplorer": false
 }
