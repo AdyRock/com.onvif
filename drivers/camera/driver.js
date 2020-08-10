@@ -108,7 +108,8 @@ class CameraDriver extends Homey.Driver {
 					Homey.app.updateLog("list_devices2: Multiple Sources ", tempCam.videoSources);
 
 					let devices = [];
-					for (const source of tempCam.videoSources) {
+					for (var i = 0; i < tempCam.videoSources.length; i++) {
+						const source = tempCam.videoSources[ i ];
 						// There is more tha 1 video source so add a device for each
 						Homey.app.updateLog("Adding source " + source + " to list");
 						let token = "";
