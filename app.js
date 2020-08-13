@@ -433,7 +433,7 @@ class MyApp extends Homey.App {
 
 						pushEvent.refreshTime = refreshTime;
 						pushEvent.unsubscribeRef = unsubscribeRef;
-						pushEvent.eventSubscriptionRenewTimerId = setTimeout(this.subscribeToCamPushEvents.bind(this, Device), refreshTime);
+                        pushEvent.eventSubscriptionRenewTimerId = setTimeout(() => { this.updateLog("Renewing subscription"); this.subscribeToCamPushEvents(Device); }, refreshTime);
 						return resolve(true);
 					}
 				});
@@ -463,7 +463,7 @@ class MyApp extends Homey.App {
 
 						pushEvent.refreshTime = refreshTime;
 						pushEvent.unsubscribeRef = unsubscribeRef;
-						pushEvent.eventSubscriptionRenewTimerId = setTimeout(this.subscribeToCamPushEvents.bind(this, Device), refreshTime);
+                        pushEvent.eventSubscriptionRenewTimerId = setTimeout(() => { this.updateLog("Renewing subscription"); this.subscribeToCamPushEvents(Device); }, refreshTime);
 						return resolve(true);
 					}
 				});
