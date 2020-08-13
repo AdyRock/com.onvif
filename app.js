@@ -1,5 +1,4 @@
 'use strict';
-require('inspector').open(9222, '0.0.0.0');
 
 const Homey = require('homey');
 var onvif = require('/lib/onvif');
