@@ -15,7 +15,7 @@
     "en": "Added image update and trigger flow cards. More error checking for cameras that don't support pullpoints"
   },
   "0.0.10": {
-    "en": "Added button to send the Diagnostics log to the dev. Improved reconnection to a camera that went offline. Added the Repair faeture to reconnect a camera that has changed IP address or login details"
+    "en": "Added button to send the Diagnostics log to the dev. Improved reconnection to a camera that went offline. Added the Repair feature to reconnect a camera that has changed IP address or login details"
   },
   "0.0.11": {
     "en": "Fixed pairing that was broken by last test version"
