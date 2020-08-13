@@ -513,35 +513,30 @@ class CameraDevice extends Homey.Device {
 		}
 	}
 
-	async subscribeToCamPushEvents() {
-		if (this.getCapabilityValue('motion_enabled')) {
-			Homey.app.subscribeToCamPushEvents(this);
-		}
-	}
-
 	async listenForEvents(cam_obj) {
 		//Stop listening for motion events before we add a new listener
 		this.cam.removeAllListeners('event');
 
-		this.log("listenForEvents, flag = ", this.updatingEventImage);
+		this.log("listenForEvents");
 
-		if (this.getCapabilityValue('motion_enabled')) {
-			if (this.updatingEventImage) {
-				// Wait while repairing and try again later
-				this.eventTimerId = setTimeout(this.listenForEvents.bind(this, cam_obj), 2000);
-			} else {
-				if (this.supportPushEvent && !this.preferPullEvents) {
-					Homey.app.updateLog('\r\n## Waiting for Push events (' + this.id + ') ##');
+		if (this.updatingEventImage) {
 
-					this.subscribeToCamPushEvents();
-					return;
-				}
+			this.log("listenForEvents blocked bu updating image");
 
-				Homey.app.updateLog('## Waiting for Pull events (' + this.id + ') ##');
-				cam_obj.on('event', (camMessage, xml) => {
-					this.processCamEventMessage(camMessage);
-				});
+			// Wait while repairing and try again later
+			this.eventTimerId = setTimeout(this.listenForEvents.bind(this, cam_obj), 2000);
+		} else {
+			if (this.supportPushEvent && !this.preferPullEvents) {
+				Homey.app.updateLog('\r\n## Waiting for Push events (' + this.id + ') ##');
+
+				Homey.app.subscribeToCamPushEvents(this);
+				return;
 			}
+
+			Homey.app.updateLog('## Waiting for Pull events (' + this.id + ') ##');
+			cam_obj.on('event', (camMessage, xml) => {
+				this.processCamEventMessage(camMessage);
+			});
 		}
 	}
 
@@ -631,7 +626,7 @@ class CameraDevice extends Homey.Device {
 				this.motionDisabledTrigger
 					.trigger(this)
 					.catch(this.error)
-					.then(this.log("triggered enable off"))
+					.then(this.log("Triggered enable off"))
 			}
 
 		} catch (err) {
