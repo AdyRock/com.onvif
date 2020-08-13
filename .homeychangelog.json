@@ -151,5 +151,8 @@
   },
   "1.0.9": {
     "en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix bug in unsubscribe"
+  },
+  "1.0.10": {
+    "en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix bug in unsubscribe"
   }
 }
