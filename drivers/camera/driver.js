@@ -140,7 +140,7 @@ class CameraDriver extends Homey.Driver {
 					Homey.app.updateLog("list_devices2: Listing ", devices);
 					callback(null, devices);
 				} else {
-					Homey.app.updateLog("list_devices2: Single Sources ", cam.videoSources);
+					Homey.app.updateLog("list_devices2: Single Sources");
 					socket.nextView();
 				}
 			}
@@ -181,12 +181,6 @@ class CameraDriver extends Homey.Driver {
 					Homey.app.updateLog("Failed: " + err.stack, true);
 					callback(err);
 				});
-		});
-
-		// Received when a view has changed
-		socket.on('showView', (viewId, callback) => {
-			callback();
-			console.log('View: ' + viewId);
 		});
 	}
 

@@ -305,10 +305,7 @@
         },
         {
           "id": "login",
-          "template": "login_credentials",
-          "navigation": {
-            "next": "list_devices2"
-          }
+          "template": "login_credentials"
         },
         {
           "id": "list_devices2",
