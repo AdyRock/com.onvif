@@ -1,5 +1,9 @@
 'use strict';
 
+if (process.env.DEBUG === '1') {
+	require('inspector').open(9222, '0.0.0.0')
+}
+
 const Homey = require('homey');
 var onvif = require('/lib/onvif');
 let Cam = require('/lib/onvif').Cam;
@@ -433,7 +437,10 @@ class MyApp extends Homey.App {
 
 						pushEvent.refreshTime = refreshTime;
 						pushEvent.unsubscribeRef = unsubscribeRef;
-                        pushEvent.eventSubscriptionRenewTimerId = setTimeout(() => { this.updateLog("Renewing subscription"); this.subscribeToCamPushEvents(Device); }, refreshTime);
+						pushEvent.eventSubscriptionRenewTimerId = setTimeout(() => {
+							this.updateLog("Renewing subscription");
+							this.subscribeToCamPushEvents(Device);
+						}, refreshTime);
 						return resolve(true);
 					}
 				});
@@ -462,7 +469,10 @@ class MyApp extends Homey.App {
 
 						pushEvent.refreshTime = refreshTime;
 						pushEvent.unsubscribeRef = unsubscribeRef;
-                        pushEvent.eventSubscriptionRenewTimerId = setTimeout(() => { this.updateLog("Renewing subscription"); this.subscribeToCamPushEvents(Device); }, refreshTime);
+						pushEvent.eventSubscriptionRenewTimerId = setTimeout(() => {
+							this.updateLog("Renewing subscription");
+							this.subscribeToCamPushEvents(Device);
+						}, refreshTime);
 						return resolve(true);
 					}
 				});
@@ -503,8 +513,7 @@ class MyApp extends Homey.App {
 				Device.cam.UnsubscribePushEventSubscription(pushEvent.unsubscribeRef, (err, info, xml) => {
 					if (err) {
 						this.updateLog("Push unsubscribe error (" + Device.cam.hostname + "): " + this.varToString(err), true);
-					}
-					else{
+					} else {
 						this.updateLog("Push unsubscribe response (" + Device.cam.hostname + "): " + this.varToString(info));
 					}
 
