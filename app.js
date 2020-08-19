@@ -107,7 +107,7 @@ class MyApp extends Homey.App {
 											if (device.ip == pathParts[2]) {
 												// Correct IP so check the token for multiple cameras on this IP
 												this.updateLog("Push Event found Device: " + pathParts[2]);
-												if (!messageToken || (messageToken == device.token)) {
+												if (!device.token || !messageToken || (messageToken == device.token)) {
 													theDevice = device;
 													this.updateLog("Push Event found correct Device: " + device.token);
 													break;
