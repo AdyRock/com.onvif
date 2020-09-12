@@ -196,12 +196,12 @@ class MyApp extends Homey.App {
 						this.updateLog("Discovery (" + cam.hostname + "): Invalid service URI");
 					}
 				} catch (err) {
-					this.updateLog("Discovery error: " + err.stack, true);
+					this.updateLog("Discovery catch error: " + err.message + "\n" + err.stack, true);
 				}
 			})
 
 			onvif.Discovery.on('error', (msg, xml) => {
-				this.updateLog("Discovery error: " + this.varToString(msg), true);
+				this.updateLog("Discovery on error: " + this.varToString(msg), true);
 				if (xml) {
 					this.updateLog("xml: " + this.varToString(xml));
 				}
