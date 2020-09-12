@@ -166,5 +166,8 @@
   },
   "1.1.2": {
     "en": "More logging"
+  },
+  "1.1.3": {
+    "en": "Handle missing time from camera."
   }
 }
