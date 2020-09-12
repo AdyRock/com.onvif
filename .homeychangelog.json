@@ -169,5 +169,8 @@
   },
   "1.1.3": {
     "en": "Handle missing time from camera."
+  },
+  "1.1.4": {
+    "en": "Put catch around each image retrieval method instead of relaying on camera returning a failure message."
   }
 }
