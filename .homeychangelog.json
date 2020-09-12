@@ -163,5 +163,8 @@
   },
   "1.1.1": {
     "en": "Fix push event issue for single camera introduced when adding multiple camera support."
+  },
+  "1.1.2": {
+    "en": "More logging"
   }
 }
