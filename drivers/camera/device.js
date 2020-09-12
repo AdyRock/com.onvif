@@ -782,7 +782,13 @@ class CameraDevice extends Homey.Device {
 					this.authType = 1;
 				}
 			}
+		} catch (err) {
+			Homey.app.updateLog("SnapShot error (" + this.id + "): " + err.stack, true);
+			// Try Basic Authentication
+			this.authType = 1;
+		}
 
+		try {
 			if (this.authType == 1) {
 				Homey.app.updateLog("Fetching (" + this.id + ") " + name + " image with Basic Auth. From: " + Homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
 
@@ -795,7 +801,13 @@ class CameraDevice extends Homey.Device {
 					this.authType = 2;
 				}
 			}
+		} catch (err) {
+			Homey.app.updateLog("SnapShot error (" + this.id + "): " + err.stack, true);
+			// Try Digest Authentication
+			this.authType = 2;
+		}
 
+		try {
 			if (this.authType >= 2) {
 				Homey.app.updateLog("Fetching (" + this.id + ") " + name + " image with Digest Auth. From: " + Homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
 
@@ -810,6 +822,10 @@ class CameraDevice extends Homey.Device {
 			}
 		} catch (err) {
 			Homey.app.updateLog("SnapShot error (" + this.id + "): " + err.stack, true);
+
+			// Go back to no Authentication
+			this.authType = 0;
+
 			res = {
 				'ok': false,
 				'statusText': err.message
