@@ -172,5 +172,8 @@
   },
   "1.1.4": {
     "en": "Put catch around each image retrieval method instead of relaying on camera returning a failure message."
+  },
+  "1.1.5": {
+    "en": "Switch log off when full instead of clearing it."
   }
 }
