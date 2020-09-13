@@ -189,7 +189,7 @@ class MyApp extends Homey.App {
 								"ip": cam.hostname,
 								"port": cam.port ? cam.port.toString() : "",
 								"urn": cam.urn,
-								"channel": 1
+								"channel": -1
 							}
 						})
 					} else {

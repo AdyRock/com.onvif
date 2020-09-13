@@ -654,13 +654,15 @@ class CameraDevice extends Homey.Device {
 
 			this.snapUri = snapURL.uri;
 
-			// Check if the uri has a channel number and replace it with the settings
-			let chanelPos = this.snapUri.indexOf("channel=")
-			if (chanelPos > 0) {
-				let tempStr = this.snapUri.substr(0, chanelPos + 8) + this.channel + this.snapUri.substr(chanelPos + 9);
-				this.snapUri = tempStr;
+			if (this.channel >= 0){
+				// Check if the uri has a channel number and replace it with the settings
+				let chanelPos = this.snapUri.indexOf("channel=")
+				if (chanelPos > 0) {
+					let tempStr = this.snapUri.substr(0, chanelPos + 8) + this.channel + this.snapUri.substr(chanelPos + 9);
+					this.snapUri = tempStr;
+				}
 			}
-
+			
 			this.invalidAfterConnect = snapURL.invalidAfterConnect;
 
 			const publicSnapURL = this.snapUri.replace(this.password, "YOUR_PASSWORD");
