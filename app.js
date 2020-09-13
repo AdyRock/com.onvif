@@ -494,11 +494,12 @@ class MyApp extends Homey.App {
 				deviceIdx = pushEvent.devices.findIndex(element => element.id == Device.id);
 				if (deviceIdx < 0) {
 					// Not registered so do nothing
-					this.updateLog("App.unsubscribe: No entry for device: " + Device.id);
+					this.updateLog("App.unsubscribe: No Push entry for device: " + Device.id);
 					return resolve(null);
 				}
 			} else {
-				this.updateLog("App.unsubscribe: No entry for host: " + Device.cam.hostname);
+				this.updateLog("App.unsubscribe: No Push entry for host: " + Device.cam.hostname);
+				Device.cam.removeAllListeners('event');
 				return resolve(null);
 			}
 
@@ -601,7 +602,8 @@ class MyApp extends Homey.App {
 		this.log(newMessage);
 		var oldText = Homey.ManagerSettings.get('diagLog');
 		if (oldText.length > 30000) {
-			oldText = "";
+			Homey.ManagerSettings.set('logEnabled', false);
+			return;
 		}
 
 		const nowTime = new Date(Date.now());
