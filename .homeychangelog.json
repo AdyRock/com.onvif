@@ -175,5 +175,8 @@
   },
   "1.1.5": {
     "en": "Switch log off when full instead of clearing it."
+  },
+  "1.1.6": {
+    "en": "Added diagnostics to find a specific problem"
   }
 }
