@@ -41,11 +41,15 @@
             document.getElementById("defaultOpen").click();
 
             Homey.on('settings.set', function () {
+                Homey.get('logEnabled', function (err, logEnabled) {
+                    if (err) return Homey.alert(err);
+                    logEnabledElement.checked = logEnabled;
+                });
+
                 Homey.get('diagLog', function (err, diagLog) {
                     if (err) return Homey.alert(err);
                     diagLogElement.value = diagLog;
                 });
-
             });
 
             logEnabledElement.addEventListener('click', function (e) {
