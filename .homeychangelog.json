@@ -178,5 +178,8 @@
   },
   "1.1.6": {
     "en": "Added diagnostics to find a specific problem"
+  },
+  "1.1.7": {
+    "en": "More logging"
   }
 }
