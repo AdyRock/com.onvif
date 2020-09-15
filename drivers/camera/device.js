@@ -25,25 +25,29 @@ class CameraDevice extends Homey.Device {
 		// Upgrade old device settings where the ip and port where part of the data
 		const settings = this.getSettings();
 		const devData = this.getData();
-		if (!settings.ip) {
+		if (typeof settings.ip === "undefined") {
 			await this.setSettings({
 				'ip': devData.id,
 				'port': devData.port.toString()
 			})
 		}
 
-		this.ip = settings.ip;
-
 		this.preferPullEvents = settings.preferPullEvents;
 		this.hasMotion = settings.hasMotion;
-		if (!settings.channel) {
-			settings.channel = 1;
+		if (typeof settings.channel === "undefined") {
+			await this.setSettings({
+				'channel': -1
+			})
 		}
-		this.channel = settings.channel;
 
-		if (!settings.token) {
-			settings.token = "";
+		if (typeof settings.token === "undefined") {
+			await this.setSettings({
+				'token': ""
+			})
 		}
+
+		this.ip = settings.ip;
+		this.channel = settings.channel;
 		this.token = settings.token;
 
 		this.id = devData.id;
