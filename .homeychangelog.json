@@ -181,5 +181,8 @@
   },
   "1.1.7": {
     "en": "More logging"
+  },
+  "1.1.8": {
+    "en": "Fix 255.255.255.255 ip address returned from pull point subscription"
   }
 }
