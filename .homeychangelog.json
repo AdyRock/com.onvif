@@ -184,5 +184,8 @@
   },
   "1.1.8": {
     "en": "Fix 255.255.255.255 ip address returned from pull point subscription"
+  },
+  "1.1.9": {
+    "en": "Allow channel to stay set to 0"
   }
 }
