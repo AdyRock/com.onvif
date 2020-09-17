@@ -187,5 +187,8 @@
   },
   "1.1.9": {
     "en": "Allow channel to stay set to 0"
+  },
+  "1.1.10": {
+    "en": "Extra error logging"
   }
 }
