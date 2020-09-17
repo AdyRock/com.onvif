@@ -110,7 +110,7 @@ class CameraDevice extends Homey.Device {
 						}
 					});
 			} catch (err) {
-				Homey.app.updateLog("Check Camera Error (" + this.id + "): " + err.stack, true);
+				Homey.app.updateLog("Check Camera Error (" + this.id + "): " + Homey.app.varToString(err), true);
 			}
 		});
 	}

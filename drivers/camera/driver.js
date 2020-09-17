@@ -178,7 +178,7 @@ class CameraDriver extends Homey.Driver {
 					callback(null, true);
 				})
 				.catch(err => {
-					Homey.app.updateLog("Failed: " + err.stack, true);
+					Homey.app.updateLog("Failed: " + Homey.app.varToString(err), true);
 					callback(err);
 				});
 		});
@@ -215,7 +215,7 @@ class CameraDriver extends Homey.Driver {
 						info = await Homey.app.getDeviceInformation(cam);
 						Homey.app.updateLog("Camera Information: " + Homey.app.varToString(info));
 					} catch (err) {
-						Homey.app.updateLog("Get camera info error: " + err.stack, true);
+						Homey.app.updateLog("Get camera info error: " + Homey.app.varToString(err), true);
 						return;
 					}
 
@@ -232,7 +232,7 @@ class CameraDriver extends Homey.Driver {
 					}
 
 				} catch (err) {
-					Homey.app.updateLog("Get camera info error: " + err.stack, true);
+					Homey.app.updateLog("Get camera info error: " + Homey.app.varToString(err), true);
 				}
 			});
 			callback(null, true);
