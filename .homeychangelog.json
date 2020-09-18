@@ -193,5 +193,8 @@
   },
   "1.1.11": {
     "en": "Fixed enable / disable flow actions. Improved robustness against network failures."
+  },
+  "1.1.12": {
+    "en": "More diagnostics in parseSOAPString"
   }
 }
