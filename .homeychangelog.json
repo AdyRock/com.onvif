@@ -196,5 +196,8 @@
   },
   "1.1.12": {
     "en": "More diagnostics in parseSOAPString"
+  },
+  "1.1.13": {
+    "en": "More diag for invalid soap"
   }
 }
