@@ -190,5 +190,8 @@
   },
   "1.1.10": {
     "en": "Extra error logging"
+  },
+  "1.1.11": {
+    "en": "Fixed enable / disable flow actions. Improved robustness against network failures."
   }
 }
