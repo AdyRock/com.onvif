@@ -20,6 +20,13 @@
     "video"
   ],
   "permissions": [],
+  "contributing": {
+    "donate": {
+      "paypal": {
+        "username": "adyrock"
+      }
+    }
+  },
   "bugs": {
     "url": "https://github.com/AdyRock/com.onvif/issues"
   },
