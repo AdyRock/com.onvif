@@ -240,14 +240,14 @@
             "en": "Time Format",
             "de": "Zeitformat",
             "nl": "Tijd format",
-            "it": "Formato del Tempo,"
+            "it": "Formato del Tempo"
           },
           "value": "mm_dd",
           "hint": {
             "en": "The format to show the time capabilities.",
             "de": "Zeitformat das zur Anzeige genutzt werden soll.",
             "nl": "Tijd format notatie mogelijkheden",
-            "it": "Il formato mosta capabilities del Tempo.,"
+            "it": "Il formato mosta capabilities del Tempo."
           },
           "values": [{
               "id": "raw",
@@ -255,7 +255,7 @@
                 "en": "Direct From Camera",
                 "de": "Direkt von der Kamera",
                 "nl": "Live",
-                "it": "Diretto dalla Camera,"
+                "it": "Diretto dalla Camera"
               }
             },
             {
@@ -264,7 +264,7 @@
                 "en": "Local",
                 "de": "Lokal",
                 "nl": "Intern",
-                "it": "Locale,"
+                "it": "Locale"
               }
             },
             {
@@ -273,7 +273,7 @@
                 "en": "Short HH:MM DD-MM",
                 "de": "Kurz HH:MM DD-MM",
                 "nl": "Kort HH:MM DD-MM",
-                "it": "Corto HH:MM DD-MM,"
+                "it": "Corto HH:MM DD-MM"
               }
             }
           ]
@@ -286,7 +286,7 @@
         "en": "Camera Information",
         "de": "Kamera Informationen",
         "nl": "Camera informatie",
-        "it": "Informazioni sulla Camera,"
+        "it": "Informazioni sulla Camera"
       },
       "children": [{
           "id": "urn",
@@ -302,7 +302,7 @@
             "en": "Manufacturer",
             "de": "Hersteller",
             "nl": "Fabrikant",
-            "it": "Costruttore,"
+            "it": "Costruttore"
           },
           "value": ""
         },
@@ -313,7 +313,7 @@
             "en": "Model",
             "de": "Model",
             "nl": "Model",
-            "it": "Modello,"
+            "it": "Modello"
           },
           "value": ""
         },
@@ -324,7 +324,7 @@
             "en": "Serial Number",
             "de": "Serial Nummer",
             "nl": "Serienummer",
-            "it": "Numero di Serie,"
+            "it": "Numero di Serie"
           },
           "value": ""
         },
@@ -335,7 +335,7 @@
             "en": "Firmware Version",
             "de": "Firmware Version",
             "nl": "Software versie",
-            "it": "Versione del Firmware,"
+            "it": "Versione del Firmware"
           },
           "value": ""
         },
@@ -346,7 +346,7 @@
             "en": "IP Address",
             "de": "IP-Addresse",
             "nl": "IP adres",
-            "it": "Indirizzo IP,"
+            "it": "Indirizzo IP"
           },
           "value": ""
         },
@@ -357,7 +357,18 @@
             "en": "Port",
             "de": "Port",
             "nl": "Poort",
-            "it": "Porta,"
+            "it": "Porta"
+          },
+          "value": ""
+        },
+        {
+          "id": "hasSnapshot",
+          "type": "label",
+          "label": {
+            "en": "Supports Snapshots",
+            "de": "Supports Snapshots",
+            "nl": "Supports Snapshots",
+            "it": "Supports Snapshots"
           },
           "value": ""
         },
@@ -368,7 +379,7 @@
             "en": "ONVIF Snapshot URL",
             "de": "ONVIF Standbild URL",
             "nl": "ONVIF snapshot URL",
-            "it": "ONVIF Snapshot URL,"
+            "it": "ONVIF Snapshot URL"
           },
           "value": ""
         },
@@ -379,7 +390,7 @@
             "en": "ONVIF Notification methods",
             "de": "ONVIF Mitteilungs Methode",
             "nl": "ONVIF notificatie metode",
-            "it": "ONVIF Metodi di notifica,"
+            "it": "ONVIF Metodi di notifica"
           },
           "value": ""
         },

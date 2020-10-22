@@ -1,7 +1,7 @@
 {
     "settings": {
         "diagnosticsLog": "Diagnoseprotokoll",
-        "logEnabled": "Protokoll eingeschaltet",
+        "logLevel": "Protokollstufe",
         "ClearLog": "Protokoll löschen",
         "SendLog": "Protokoll versenden"
     },

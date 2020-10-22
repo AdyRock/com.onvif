@@ -1,7 +1,7 @@
 {
     "settings": {
         "diagnosticsLog": "Diagnostics Log",
-        "logEnabled": "Log Enabled",
+        "logLevel": "Log Level",
         "ClearLog": "Clear Log",
         "SendLog": "Send Log"
     },

@@ -17,8 +17,12 @@
     <!-- LOG PAGE -->
     <div id="log" class="tabcontent">
         <div class="field row">
-            <label for="logEnabled"><span data-i18n="settings.logEnabled"></span></label>
-            <input id="logEnabled" type="checkbox" value="logEnabled" />
+            <label for="logLevel"><span data-i18n="settings.logLevel"></span></label>
+            <select id="logLevel">
+                <option value=0>Errors Only</option>
+                <option value=1>Basic Information</option>
+                <option value=2>Full Information</option>            
+            </select>
             <P></P>
         </div>
         <p><button id="clearLog"><span data-i18n="settings.ClearLog"></span></button> <button id="sendLog"><span data-i18n="settings.SendLog"></span></button></p>
@@ -29,7 +33,7 @@
 
     <script type="text/javascript">
         var diagLogElement = document.getElementById('diagLog');
-        var logEnabledElement = document.getElementById('logEnabled');
+        var logLevelElement = document.getElementById('logLevel');
         var clearLogElement = document.getElementById('clearLog');
         var sendLogElement = document.getElementById('sendLog');
 
@@ -41,9 +45,9 @@
             document.getElementById("defaultOpen").click();
 
             Homey.on('settings.set', function () {
-                Homey.get('logEnabled', function (err, logEnabled) {
+                Homey.get('logLevel', function (err, logLevel) {
                     if (err) return Homey.alert(err);
-                    logEnabledElement.checked = logEnabled;
+                    logLevelElement.value = logLevel;
                 });
 
                 Homey.get('diagLog', function (err, diagLog) {
@@ -52,8 +56,8 @@
                 });
             });
 
-            logEnabledElement.addEventListener('click', function (e) {
-                Homey.set('logEnabled', logEnabledElement.checked, function (err) {
+            logLevelElement.addEventListener('change', function (e) {
+                Homey.set('logLevel', logLevelElement.value, function (err) {
                     if (err) return Homey.alert(err);
                 });
             });
@@ -97,9 +101,9 @@
 
             if (tabPage == 'log') {
                 // Refresh the log data
-                Homey.get('logEnabled', function (err, logEnabled) {
+                Homey.get('logLevel', function (err, logLevel) {
                     if (err) return Homey.alert(err);
-                    logEnabledElement.checked = logEnabled;
+                    logLevelElement.value = logLevel;
                 });
 
                 Homey.get('diagLog', function (err, diagLog) {
