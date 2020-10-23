@@ -199,5 +199,8 @@
   },
   "1.1.13": {
     "en": "More diag for invalid soap"
+  },
+  "1.1.14": {
+    "en": "Change to 3 levels of logging. Handle an uncaught exception. Fixed typo in discovery message."
   }
 }
