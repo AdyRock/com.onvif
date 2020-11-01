@@ -56,9 +56,13 @@ class CameraDevice extends Homey.Device
             })
         }
 
+        this.password = settings.password
+        this.username = settings.username;
         this.ip = settings.ip;
+        this.port = settings.port;
         this.channel = settings.channel;
         this.token = settings.token;
+        this.userSnapUri = settings.userSnapUri;
 
         this.id = devData.id;
         Homey.app.updateLog("Initialising CameraDevice (" + this.id + ")");
@@ -164,6 +168,18 @@ class CameraDevice extends Homey.Device
             reconnect = true;
         }
 
+        if (changedKeysArr.indexOf("ip") >= 0)
+        {
+            this.ip = newSettingsObj.ip;
+            reconnect = true;
+        }
+
+        if (changedKeysArr.indexOf("port") >= 0)
+        {
+            this.port = newSettingsObj.port;
+            reconnect = true;
+        }
+
         if (reconnect)
         {
             await this.connectCamera(false);
@@ -187,8 +203,9 @@ class CameraDevice extends Homey.Device
             });
         }
 
-        if (changedKeysArr.indexOf("userSnapUrl") >= 0)
+        if (changedKeysArr.indexOf("userSnapUri") >= 0)
         {
+            this.userSnapUri = newSettingsObj.userSnapUri;
             // refresh image settings after exiting this callback
             setImmediate(() =>
             {
@@ -235,10 +252,10 @@ class CameraDevice extends Homey.Device
             try
             {
                 this.cam = await Homey.app.connectCamera(
-                    settings.ip,
-                    settings.port,
-                    settings.username,
-                    settings.password
+                    this.ip,
+                    this.port,
+                    this.username,
+                    this.password
                 );
 
                 this.cam.on('error', (msg, xml) =>
@@ -356,7 +373,7 @@ class CameraDevice extends Homey.Device
                     "hasMotion": this.hasMotion,
                     'notificationMethods': notificationMethods,
                     'notificationTypes': supportedEvents.toString(),
-                    'hasSnapshot': this.snapshotSupported.toString(),
+                    'hasSnapshot': this.snapshotSupported,
                 })
 
                 settings = this.getSettings();
@@ -456,7 +473,7 @@ class CameraDevice extends Homey.Device
                     this.cameraTime = date;
                     this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, this.getSettings()));
 
-                    if (this.snapshotSupported && !this.snapUri)
+                    if (!this.snapUri)
                     {
                         await this.setupImages();
                     }
@@ -531,8 +548,7 @@ class CameraDevice extends Homey.Device
             Homey.app.updateLog("Invalid Snapshot URL, it must be http or https: " + Homey.app.varToString(snapURL.uri).replace(this.password, "YOUR_PASSWORD"), 0);
             return;
         }
-        const settings = this.getSettings();
-        Homey.app.updateLog("Event snapshot URL (" + this.id + "): " + Homey.app.varToString(this.snapUri).replace(settings.password, "YOUR_PASSWORD"));
+        Homey.app.updateLog("Event snapshot URL (" + this.id + "): " + Homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
 
         var res = await this.doFetch("MOTION EVENT");
         if (!res.ok)
@@ -846,29 +862,36 @@ class CameraDevice extends Homey.Device
 
     async setupImages()
     {
-        if (!this.snapshotSupported)
+        if (!this.snapshotSupported && !this.userSnapUri)
         {
             return;
         }
+
         try
         {
             const devData = this.getData();
-            const settings = this.getSettings();
-            this.password = settings.password
-            this.username = settings.username;
 
             this.invalidAfterConnect = false;
 
-            // Use ONVIF snapshot URL
-            const snapURL = await Homey.app.getSnapshotURL(this.cam);
-            if (snapURL.uri.indexOf("http") < 0)
+            if (!this.userSnapUri)
             {
-                this.snapUri = null;
-                Homey.app.updateLog("Invalid Snapshot URL, it must be http or https: " + Homey.app.varToString(snapURL.uri).replace(this.password, "YOUR_PASSWORD"), 0);
-                return;
-            }
+                // Use ONVIF snapshot URL
+                const snapURL = await Homey.app.getSnapshotURL(this.cam);
+                if (snapURL.uri.indexOf("http") < 0)
+                {
+                    this.snapUri = null;
+                    Homey.app.updateLog("Invalid Snapshot URL, it must be http or https: " + Homey.app.varToString(snapURL.uri).replace(this.password, "YOUR_PASSWORD"), 0);
+                    return;
+                }
 
-            this.snapUri = snapURL.uri;
+                this.snapUri = snapURL.uri;
+                this.invalidAfterConnect = snapURL.invalidAfterConnect;
+
+            }
+            else
+            {
+                this.snapUri = this.userSnapUri;
+            }
 
             if (this.channel >= 0)
             {
@@ -880,8 +903,6 @@ class CameraDevice extends Homey.Device
                     this.snapUri = tempStr;
                 }
             }
-
-            this.invalidAfterConnect = snapURL.invalidAfterConnect;
 
             const publicSnapURL = this.snapUri.replace(this.password, "YOUR_PASSWORD");
             await this.setSettings(

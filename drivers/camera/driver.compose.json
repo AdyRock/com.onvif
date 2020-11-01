@@ -341,7 +341,7 @@
         },
         {
           "id": "ip",
-          "type": "label",
+          "type": "text",
           "label": {
             "en": "IP Address",
             "de": "IP-Addresse",
@@ -352,25 +352,25 @@
         },
         {
           "id": "port",
-          "type": "label",
+          "type": "text",
           "label": {
             "en": "Port",
             "de": "Port",
             "nl": "Poort",
             "it": "Porta"
           },
-          "value": ""
+          "value": "0"
         },
         {
           "id": "hasSnapshot",
-          "type": "label",
+          "type": "checkbox",
           "label": {
             "en": "Supports Snapshots",
             "de": "Supports Snapshots",
             "nl": "Supports Snapshots",
             "it": "Supports Snapshots"
           },
-          "value": ""
+          "value": false
         },
         {
           "id": "url",
@@ -380,6 +380,17 @@
             "de": "ONVIF Standbild URL",
             "nl": "ONVIF snapshot URL",
             "it": "ONVIF Snapshot URL"
+          },
+          "value": ""
+        },
+        {
+          "id": "userSnapUri",
+          "type": "text",
+          "label": {
+            "en": "USER Snapshot URL",
+            "de": "USER Standbild URL",
+            "nl": "USER snapshot URL",
+            "it": "USER Snapshot URL"
           },
           "value": ""
         },

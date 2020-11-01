@@ -262,6 +262,12 @@ class MyApp extends Homey.App
 
         // Allow time for the process to finish
         await new Promise(resolve => setTimeout(resolve, 5000));
+
+
+
+        // Add in a manual option
+
+        
         this.updateLog('====  Discovery Finished  ====');
         let devices = this.discoveredDevices;
 
