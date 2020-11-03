@@ -182,7 +182,12 @@ class CameraDevice extends Homey.Device
 
         if (reconnect)
         {
-            await this.connectCamera(false);
+            // re-connect to camera after exiting this callback
+            setImmediate(() =>
+            {
+                this.connectCamera(false);
+                return;
+            });
         }
 
         if (changedKeysArr.indexOf("timeFormat") >= 0)
@@ -195,23 +200,29 @@ class CameraDevice extends Homey.Device
         if (changedKeysArr.indexOf("channel") >= 0)
         {
             this.channel = newSettingsObj.channel;
-            // refresh image settings after exiting this callback
-            setImmediate(() =>
+            if (!reconnect)
             {
-                this.setupImages();
-                return;
-            });
+                // refresh image settings after exiting this callback
+                setImmediate(() =>
+                {
+                    this.setupImages();
+                    return;
+                });
+            }
         }
 
         if (changedKeysArr.indexOf("userSnapUri") >= 0)
         {
             this.userSnapUri = newSettingsObj.userSnapUri;
-            // refresh image settings after exiting this callback
-            setImmediate(() =>
+            if (!reconnect)
             {
-                this.setupImages();
-                return;
-            });
+                // refresh image settings after exiting this callback
+                setImmediate(() =>
+                {
+                    this.setupImages();
+                    return;
+                });
+            }
         }
 
         if (changedKeysArr.indexOf("preferPullEvents") >= 0)
@@ -223,12 +234,15 @@ class CameraDevice extends Homey.Device
                 // Switch off the current even mode
                 await Homey.app.unsubscribe(this);
 
-                // Turn on the new mode
-                setImmediate(() =>
+                if (!reconnect)
                 {
-                    this.listenForEvents(this.cam);
-                    return;
-                });
+                    // Turn on the new mode
+                    setImmediate(() =>
+                    {
+                        this.listenForEvents(this.cam);
+                        return;
+                    });
+                }
             }
         }
 

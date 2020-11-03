@@ -205,5 +205,8 @@
   },
   "1.1.15": {
     "en": "Fix to cope with a single service."
+  },
+  "1.1.16": {
+    "en": "Fix to cope with a single video source."
   }
 }

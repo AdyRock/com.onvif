@@ -170,7 +170,7 @@ class CameraDriver extends Homey.Driver {
 				)
 				.then(cam => {
 					Homey.app.updateLog("Credentials OK. Adding " + Homey.app.varToString(cam.videoSources));
-					if (cam.videoSources.length > 1) {
+					if (Array.isArray(cam.videoSources) && (cam.videoSources.length > 1)) {
 						// There is more tha 1 video source so add a device for each
 						Homey.app.updateLog("Multiple source found. Adding " + cam.videoSources.length + " more devices");
 						tempCam = cam;
