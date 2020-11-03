@@ -202,5 +202,8 @@
   },
   "1.1.14": {
     "en": "Change to 3 levels of logging. Handle an uncaught exception. Fixed typo in discovery message."
+  },
+  "1.1.15": {
+    "en": "Fix to cope with a single service."
   }
 }
