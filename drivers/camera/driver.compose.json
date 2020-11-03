@@ -42,19 +42,19 @@
     }
   },
 
-  "pair": [{
+  "pair": [ 
+    {
       "id": "list_devices",
       "template": "list_devices",
       "navigation": {
-        "next": "login"
+        "next": "my_connect"
       },
       "options": {
         "singular": true
       }
     },
     {
-      "id": "login",
-      "template": "login_credentials"
+      "id": "my_connect"
     },
     {
       "id": "list_devices2",

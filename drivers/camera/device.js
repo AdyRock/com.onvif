@@ -382,7 +382,7 @@ class CameraDevice extends Homey.Device
                 {
                     "manufacturer": info.manufacturer,
                     "model": info.model,
-                    "serialNumber": info.serialNumber,
+                    "serialNumber": info.serialNumber.toString(),
                     "firmwareVersion": info.firmwareVersion,
                     "hasMotion": this.hasMotion,
                     'notificationMethods': notificationMethods,

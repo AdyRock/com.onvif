@@ -208,5 +208,8 @@
   },
   "1.1.16": {
     "en": "Fix to cope with a single video source."
+  },
+  "1.1.17": {
+    "en": "Fix to cope with a 'numeric' serial number."
   }
 }

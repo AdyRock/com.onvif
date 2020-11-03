@@ -12,5 +12,20 @@
     "Only_Push_Supported": "Only Push supported",
     "Not_Supported": "Not supported",
     "Motion_Event": "Motion Event",
-    "Now": "Now"
+    "Now": "Now",
+    "pair": {
+        "manual_add":{
+            "intro": "Enter Connection Details",
+            "title": "Add Camera Manually",
+            "title2": "Log in to camera",
+            "username": "Username",
+            "password": "Password",
+            "ip_address": "IP Address",
+            "port": "Port",
+            "checking": "Checking connection",
+            "try_again": "Try again",
+            "correct": "Successful",
+            "adding": "Adding device(s)"
+        }
+    }
 }

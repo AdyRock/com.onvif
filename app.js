@@ -214,7 +214,7 @@ class MyApp extends Homey.App
                     {
                         var data = {};
                         data = {
-                            "id": cam.urn,
+                            "id": cam.urn
                         };
                         this.discoveredDevices.push(
                         {
