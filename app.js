@@ -202,7 +202,7 @@ class MyApp extends Homey.App
         if (!this.discoveryInitialised)
         {
             this.discoveryInitialised = true;
-            onvif.Discovery.on('device', (cam, rinfo, xml) =>
+            onvif.Discovery.on('device', async (cam, rinfo, xml) =>
             {
                 try
                 {
@@ -212,14 +212,15 @@ class MyApp extends Homey.App
 
                     if (cam.href && cam.href.indexOf("onvif") >= 0)
                     {
-                        var data = {};
-                        data = {
-                            "id": cam.urn
-                        };
+                        var mac = await Homey.ManagerArp.getMAC(cam.hostname);
+
                         this.discoveredDevices.push(
                         {
                             "name": cam.hostname,
-                            data,
+                            data:
+                            {
+                                "id": mac
+                            },
                             settings:
                             {
                                 // Store username & password in settings
@@ -228,8 +229,8 @@ class MyApp extends Homey.App
                                 "password": "",
                                 "ip": cam.hostname,
                                 "port": cam.port ? cam.port.toString() : "",
-                                "urn": cam.urn,
-                                "channel": -1
+                                "urn": mac,
+                                "channel": -1,
                             }
                         })
                     }

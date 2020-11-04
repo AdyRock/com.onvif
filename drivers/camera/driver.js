@@ -105,8 +105,8 @@ class CameraDriver extends Homey.Driver
     onPair(socket)
     {
         let listDevices = 1;
-		let tempCam = null;
-		this.lastURN = null;
+        let tempCam = null;
+        this.lastURN = null;
 
         socket.on('list_devices', (data, callback) =>
         {
@@ -121,10 +121,10 @@ class CameraDriver extends Homey.Driver
                     devices.push(
                     {
                         "name": "Add Manually",
-						data:
-						{
-							"id": "manual"
-						},
+                        data:
+                        {
+                            "id": "manual"
+                        },
                         settings:
                         {
                             // Store username & password in settings
@@ -217,12 +217,17 @@ class CameraDriver extends Homey.Driver
             callback(null, loginInfo);
         });
 
-        socket.on('manual_connection', (data, callback) =>
+        socket.on('manual_connection', async (data, callback) =>
         {
             this.lastUsername = data.username;
             this.lastPassword = data.password;
             this.lastHostName = data.ip;
             this.lastPort = data.port;
+
+            if (!this.lastURN)
+            {
+                this.lastURN = await Homey.ManagerArp.getMAC(this.lastHostName);
+            }
 
             Homey.app.updateLog("Login-----");
 
@@ -234,11 +239,6 @@ class CameraDriver extends Homey.Driver
                 )
                 .then(cam =>
                 {
-					if (!this.lastURN)
-					{
-						this.lastURN = this.lastHostName;
-					}
-					
                     Homey.app.updateLog("Credentials OK. Adding " + Homey.app.varToString(cam.videoSources));
 
                     if (Array.isArray(cam.videoSources) && (cam.videoSources.length > 1))
@@ -246,8 +246,8 @@ class CameraDriver extends Homey.Driver
                         // There is more tha 1 video source so show the list for the user to select
                         Homey.app.updateLog("Multiple source found. Adding " + cam.videoSources.length + " more devices");
                         tempCam = cam;
-						Homey.app.updateLog("list_devices2: Listing ", devices);
-						listDevices = 2;
+                        Homey.app.updateLog("list_devices2: Listing ", devices);
+                        listDevices = 2;
 
                         callback(null, null);
                     }
@@ -310,7 +310,9 @@ class CameraDriver extends Homey.Driver
 
             console.log("Discovered devices: ", devices);
 
-            devices.forEach(async function(discoveredDevice)
+            var matched = false;
+
+            for (var discoveredDevice of devices)
             {
                 try
                 {
@@ -321,19 +323,24 @@ class CameraDriver extends Homey.Driver
                         settings.password
                     );
 
-                    let info = {};
-                    try
-                    {
-                        info = await Homey.app.getDeviceInformation(cam);
-                        Homey.app.updateLog("Camera Information: " + Homey.app.varToString(info));
-                    }
-                    catch (err)
-                    {
-                        Homey.app.updateLog("Get camera info error: " + Homey.app.varToString(err), 0);
-                        return;
-                    }
+					let info = {};
+					try
+					{
+						info = await Homey.app.getDeviceInformation(cam);
+						Homey.app.updateLog("Camera Information: " + Homey.app.varToString(info));
+					}
+					catch (err)
+					{
+						Homey.app.updateLog("Get camera info error: " + Homey.app.varToString(err), 0);
+						return;
+					}
 
-                    if ((info.serialNumber === settings.serialNumber) && (info.model === settings.model))
+					if ((info.serialNumber === settings.serialNumber) && (info.model === settings.model))
+					{
+						matched = true;
+					}
+
+                    if (matched)
                     {
                         // found it
                         await device.setSettings(
@@ -345,15 +352,23 @@ class CameraDriver extends Homey.Driver
                         device.setupImages()
 
                         Homey.app.updateLog("Found the camera: " + Homey.app.varToString(info));
+                        break;
                     }
-
                 }
                 catch (err)
                 {
-                    Homey.app.updateLog("Get camera info error: " + Homey.app.varToString(err), 0);
+                    Homey.app.updateLog("Get camera info error: " + Homey.app.varToString(err));
                 }
-            });
-            callback(null, true);
+            }
+
+            if (matched)
+            {
+                callback(null, true);
+            }
+            else
+            {
+                callback(null, false);
+            }
         });
 
         socket.on('disconnect', () =>
