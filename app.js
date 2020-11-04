@@ -336,6 +336,31 @@ class MyApp extends Homey.App
         this.checkTimerId = setTimeout(this.checkCameras, 10000);
     }
 
+    getHostName(cam_obj)
+    {
+        return new Promise((resolve, reject) =>
+        {
+            try
+            {
+                cam_obj.getHostname((err, date, xml) =>
+                {
+                    if (err)
+                    {
+                        return reject(err);
+                    }
+                    else
+                    {
+                        return resolve(date);
+                    }
+                });
+            }
+            catch (err)
+            {
+                return reject(err);
+            }
+        });
+    }
+
     getDateAndTime(cam_obj)
     {
         return new Promise((resolve, reject) =>
