@@ -211,5 +211,8 @@
   },
   "1.1.17": {
     "en": "Fix to cope with a 'numeric' serial number."
+  },
+  "1.1.18": {
+    "en": "Added an option to include a camera manually by specifying the IP and port."
   }
 }
