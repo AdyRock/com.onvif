@@ -21,7 +21,7 @@
             "username": "Username",
             "password": "Password",
             "ip_address": "IP Address",
-            "port": "Port",
+            "port": "ONVIF Service Port",
             "checking": "Checking connection",
             "try_again": "Try again",
             "correct": "Successful",

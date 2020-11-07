@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.onvif",
-  "version": "1.1.17",
+  "version": "1.1.18",
   "compatibility": ">=3.0.0",
   "sdk": 2,
   "brandColor": "#FF7D4B",
@@ -466,7 +466,7 @@
               },
               "value": 1,
               "hint": {
-                "en": "Experimental channel selection."
+                "en": "Channel selection to specify which camera to use if the parent IP is an NVR.\nSet to -1 to use the default ONVIF specified one."
               }
             },
             {
@@ -477,7 +477,7 @@
               },
               "value": "",
               "hint": {
-                "en": "Experimental channel event token."
+                "en": "Channel event token to identify which camera the push event came from if the parent IP is an NVR.\nLeave the field blank to use the default ONVIF specified one."
               }
             },
             {
@@ -560,7 +560,10 @@
               "label": {
                 "en": "URN"
               },
-              "value": ""
+              "value": "",
+              "hint": {
+                "en": "Unique identifer for the camera. This is the network MAC address when the camera is added by later versions of the app."
+              }
             },
             {
               "id": "manufacturer",
@@ -571,7 +574,10 @@
                 "nl": "Fabrikant",
                 "it": "Costruttore"
               },
-              "value": ""
+              "value": "",
+              "hint": {
+                "en": "The manufacture name that is reported by the camera. This might be different to the name on the box"
+              }
             },
             {
               "id": "model",
@@ -582,7 +588,10 @@
                 "nl": "Model",
                 "it": "Modello"
               },
-              "value": ""
+              "value": "",
+              "hint": {
+                "en": "The model name that is reported by the camera. This might be different to the name on the box"
+              }
             },
             {
               "id": "serialNumber",
@@ -593,7 +602,10 @@
                 "nl": "Serienummer",
                 "it": "Numero di Serie"
               },
-              "value": ""
+              "value": "",
+              "hint": {
+                "en": "The serial number that is reported by the camera."
+              }
             },
             {
               "id": "firmwareVersion",
@@ -604,7 +616,10 @@
                 "nl": "Software versie",
                 "it": "Versione del Firmware"
               },
-              "value": ""
+              "value": "",
+              "hint": {
+                "en": "The firmware version that is reported by the camera."
+              }
             },
             {
               "id": "ip",
@@ -615,7 +630,10 @@
                 "nl": "IP adres",
                 "it": "Indirizzo IP"
               },
-              "value": ""
+              "value": "",
+              "hint": {
+                "en": "The IP address of the camera on youe network. You can change this if required."
+              }
             },
             {
               "id": "port",
@@ -626,7 +644,10 @@
                 "nl": "Poort",
                 "it": "Porta"
               },
-              "value": "0"
+              "value": "0",
+              "hint": {
+                "en": "The ONVIF service Port number of the camera. You can change this if required."
+              }
             },
             {
               "id": "hasSnapshot",
@@ -637,7 +658,10 @@
                 "nl": "Supports Snapshots",
                 "it": "Supports Snapshots"
               },
-              "value": false
+              "value": false,
+              "hint": {
+                "en": "Specifies if the camera supports a snapshot. You can override this if the camera supports a snapshot that is not reported va the ONVIF protocol."
+              }
             },
             {
               "id": "url",
@@ -648,7 +672,10 @@
                 "nl": "ONVIF snapshot URL",
                 "it": "ONVIF Snapshot URL"
               },
-              "value": ""
+              "value": "",
+              "hint": {
+                "en": "The snapshot URL that is reported by the camera."
+              }
             },
             {
               "id": "userSnapUri",
@@ -659,7 +686,10 @@
                 "nl": "USER snapshot URL",
                 "it": "USER Snapshot URL"
               },
-              "value": ""
+              "value": "",
+              "hint": {
+                "en": "An alternative snapshot URL that overrides th detected one.\nLeave the field blank to use the detected URL."
+              }
             },
             {
               "id": "notificationMethods",
@@ -670,7 +700,10 @@
                 "nl": "ONVIF notificatie metode",
                 "it": "ONVIF Metodi di notifica"
               },
-              "value": ""
+              "value": "",
+              "hint": {
+                "en": "The availble methods the camera has reported for detecting an event."
+              }
             },
             {
               "id": "notificationTypes",
@@ -681,7 +714,10 @@
                 "nl": "ONVIF notificatie type",
                 "it": "ONVIF Tipi di notifica"
               },
-              "value": ""
+              "value": "",
+              "hint": {
+                "en": "Shows the types of event the camera supports. The app requires the MOTION event but detects notifications of IsMotion, IsInside for motion as well as IsTamper for tamper detection."
+              }
             }
           ]
         }

@@ -820,8 +820,14 @@ class MyApp extends Homey.App
         var oldText = Homey.ManagerSettings.get('diagLog');
         if (oldText.length > 30000)
         {
-            Homey.ManagerSettings.set('logLevel', 0);
-            return;
+            // Remove the first 5000 characters.
+            oldText = oldText.substring( 1000 );
+            var n = oldText.indexOf( "\n" );
+            if ( n >= 0 )
+            {
+                // Remove up to and including the first \n so the log starts on a whole line
+                oldText = oldText.substring( n + 1 );
+            }
         }
 
         const nowTime = new Date(Date.now());
