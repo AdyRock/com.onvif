@@ -217,5 +217,8 @@
   },
   "1.1.19": {
     "en": "Fix to cope with custom services."
+  },
+  "1.1.20": {
+    "en": "Fix error when manually adding a DVR."
   }
 }
