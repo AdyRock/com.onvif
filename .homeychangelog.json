@@ -214,5 +214,8 @@
   },
   "1.1.18": {
     "en": "Added an option to include a camera manually by specifying the IP and port."
+  },
+  "1.1.19": {
+    "en": "Fix to cope with custom services."
   }
 }
