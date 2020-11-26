@@ -289,31 +289,36 @@ class CameraDevice extends Homey.Device
                     {
                         services.forEach((service) =>
                         {
-                            let namespaceSplitted = service.namespace.split('.org/')[1].split('/');
-                            if ((namespaceSplitted[1] == 'events') && service.capabilities && service.capabilities.capabilities)
-                            {
-                                let serviceCapabilities = service.capabilities.capabilities['$'];
-                                if (serviceCapabilities['MaxNotificationProducers'] > 0)
+                            if (service.namespace.search('.org/') > 0){
+                                let namespaceSplitted = service.namespace.split('.org/')[1].split('/');
+                                if ((namespaceSplitted[1] == 'events') && service.capabilities && service.capabilities.capabilities)
                                 {
-                                    this.supportPushEvent = true;
-                                    Homey.app.updateLog("** PushEvent supported on " + this.id);
+                                    let serviceCapabilities = service.capabilities.capabilities['$'];
+                                    if (serviceCapabilities['MaxNotificationProducers'] > 0)
+                                    {
+                                        this.supportPushEvent = true;
+                                        Homey.app.updateLog("** PushEvent supported on " + this.id);
+                                    }
+                                }
+                                if ((namespaceSplitted[1] == 'media') && service.capabilities && service.capabilities.capabilities)
+                                {
+                                    let serviceCapabilities = service.capabilities.capabilities['$'];
+                                    if (serviceCapabilities['SnapshotUri'] >= 0)
+                                    {
+                                        this.snapshotSupported = serviceCapabilities['SnapshotUri'];
+                                        if (this.snapshotSupported)
+                                        {
+                                            Homey.app.updateLog("** Snapshots are supported on " + this.id);
+                                        }
+                                        else
+                                        {
+                                            Homey.app.updateLog("** Snapshots NOT supported on " + this.id, this.snapshotSupported, 0);
+                                        }
+                                    }
                                 }
                             }
-                            if ((namespaceSplitted[1] == 'media') && service.capabilities && service.capabilities.capabilities)
-                            {
-                                let serviceCapabilities = service.capabilities.capabilities['$'];
-                                if (serviceCapabilities['SnapshotUri'] >= 0)
-                                {
-                                    this.snapshotSupported = serviceCapabilities['SnapshotUri'];
-                                    if (this.snapshotSupported)
-                                    {
-                                        Homey.app.updateLog("** Snapshots are supported on " + this.id);
-                                    }
-                                    else
-                                    {
-                                        Homey.app.updateLog("** Snapshots NOT supported on " + this.id, this.snapshotSupported, 0);
-                                    }
-                                }
+                            else{
+                                Homey.app.updateLog("getServices: Unrecognised namespace for service " + service);
                             }
                         });
                     }
