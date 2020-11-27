@@ -246,7 +246,6 @@ class CameraDriver extends Homey.Driver
                         // There is more tha 1 video source so show the list for the user to select
                         Homey.app.updateLog("Multiple source found. Adding " + cam.videoSources.length + " more devices");
                         tempCam = cam;
-                        Homey.app.updateLog("list_devices2: Listing ", cam.videoSources);
                         listDevices = 2;
 
                         callback(null, null);
