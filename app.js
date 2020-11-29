@@ -262,7 +262,7 @@ class MyApp extends Homey.App
         });
 
         // Allow time for the process to finish
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        await new Promise(resolve => setTimeout(resolve, 10000));
 
 
 

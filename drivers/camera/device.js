@@ -463,9 +463,8 @@ class CameraDevice extends Homey.Device
 
     async checkCamera()
     {
-        if (!this.repairing && this.isReady)
+        if (!this.repairing && this.isReady && Homey.ManagerSettings.get('logLevel') === '0')
         {
-
             try
             {
                 let date = await Homey.app.getDateAndTime(this.cam);

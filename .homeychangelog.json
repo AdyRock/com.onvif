@@ -223,5 +223,8 @@
   },
   "1.1.21": {
     "en": "Fix error when manually adding a DVR."
+  },
+  "1.1.22": {
+    "en": "Stop polling for camera check when logging more than error so the log is not flooded."
   }
 }
