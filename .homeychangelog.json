@@ -226,5 +226,8 @@
   },
   "1.1.22": {
     "en": "Stop polling for camera check when logging more than error so the log is not flooded."
+  },
+  "1.1.23": {
+    "en": "Added an option to the Advanced settings to select the motion trigger source."
   }
 }

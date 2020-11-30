@@ -55,12 +55,12 @@ class MyApp extends Homey.App
 
     getMessageToken(message)
     {
-        this.updateLog("Getting message token: " + this.varToString(message));
-        this.updateLog("Getting message token source: " + this.varToString(message.source));
+        this.updateLog("Getting message token: " + this.varToString(message), 2);
+        this.updateLog("Getting message token source: " + this.varToString(message.source), 2);
         if (message.source && message.source.simpleItem)
         {
             let simpleItem = message.source.simpleItem[0];
-            this.updateLog("Getting message token simpleItem: " + this.varToString(simpleItem));
+            this.updateLog("Getting message token simpleItem: " + this.varToString(simpleItem), 2);
             if (simpleItem && simpleItem["$"])
             {
                 return simpleItem["$"].Value;

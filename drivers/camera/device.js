@@ -9,6 +9,13 @@ const
     isArray
 } = require('util');
 
+const notificationMap = {
+    "RuleEngine/CellMotionDetector/Motion:IsMotion": "MOTION",
+    "RuleEngine/FieldDetector/ObjectsInside:IsInside": "ANALYTICSSERVICE",
+    "VideoSource/MotionAlarm:State": "MOTIONALARM",
+    "Device/Trigger/DigitalInput:LogicalState": "DIGITALINPUT"
+};
+
 class CameraDevice extends Homey.Device
 {
 
@@ -63,6 +70,7 @@ class CameraDevice extends Homey.Device
         this.channel = settings.channel;
         this.token = settings.token;
         this.userSnapUri = settings.userSnapUri;
+        this.eventTN = this.getEventTN(settings, false);
 
         this.id = devData.id;
         Homey.app.updateLog("Initialising CameraDevice (" + this.id + ")");
@@ -151,11 +159,40 @@ class CameraDevice extends Homey.Device
             .catch(this.error);
     }
 
+    getEventTN(settings, fromSetSettings)
+    {
+        const searchType = notificationMap[settings.notificationToUse];
+        const availableTypes = settings.notificationTypes.split(",");
+
+        // See if the required type is available
+        if (availableTypes.indexOf(searchType) >= 0)
+        {
+            return settings.notificationToUse
+        }
+
+        if (fromSetSettings)
+        {
+            throw( new Error("Sorry the notification method you have chosen to use is not supported by this camera."))
+        }
+
+        // Not available so try MOTION
+        if (availableTypes.indexOf("MOTION") >= 0)
+        {
+            return "RuleEngine/CellMotionDetector/Motion:IsMotion";
+        }
+
+        return "VideoSource/MotionAlarm:State";
+    }
+
     async onSettings(oldSettingsObj, newSettingsObj, changedKeysArr)
     {
         let reconnect = false;
 
-        //console.log("Settings: ", oldSettingsObj, newSettingsObj, changedKeysArr);
+        if (changedKeysArr.indexOf("notificationToUse") >= 0)
+        {
+            this.eventTN = this.getEventTN(newSettingsObj, true);
+        }
+    
         if (changedKeysArr.indexOf("username") >= 0)
         {
             this.username = newSettingsObj.username;
@@ -759,7 +796,7 @@ class CameraDevice extends Homey.Device
             try
             {
                 Homey.app.updateLog('\r\n--  Event detected (' + this.id + ')  --');
-                Homey.app.updateLog(Homey.app.varToString(camMessage));
+                Homey.app.updateLog(Homey.app.varToString(camMessage), 2);
 
                 this.setAvailable();
 
@@ -802,7 +839,8 @@ class CameraDevice extends Homey.Device
                 if (dataName)
                 {
                     Homey.app.updateLog("Event data: (" + this.id + ") " + eventTopic + ": " + dataName + " = " + dataValue);
-                    if ((dataName === "IsMotion") || (dataName === "IsInside"))
+                    const compareSetting = eventTopic + ':' + dataName;
+                    if (compareSetting === this.eventTN)
                     {
                         this.triggerMotionEvent(dataName, dataValue);
                     }
