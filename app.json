@@ -755,6 +755,17 @@
               "hint": {
                 "en": "Select the type of notification to use for motion detect. If the selected type is not supported then the setting will fall back to MOTION IsMotion or MOTIONALARM"
               }
+            },
+            {
+              "id": "objectID",
+              "type": "text",
+              "label": {
+                "en": "Event Object ID"
+              },
+              "value": "",
+              "hint": {
+                "en": "The ID that is sent from the camera for the ANALYTICSSERVICE event"
+              }
             }
           ]
         }

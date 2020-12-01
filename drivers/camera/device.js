@@ -71,6 +71,11 @@ class CameraDevice extends Homey.Device
         this.token = settings.token;
         this.userSnapUri = settings.userSnapUri;
         this.eventTN = this.getEventTN(settings, false);
+        this.eventObjectID = settings.objectID;
+        if (this.eventTN !== "RuleEngine/FieldDetector/ObjectsInside:IsInside")
+        {
+            this.eventObjectID = "";
+        }
 
         this.id = devData.id;
         Homey.app.updateLog("Initialising CameraDevice (" + this.id + ")");
@@ -172,7 +177,7 @@ class CameraDevice extends Homey.Device
 
         if (fromSetSettings)
         {
-            throw( new Error("Sorry the notification method you have chosen to use is not supported by this camera."))
+            throw (new Error("Sorry the notification method you have chosen to use is not supported by this camera."))
         }
 
         // Not available so try MOTION
@@ -192,7 +197,17 @@ class CameraDevice extends Homey.Device
         {
             this.eventTN = this.getEventTN(newSettingsObj, true);
         }
-    
+
+        if (changedKeysArr.indexOf("eventObjectID") >= 0)
+        {
+            this.eventObjectID = newSettingsObj.eventObjectID;
+        }
+
+        if (this.eventTN !== "RuleEngine/FieldDetector/ObjectsInside:IsInside")
+        {
+            this.eventObjectID = "";
+        }
+
         if (changedKeysArr.indexOf("username") >= 0)
         {
             this.username = newSettingsObj.username;
@@ -314,7 +329,7 @@ class CameraDevice extends Homey.Device
                     Homey.app.updateLog("Global Camera event error (" + this.id + "): " + Homey.app.varToString(msg), 0);
                     if (xml)
                     {
-                        Homey.app.updateLog("xml: " + Homey.app.varToString(xml), 2);
+                        Homey.app.updateLog("xml: " + Homey.app.varToString(xml), 3);
                     }
                 });
 
@@ -326,7 +341,8 @@ class CameraDevice extends Homey.Device
                     {
                         services.forEach((service) =>
                         {
-                            if (service.namespace.search('.org/') > 0){
+                            if (service.namespace.search('.org/') > 0)
+                            {
                                 let namespaceSplitted = service.namespace.split('.org/')[1].split('/');
                                 if ((namespaceSplitted[1] == 'events') && service.capabilities && service.capabilities.capabilities)
                                 {
@@ -354,7 +370,8 @@ class CameraDevice extends Homey.Device
                                     }
                                 }
                             }
-                            else{
+                            else
+                            {
                                 Homey.app.updateLog("getServices: Unrecognised namespace for service " + service);
                             }
                         });
@@ -796,7 +813,7 @@ class CameraDevice extends Homey.Device
             try
             {
                 Homey.app.updateLog('\r\n--  Event detected (' + this.id + ')  --');
-                Homey.app.updateLog(Homey.app.varToString(camMessage), 2);
+                Homey.app.updateLog(Homey.app.varToString(camMessage));
 
                 this.setAvailable();
 
@@ -805,6 +822,7 @@ class CameraDevice extends Homey.Device
 
                 let dataName = "";
                 let dataValue = "";
+                let objectId = "";
 
                 // DATA (Name:Value)
                 if (camMessage.message.message.data && camMessage.message.message.data.simpleItem)
@@ -838,9 +856,14 @@ class CameraDevice extends Homey.Device
 
                 if (dataName)
                 {
-                    Homey.app.updateLog("Event data: (" + this.id + ") " + eventTopic + ": " + dataName + " = " + dataValue);
+                    if (camMessage.message.message.key && camMessage.message.message.key.simpleItem)
+                    {
+                        objectId = camMessage.message.message.key.simpleItem.$.Value
+                    }
+
+                    Homey.app.updateLog("Event data: (" + this.id + ") " + eventTopic + ": " + dataName + " = " + dataValue + (objectId === "" ? "" : (" (" + objectId + ")")) + "\r\n", 1);
                     const compareSetting = eventTopic + ':' + dataName;
-                    if (compareSetting === this.eventTN)
+                    if ((compareSetting === this.eventTN) && (this.eventObjectID == objectId))
                     {
                         this.triggerMotionEvent(dataName, dataValue);
                     }

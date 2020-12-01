@@ -115,7 +115,7 @@ class CameraDriver extends Homey.Driver
                 listDevices = 2;
                 Homey.app.discoverCameras().then(devices =>
                 {
-                    Homey.app.updateLog("Discovered: " + Homey.app.varToString(devices, null, 2));
+                    Homey.app.updateLog("Discovered: " + Homey.app.varToString(devices, null, 3));
 
                     // Add the manual entry
                     devices.push(

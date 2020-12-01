@@ -55,12 +55,12 @@ class MyApp extends Homey.App
 
     getMessageToken(message)
     {
-        this.updateLog("Getting message token: " + this.varToString(message), 2);
-        this.updateLog("Getting message token source: " + this.varToString(message.source), 2);
+        this.updateLog("Getting message token: " + this.varToString(message), 3);
+        this.updateLog("Getting message token source: " + this.varToString(message.source), 3);
         if (message.source && message.source.simpleItem)
         {
             let simpleItem = message.source.simpleItem[0];
-            this.updateLog("Getting message token simpleItem: " + this.varToString(simpleItem), 2);
+            this.updateLog("Getting message token simpleItem: " + this.varToString(simpleItem), 3);
             if (simpleItem && simpleItem["$"])
             {
                 return simpleItem["$"].Value;
@@ -250,7 +250,7 @@ class MyApp extends Homey.App
                 this.updateLog("Discovery on error: " + this.varToString(msg), 0);
                 if (xml)
                 {
-                    this.updateLog("xml: " + this.varToString(xml), 2);
+                    this.updateLog("xml: " + this.varToString(xml), 3);
                 }
             })
         }
@@ -808,7 +808,7 @@ class MyApp extends Homey.App
         return source.toString();
     }
 
-    updateLog(newMessage, ignoreSetting = 1)
+    updateLog(newMessage, ignoreSetting = 2)
     {
         if (ignoreSetting > Homey.ManagerSettings.get('logLevel'))
         {
