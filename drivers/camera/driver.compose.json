@@ -569,7 +569,7 @@
             "value": "",
             "hint":
             {
-                "en": "The ID that is sent from the camera for the ANALYTICSSERVICE event"
+                "en": "The ID that is sent from the camera for the ANALYTICSSERVICE event. Leave empty to match any. Seperate multiples with a comma."
             }
         }]
     }],

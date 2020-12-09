@@ -76,9 +76,14 @@ class CameraDevice extends Homey.Device
         {
             this.eventObjectID = "";
         }
+        else if (this.eventObjectID !== "")
+        {
+            this.eventObjectID = this.eventObjectID.split(",");
+        }
 
         this.id = devData.id;
-        Homey.app.updateLog("Initialising CameraDevice (" + this.id + ")");
+        this.name = this.getName();
+        Homey.app.updateLog("Initialising CameraDevice (" + this.name + ")");
 
         if (this.hasCapability('alarm_motion'))
         {
@@ -94,7 +99,7 @@ class CameraDevice extends Homey.Device
         this.connectCamera(false)
             .catch(err =>
             {
-                Homey.app.updateLog("Check Camera Error (" + this.id + "): " + Homey.app.varToString(err), 0);
+                Homey.app.updateLog("Check Camera Error (" + this.name + "): " + Homey.app.varToString(err), 0);
             });
 
         this.registerCapabilityListener('motion_enabled', this.onCapabilityMotionEnable.bind(this));
@@ -114,7 +119,7 @@ class CameraDevice extends Homey.Device
         this.registerCapabilityListener('button.syncTime', async () =>
         {
             // Set the Camera date to Homey's date
-            Homey.app.updateLog("Syncing time (" + this.id + ")");
+            Homey.app.updateLog("Syncing time (" + this.name + ")");
 
             Date.prototype.stdTimezoneOffset = function()
             {
@@ -143,25 +148,25 @@ class CameraDevice extends Homey.Device
                     {
                         if (err)
                         {
-                            Homey.app.updateLog("Check Camera Error (" + this.id + "): " + Homey.app.varToString(err), 0);
+                            Homey.app.updateLog("Check Camera Error (" + this.name + "): " + Homey.app.varToString(err), 0);
                         }
                     });
             }
             catch (err)
             {
-                Homey.app.updateLog("Check Camera Error (" + this.id + "): " + Homey.app.varToString(err), 0);
+                Homey.app.updateLog("Check Camera Error (" + this.name + "): " + Homey.app.varToString(err), 0);
             }
         });
     }
 
     async onAdded()
     {
-        Homey.app.updateLog('CameraDevice has been added (' + this.id + ')');
+        Homey.app.updateLog('CameraDevice has been added (' + this.name + ')');
         //Allow some time for the validation check cam connection to disconnect
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        await this.getDriver().getLastCredentials(this);
-        this.connectCamera(true)
-            .catch(this.error);
+        // await new Promise(resolve => setTimeout(resolve, 2000));
+        // await this.getDriver().getLastCredentials(this);
+        // this.connectCamera(true)
+        //     .catch(this.error);
     }
 
     getEventTN(settings, fromSetSettings)
@@ -189,6 +194,11 @@ class CameraDevice extends Homey.Device
         return "VideoSource/MotionAlarm:State";
     }
 
+    async onRenamed(newName)
+    {
+        this.name = newName;
+    }
+
     async onSettings(oldSettingsObj, newSettingsObj, changedKeysArr)
     {
         let reconnect = false;
@@ -202,10 +212,18 @@ class CameraDevice extends Homey.Device
         {
             this.eventObjectID = newSettingsObj.eventObjectID;
         }
+        else
+        {
+            this.eventObjectID = oldSettingsObj.eventObjectID;
+        }
 
         if (this.eventTN !== "RuleEngine/FieldDetector/ObjectsInside:IsInside")
         {
             this.eventObjectID = "";
+        }
+        else if (this.eventObjectID !== "")
+        {
+            this.eventObjectID = this.eventObjectID.split(",");
         }
 
         if (changedKeysArr.indexOf("username") >= 0)
@@ -311,10 +329,8 @@ class CameraDevice extends Homey.Device
             // Wait while repairing and try again later
             this.checkTimerId = setTimeout(this.connectCamera.bind(this, addingCamera), 2000);
         }
-        else if (this.getStoreValue('initialised'))
+        else
         {
-            let settings = this.getSettings();
-
             try
             {
                 this.cam = await Homey.app.connectCamera(
@@ -326,7 +342,7 @@ class CameraDevice extends Homey.Device
 
                 this.cam.on('error', (msg, xml) =>
                 {
-                    Homey.app.updateLog("Global Camera event error (" + this.id + "): " + Homey.app.varToString(msg), 0);
+                    Homey.app.updateLog("Global Camera event error (" + this.name + "): " + Homey.app.varToString(msg), 0);
                     if (xml)
                     {
                         Homey.app.updateLog("xml: " + Homey.app.varToString(xml), 3);
@@ -336,6 +352,9 @@ class CameraDevice extends Homey.Device
                 this.supportPushEvent = false;
                 try
                 {
+                    let capabilities = await Homey.app.getServiceCapabilities(this.cam);
+                    Homey.app.updateLog("** service capabilities " + this.name + " = " + capabilities);
+
                     let services = await Homey.app.getServices(this.cam);
                     if (Array.isArray(services))
                     {
@@ -350,7 +369,7 @@ class CameraDevice extends Homey.Device
                                     if (serviceCapabilities['MaxNotificationProducers'] > 0)
                                     {
                                         this.supportPushEvent = true;
-                                        Homey.app.updateLog("** PushEvent supported on " + this.id);
+                                        Homey.app.updateLog("** PushEvent supported on " + this.name);
                                     }
                                 }
                                 if ((namespaceSplitted[1] == 'media') && service.capabilities && service.capabilities.capabilities)
@@ -361,13 +380,18 @@ class CameraDevice extends Homey.Device
                                         this.snapshotSupported = serviceCapabilities['SnapshotUri'];
                                         if (this.snapshotSupported)
                                         {
-                                            Homey.app.updateLog("** Snapshots are supported on " + this.id);
+                                            Homey.app.updateLog("** Snapshots are supported on " + this.name);
                                         }
                                         else
                                         {
-                                            Homey.app.updateLog("** Snapshots NOT supported on " + this.id, this.snapshotSupported, 0);
+                                            Homey.app.updateLog("** Snapshots NOT supported on " + this.name, this.snapshotSupported, 0);
                                         }
                                     }
+                                }
+                                if (namespaceSplitted[1] == 'analytics')
+                                {
+                                    this.supportPushEvent = true;
+                                    Homey.app.updateLog("** Analytics supported on " + this.name);
                                 }
                             }
                             else
@@ -379,7 +403,7 @@ class CameraDevice extends Homey.Device
                 }
                 catch (err)
                 {
-                    Homey.app.updateLog("Get camera services error (" + this.id + "): " + err.stack, 0);
+                    Homey.app.updateLog("Get camera services error (" + this.name + "): " + err.stack, 0);
                 }
 
                 //if (addingCamera) {
@@ -387,18 +411,18 @@ class CameraDevice extends Homey.Device
                 try
                 {
                     info = await Homey.app.getDeviceInformation(this.cam);
-                    Homey.app.updateLog("Camera Information (" + this.id + "): " + Homey.app.varToString(info, ));
+                    Homey.app.updateLog("Camera Information (" + this.name + "): " + Homey.app.varToString(info, ));
                 }
                 catch (err)
                 {
-                    Homey.app.updateLog("Get camera info error (" + this.id + "): " + err.stack, 0);
+                    Homey.app.updateLog("Get camera info error (" + this.name + "): " + err.stack, 0);
                 }
 
                 let supportedEvents = [""];
                 try
                 {
                     let capabilities = await Homey.app.getCapabilities(this.cam);
-                    this.hasPullPoints = Homey.app.hasPullSupport(capabilities, this.id);
+                    this.hasPullPoints = Homey.app.hasPullSupport(capabilities, this.name);
                     if (this.hasPullPoints || this.supportPushEvent)
                     {
                         supportedEvents = await Homey.app.hasEventTopics(this.cam);
@@ -406,9 +430,9 @@ class CameraDevice extends Homey.Device
                 }
                 catch (err)
                 {
-                    Homey.app.updateLog("Get camera capabilities error (" + this.id + "): " + err.stack, 0);
+                    Homey.app.updateLog("Get camera capabilities error (" + this.name + "): " + err.stack, 0);
                 }
-                Homey.app.updateLog("Supported Events(" + this.id + "): " + supportedEvents);
+                Homey.app.updateLog("Supported Events(" + this.name + "): " + supportedEvents);
 
                 let notificationMethods = "";
                 if (this.supportPushEvent && this.hasPullPoints)
@@ -449,11 +473,11 @@ class CameraDevice extends Homey.Device
                     'hasSnapshot': this.snapshotSupported,
                 })
 
-                settings = this.getSettings();
+                let settings = this.getSettings();
 
                 if (!this.hasMotion)
                 {
-                    Homey.app.updateLog("Removing unsupported motion capabilities for " + this.id);
+                    Homey.app.updateLog("Removing unsupported motion capabilities for " + this.name);
 
                     if (this.hasCapability('motion_enabled'))
                     {
@@ -500,13 +524,13 @@ class CameraDevice extends Homey.Device
                 this.setAvailable();
                 this.isReady = true;
                 this.setCapabilityValue('alarm_tamper', false);
-                Homey.app.updateLog("Camera (" + this.id + ") is ready");
+                Homey.app.updateLog("Camera (" + this.name + ") is ready");
             }
             catch (err)
             {
                 if (!this.repairing)
                 {
-                    Homey.app.updateLog("Connect to camera error (" + this.id + "): " + err.stack, 0);
+                    Homey.app.updateLog("Connect to camera error (" + this.name + "): " + err.stack, 0);
                     this.setUnavailable();
                 }
                 this.checkTimerId = setTimeout(this.connectCamera.bind(this, addingCamera), 5000);
@@ -524,7 +548,7 @@ class CameraDevice extends Homey.Device
                 let date = await Homey.app.getDateAndTime(this.cam);
                 if (this.getCapabilityValue('alarm_tamper'))
                 {
-                    Homey.app.updateLog("Check Camera (" + this.id + "): back online");
+                    Homey.app.updateLog("Check Camera (" + this.name + "): back online");
                     this.setCapabilityValue('alarm_tamper', false);
                     this.setAvailable();
 
@@ -554,7 +578,7 @@ class CameraDevice extends Homey.Device
             catch (err)
             {
                 err = String(err);
-                Homey.app.updateLog("Check Camera Error (" + this.id + "): " + Homey.app.varToString(err), 0);
+                Homey.app.updateLog("Check Camera Error (" + this.name + "): " + Homey.app.varToString(err), 0);
 
                 if (!this.getCapabilityValue('alarm_tamper'))
                 {
@@ -620,7 +644,7 @@ class CameraDevice extends Homey.Device
             Homey.app.updateLog("Invalid Snapshot URL, it must be http or https: " + Homey.app.varToString(snapURL.uri).replace(this.password, "YOUR_PASSWORD"), 0);
             return;
         }
-        Homey.app.updateLog("Event snapshot URL (" + this.id + "): " + Homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
+        Homey.app.updateLog("Event snapshot URL (" + this.name + "): " + Homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
 
         var res = await this.doFetch("MOTION EVENT");
         if (!res.ok)
@@ -641,7 +665,7 @@ class CameraDevice extends Homey.Device
             storageStream.on('finish', () =>
             {
                 this.eventImage.update();
-                Homey.app.updateLog("Event Image Updated (" + this.id + ")");
+                Homey.app.updateLog("Event Image Updated (" + this.name + ")");
 
                 let tokens = {
                     'eventImage': this.eventImage
@@ -651,7 +675,7 @@ class CameraDevice extends Homey.Device
                     .trigger(this, tokens)
                     .catch(err =>
                     {
-                        Homey.app.updateLog("Snapshot error (" + this.id + "): " + Homey.app.varToString(err), 0);
+                        Homey.app.updateLog("Snapshot error (" + this.name + "): " + Homey.app.varToString(err), 0);
                         return reject(err);
                     })
                     .then(() =>
@@ -694,7 +718,7 @@ class CameraDevice extends Homey.Device
                     }
                     catch (err)
                     {
-                        Homey.app.updateLog("Event image error (" + this.id + "): " + err, 0);
+                        Homey.app.updateLog("Event image error (" + this.name + "): " + err, 0);
                         clearTimeout(timerId);
                         timerId = setTimeout(() =>
                         {
@@ -708,7 +732,7 @@ class CameraDevice extends Homey.Device
         }
         else
         {
-            Homey.app.updateLog("** Event STILL Processing last image (" + this.id + ") **", 0);
+            Homey.app.updateLog("** Event STILL Processing last image (" + this.name + ") **", 0);
             return false;
         }
     }
@@ -732,7 +756,7 @@ class CameraDevice extends Homey.Device
         {
             if (!settings.single || dataValue != this.getCapabilityValue('alarm_motion'))
             {
-                Homey.app.updateLog("Event Processing (" + this.id + "):" + dataName + " = " + dataValue);
+                Homey.app.updateLog("Event Processing (" + this.name + "):" + dataName + " = " + dataValue);
                 this.setCapabilityValue('alarm_motion', dataValue);
                 if (dataValue)
                 {
@@ -746,7 +770,7 @@ class CameraDevice extends Homey.Device
             }
             else
             {
-                Homey.app.updateLog("Ignoring unchanged event (" + this.id + ") " + dataName + " = " + dataValue);
+                Homey.app.updateLog("Ignoring unchanged event (" + this.name + ") " + dataName + " = " + dataValue);
             }
         }
     }
@@ -758,7 +782,7 @@ class CameraDevice extends Homey.Device
 
         if (dataValue != this.getCapabilityValue('alarm_tamper'))
         {
-            Homey.app.updateLog("Event Processing (" + this.id + "):" + dataName + " = " + dataValue);
+            Homey.app.updateLog("Event Processing (" + this.name + "):" + dataName + " = " + dataValue);
             this.setCapabilityValue('alarm_tamper', dataValue);
             if (dataValue)
             {
@@ -769,7 +793,7 @@ class CameraDevice extends Homey.Device
         }
         else
         {
-            Homey.app.updateLog("Ignoring unchanged event (" + this.id + ") " + dataName + " = " + dataValue);
+            Homey.app.updateLog("Ignoring unchanged event (" + this.name + ") " + dataName + " = " + dataValue);
         }
     }
 
@@ -792,13 +816,13 @@ class CameraDevice extends Homey.Device
         {
             if (this.supportPushEvent && !this.preferPullEvents)
             {
-                Homey.app.updateLog('\r\n## Waiting for Push events (' + this.id + ') ##');
+                Homey.app.updateLog('\r\n## Waiting for Push events (' + this.name + ') ##');
 
                 Homey.app.subscribeToCamPushEvents(this);
                 return;
             }
 
-            Homey.app.updateLog('## Waiting for Pull events (' + this.id + ') ##');
+            Homey.app.updateLog('## Waiting for Pull events (' + this.name + ') ##');
             cam_obj.on('event', (camMessage, xml) =>
             {
                 this.processCamEventMessage(camMessage);
@@ -812,7 +836,7 @@ class CameraDevice extends Homey.Device
         {
             try
             {
-                Homey.app.updateLog('\r\n--  Event detected (' + this.id + ')  --');
+                Homey.app.updateLog('\r\n--  Event detected (' + this.name + ')  --');
                 Homey.app.updateLog(Homey.app.varToString(camMessage));
 
                 this.setAvailable();
@@ -861,9 +885,9 @@ class CameraDevice extends Homey.Device
                         objectId = camMessage.message.message.key.simpleItem.$.Value
                     }
 
-                    Homey.app.updateLog("Event data: (" + this.id + ") " + eventTopic + ": " + dataName + " = " + dataValue + (objectId === "" ? "" : (" (" + objectId + ")")) + "\r\n", 1);
+                    Homey.app.updateLog("Event data: (" + this.name + ") " + eventTopic + ": " + dataName + " = " + dataValue + (objectId === "" ? "" : (" (" + objectId + ")")) + "\r\n", 1);
                     const compareSetting = eventTopic + ':' + dataName;
-                    if ((compareSetting === this.eventTN) && (this.eventObjectID == objectId))
+                    if ((compareSetting === this.eventTN) && ((this.eventObjectID === "") || (this.eventObjectID.indexOf(objectId) >= 0)))
                     {
                         this.triggerMotionEvent(dataName, dataValue);
                     }
@@ -873,13 +897,13 @@ class CameraDevice extends Homey.Device
                     }
                     else
                     {
-                        Homey.app.updateLog("Ignoring event type (" + this.id + ") " + eventTopic + ": " + dataName + " = " + dataValue);
+                        Homey.app.updateLog("Ignoring event type (" + this.name + ") " + eventTopic + ": " + dataName + " = " + dataValue);
                     }
                 }
             }
             catch (err)
             {
-                Homey.app.updateLog("Camera Event Error (" + this.id + "): " + err.stack, 0);
+                Homey.app.updateLog("Camera Event Error (" + this.name + "): " + err.stack, 0);
             }
         }
     }
@@ -896,7 +920,7 @@ class CameraDevice extends Homey.Device
 
             if (value && this.hasMotion)
             {
-                Homey.app.updateLog("Switch motion detection On (" + this.id + ")");
+                Homey.app.updateLog("Switch motion detection On (" + this.name + ")");
 
                 // Start listening for motion events
                 setImmediate(() =>
@@ -914,7 +938,7 @@ class CameraDevice extends Homey.Device
             {
                 try
                 {
-                    Homey.app.updateLog("Switch motion detection Off (" + this.id + ")");
+                    Homey.app.updateLog("Switch motion detection Off (" + this.name + ")");
 
                     // Switch off the current even mode
                     await Homey.app.unsubscribe(this);
@@ -922,7 +946,8 @@ class CameraDevice extends Homey.Device
                 }
                 catch (err)
                 {
-                    Homey.app.updateLog(this.getName() + " onCapabilityOff Error (" + this.id + ") " + err.stack, 0);
+                    Homey.app.updateLog(this.getName() + " onCapabilityOff Error (" + this.name + ") " + err.stack, 0);
+                    throw(err);
                 }
 
                 this.motionDisabledTrigger
@@ -935,7 +960,8 @@ class CameraDevice extends Homey.Device
         catch (err)
         {
             //this.setUnavailable();
-            Homey.app.updateLog(this.getName() + " onCapabilityOnoff Error (" + this.id + ") " + err.stack, 0);
+            Homey.app.updateLog(this.getName() + " onCapabilityOnoff Error (" + this.name + ") " + err.stack, 0);
+            throw(err);
         }
     }
 
@@ -1004,7 +1030,7 @@ class CameraDevice extends Homey.Device
                     var res = await this.doFetch("NOW");
                     if (!res.ok)
                     {
-                        Homey.app.updateLog("Fetch NOW error (" + this.id + "): " + res.statusText, 0);
+                        Homey.app.updateLog("Fetch NOW error (" + this.name + "): " + res.statusText, 0);
                         console.log(res);
                         console.log(res.headers.raw());
                         throw new Error(res.statusText);
@@ -1014,24 +1040,24 @@ class CameraDevice extends Homey.Device
 
                     stream.on('error', (err) =>
                     {
-                        Homey.app.updateLog("Fetch Now image error (" + this.id + "): " + err.stack, 0);
+                        Homey.app.updateLog("Fetch Now image error (" + this.name + "): " + err.stack, 0);
                     })
                     stream.on('finish', () =>
                     {
-                        Homey.app.updateLog("Now Image Updated (" + this.id + ")");
+                        Homey.app.updateLog("Now Image Updated (" + this.name + ")");
                     });
                 });
 
-                Homey.app.updateLog("Registering Now image (" + this.id + ")");
+                Homey.app.updateLog("Registering Now image (" + this.name + ")");
                 this.nowImage.register()
                     .then(() =>
                     {
-                        Homey.app.updateLog("registered Now image (" + this.id + ")")
+                        Homey.app.updateLog("registered Now image (" + this.name + ")")
                         this.setCameraImage('Now', Homey.__("Now"), this.nowImage);
                     })
                     .catch((err) =>
                     {
-                        Homey.app.updateLog("Register Now image error (" + this.id + "): " + err.stack, 0);
+                        Homey.app.updateLog("Register Now image error (" + this.name + "): " + err.stack, 0);
                     });
             }
 
@@ -1040,17 +1066,17 @@ class CameraDevice extends Homey.Device
                 const imageFilename = 'eventImage' + devData.id;
                 this.eventImageFilename = imageFilename.replace(/[^a-z0-9]/gi, '_').toLowerCase();
                 this.eventImageFilename += ".jpg";
-                Homey.app.updateLog("SnapShot save file (" + this.id + ") = " + this.eventImageFilename);
+                Homey.app.updateLog("SnapShot save file (" + this.name + ") = " + this.eventImageFilename);
 
                 const eventImagePath = Homey.app.getUserDataPath(this.eventImageFilename);
                 if (!fs.existsSync(eventImagePath))
                 {
                     this.updatingEventImage = true;
 
-                    Homey.app.updateLog("Initialising event image (" + this.id + ")");
+                    Homey.app.updateLog("Initialising event image (" + this.name + ")");
                     // Initialise the event image with the current snapshot
                     const storageStream = fs.createWriteStream(eventImagePath);
-                    Homey.app.updateLog("Fetching event image (" + this.id + ")");
+                    Homey.app.updateLog("Fetching event image (" + this.name + ")");
 
                     if (this.invalidAfterConnect)
                     {
@@ -1061,7 +1087,7 @@ class CameraDevice extends Homey.Device
                     var res = await this.doFetch("Motion Event");
                     if (!res.ok)
                     {
-                        Homey.app.updateLog("Fetch MOTION error (" + this.id + "): " + Homey.app.varToString(res), 0);
+                        Homey.app.updateLog("Fetch MOTION error (" + this.name + "): " + Homey.app.varToString(res), 0);
                         this.updatingEventImage = false;
                         throw new Error(res.statusText);
                     }
@@ -1070,12 +1096,12 @@ class CameraDevice extends Homey.Device
 
                     storageStream.on('error', (err) =>
                     {
-                        Homey.app.updateLog("Fetch event image error (" + this.id + "): " + err.stack, true);
+                        Homey.app.updateLog("Fetch event image error (" + this.name + "): " + err.stack, true);
                         this.updatingEventImage = false;
                     })
                     storageStream.on('finish', () =>
                     {
-                        Homey.app.updateLog("Event Image Updated (" + this.id + ")");
+                        Homey.app.updateLog("Event Image Updated (" + this.name + ")");
                         this.updatingEventImage = false;
                     });
 
@@ -1083,33 +1109,34 @@ class CameraDevice extends Homey.Device
                     await new Promise(resolve => setTimeout(resolve, 2000));
                 }
 
+                // Register the event image, even if motion is not supported, so it can be initiated by the flow action
                 if (!this.eventImage)
                 {
-                    Homey.app.updateLog("Registering event image (" + this.id + ")");
+                    Homey.app.updateLog("Registering event image (" + this.name + ")");
                     this.eventImage = new Homey.Image();
                     this.eventImage.setPath(eventImagePath);
                     this.eventImage.register()
                         .then(() =>
                         {
-                            Homey.app.updateLog("registered event image (" + this.id + ")")
+                            Homey.app.updateLog("registered event image (" + this.name + ")")
                             this.setCameraImage('Event', Homey.__("Motion_Event"), this.eventImage);
                         })
                         .catch((err) =>
                         {
-                            Homey.app.updateLog("Register event image error (" + this.id + "): " + err.stack, 0);
+                            Homey.app.updateLog("Register event image error (" + this.name + "): " + err.stack, 0);
                         });
                 }
             }
             catch (err)
             {
-                Homey.app.updateLog("Event SnapShot error (" + this.id + "): " + err.stack, 0);
+                Homey.app.updateLog("Event SnapShot error (" + this.name + "): " + err.stack, 0);
                 this.updatingEventImage = false;
             }
         }
         catch (err)
         {
             //Homey.app.updateLog("SnapShot error: " + Homey.app.varToString(err), true);
-            Homey.app.updateLog("SnapShot error (" + this.id + "): " + err.stack, 0);
+            Homey.app.updateLog("SnapShot error (" + this.name + "): " + err.stack, 0);
         }
     }
 
@@ -1120,7 +1147,7 @@ class CameraDevice extends Homey.Device
         {
             if (this.authType == 0)
             {
-                Homey.app.updateLog("Fetching (" + this.id + ") " + name + " image from: " + Homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
+                Homey.app.updateLog("Fetching (" + this.name + ") " + name + " image from: " + Homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
                 res = await fetch(this.snapUri);
                 if (res.status == 401)
                 {
@@ -1131,7 +1158,7 @@ class CameraDevice extends Homey.Device
         }
         catch (err)
         {
-            Homey.app.updateLog("SnapShot error (" + this.id + "): " + err.stack, 0);
+            Homey.app.updateLog("SnapShot error (" + this.name + "): " + err.stack, 0);
             // Try Basic Authentication
             this.authType = 1;
         }
@@ -1140,7 +1167,7 @@ class CameraDevice extends Homey.Device
         {
             if (this.authType == 1)
             {
-                Homey.app.updateLog("Fetching (" + this.id + ") " + name + " image with Basic Auth. From: " + Homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
+                Homey.app.updateLog("Fetching (" + this.name + ") " + name + " image with Basic Auth. From: " + Homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
 
                 const client = new DigestFetch(this.username, this.password,
                 {
@@ -1156,7 +1183,7 @@ class CameraDevice extends Homey.Device
         }
         catch (err)
         {
-            Homey.app.updateLog("SnapShot error (" + this.id + "): " + err.stack, 0);
+            Homey.app.updateLog("SnapShot error (" + this.name + "): " + err.stack, 0);
             // Try Digest Authentication
             this.authType = 2;
         }
@@ -1165,7 +1192,7 @@ class CameraDevice extends Homey.Device
         {
             if (this.authType >= 2)
             {
-                Homey.app.updateLog("Fetching (" + this.id + ") " + name + " image with Digest Auth. From: " + Homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
+                Homey.app.updateLog("Fetching (" + this.name + ") " + name + " image with Digest Auth. From: " + Homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
 
                 const client = new DigestFetch(this.username, this.password,
                 {
@@ -1181,7 +1208,7 @@ class CameraDevice extends Homey.Device
         }
         catch (err)
         {
-            Homey.app.updateLog("SnapShot error (" + this.id + "): " + err.stack, 0);
+            Homey.app.updateLog("SnapShot error (" + this.name + "): " + err.stack, 0);
 
             // Go back to no Authentication
             this.authType = 0;

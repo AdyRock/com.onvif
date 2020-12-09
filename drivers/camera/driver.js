@@ -91,17 +91,6 @@ class CameraDriver extends Homey.Driver
             })
     }
 
-    async getLastCredentials(device)
-    {
-        await device.setSettings(
-        {
-            'username': this.lastUsername,
-            'password': this.lastPassword
-        });
-        await device.setStoreValue('initialised', true);
-        Homey.app.updateLog("Saved Credentials");
-    }
-
     onPair(socket)
     {
         let listDevices = 1;

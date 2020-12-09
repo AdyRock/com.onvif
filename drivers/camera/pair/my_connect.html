@@ -90,11 +90,21 @@
                     }
                     else
                     {
-                        Homey.addDevice(result, function(err, result)
+                        Homey.addDevice(result, function(addErr, addResult)
                         {
-                            if (err) console.error(err);
-                            else console.log(result);
-                            Homey.done();
+                            if (addErr)
+                            {
+                                console.error(addErr);
+                                document.getElementById('submit').disabled = false;
+                                document.getElementById('submit').value = __('pair.manual_add.try_again');
+                                document.getElementById('status').value = addErr;
+                                document.getElementById('status').style.color = 'red';
+                            }
+                            else
+                            {
+                                console.log(addResult);
+                                Homey.done();
+                            }
                         });
                     }
                 }
