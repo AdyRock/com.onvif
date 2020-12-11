@@ -24,9 +24,9 @@
 
 
 <script type="text/javascript">
-    Homey.setTitle(__('pair.manual_add.title'));
+    Homey.setTitle("Repair Connection");
 
-    Homey.emit('manual_connection_setup', {},
+    Homey.emit('repair_connection_setup', {},
         function(err, result)
         {
             if (result)
@@ -61,7 +61,7 @@
         document.getElementById('submit').disabled = 'disabled';
         document.getElementById('submit').value = __('pair.manual_add.checking');
 
-        Homey.emit('manual_connection',
+        Homey.emit('repair_connection',
             {
                 username: document.forms["form"]["username"].value,
                 password: document.forms["form"]["password"].value,
@@ -70,7 +70,7 @@
             },
             function(err, result)
             {
-                if (err)
+                if (err || result === false)
                 {
                     console.log('authentication failed');
                     document.getElementById('submit').disabled = false;
@@ -82,36 +82,10 @@
                 {
                     console.log('authentication succeeded');
                     document.getElementById('submit').value = __('pair.manual_add.correct');
-                    document.getElementById('status').value = __('pair.manual_add.adding');
-                    document.getElementById('status').style.color = 'green';
-                    if (!result)
+                    Homey.alert("Successful", null, function(e, ok)
                     {
-                        Homey.showView("list_devices2");
-                    }
-                    else if (result === true)
-                    {
-                        console.log(addResult);
                         Homey.done();
-                    }
-                    else
-                    {
-                        Homey.addDevice(result, function(addErr, addResult)
-                        {
-                            if (addErr)
-                            {
-                                console.error(addErr);
-                                document.getElementById('submit').disabled = false;
-                                document.getElementById('submit').value = __('pair.manual_add.try_again');
-                                document.getElementById('status').value = addErr;
-                                document.getElementById('status').style.color = 'red';
-                            }
-                            else
-                            {
-                                console.log(addResult);
-                                Homey.done();
-                            }
-                        });
-                    }
+                    });
                 }
             });
     }

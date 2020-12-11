@@ -83,8 +83,7 @@
     }],
     "repair": [
     {
-        "id": "login",
-        "template": "login_credentials"
+        "id": "my_repair"
     }],
 
     "settings": [

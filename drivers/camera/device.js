@@ -208,13 +208,13 @@ class CameraDevice extends Homey.Device
             this.eventTN = this.getEventTN(newSettingsObj, true);
         }
 
-        if (changedKeysArr.indexOf("eventObjectID") >= 0)
+        if (changedKeysArr.indexOf("objectID") >= 0)
         {
-            this.eventObjectID = newSettingsObj.eventObjectID;
+            this.eventObjectID = newSettingsObj.objectID;
         }
         else
         {
-            this.eventObjectID = oldSettingsObj.eventObjectID;
+            this.eventObjectID = oldSettingsObj.objectID;
         }
 
         if (this.eventTN !== "RuleEngine/FieldDetector/ObjectsInside:IsInside")
@@ -250,16 +250,6 @@ class CameraDevice extends Homey.Device
             reconnect = true;
         }
 
-        if (reconnect)
-        {
-            // re-connect to camera after exiting this callback
-            setImmediate(() =>
-            {
-                this.connectCamera(false);
-                return;
-            });
-        }
-
         if (changedKeysArr.indexOf("timeFormat") >= 0)
         {
             this.setCapabilityValue('event_time', this.convertDate(this.eventTime, newSettingsObj));
@@ -279,6 +269,11 @@ class CameraDevice extends Homey.Device
                     return;
                 });
             }
+        }
+
+        if (changedKeysArr.indexOf("hasSnapshot") >= 0)
+        {
+            this.snapshotSupported = newSettingsObj.hasSnapshot;
         }
 
         if (changedKeysArr.indexOf("userSnapUri") >= 0)
@@ -319,6 +314,16 @@ class CameraDevice extends Homey.Device
         if (changedKeysArr.indexOf("classType") >= 0)
         {
             this.setClass(newSettingsObj.classType);
+        }
+
+        if (reconnect)
+        {
+            // re-connect to camera after exiting this callback
+            setImmediate(() =>
+            {
+                this.connectCamera(false);
+                return;
+            });
         }
     }
 

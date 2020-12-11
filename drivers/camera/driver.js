@@ -285,12 +285,26 @@ class CameraDriver extends Homey.Driver
 
         device.repairing = true;
 
-        socket.on('login', async (data, callback) =>
+        socket.on('repair_connection_setup', (data, callback) =>
+        {
+            var loginInfo = {
+                username: device.username,
+                password: device.password,
+                ip: device.ip,
+                port: device.port
+            };
+
+            callback(null, loginInfo);
+        });
+
+        socket.on('repair_connection', async (data, callback) =>
         {
             await device.setSettings(
             {
                 'username': data.username,
-                'password': data.password
+                'password': data.password,
+                "ip": data.ip,
+                "port": data.port
             });
 
             let settings = device.getSettings();

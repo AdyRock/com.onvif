@@ -39,11 +39,17 @@ class MyApp extends Homey.App
 
         this.pushEvents = [];
 
+        this.logLevel = Homey.ManagerSettings.get('logLevel');
+
         Homey.ManagerSettings.on('set', (setting) =>
         {
             if (setting === 'sendLog' && (Homey.ManagerSettings.get('sendLog') === "send") && (Homey.ManagerSettings.get('diagLog') !== ""))
             {
                 return this.sendLog();
+            }
+            else if (setting === 'logLevel')
+            {
+                this.logLevel = Homey.ManagerSettings.get('logLevel');
             }
         });
 
@@ -99,12 +105,18 @@ class MyApp extends Homey.App
                                 if (!device.token || !messageToken || (messageToken == device.token))
                                 {
                                     theDevice = device;
-                                    this.updateLog("Push Event found correct Device: " + device.token);
+                                    if (this.logLevel >= 2)
+                                    {
+                                        this.updateLog("Push Event found correct Device: " + device.token);
+                                    }
                                     break;
                                 }
                                 else
                                 {
-                                    this.updateLog("Wrong channel token", 0);
+                                    if (this.logLevel >= 2)
+                                    {
+                                        this.updateLog("Wrong channel token");
+                                    }
                                 }
                             }
                         }
@@ -114,6 +126,10 @@ class MyApp extends Homey.App
                     {
                         data.notificationMessage.forEach((message) =>
                         {
+                            if (this.logLevel >= 2)
+                            {
+                                this.updateLog("Push Event process: " + this.varToString(message));
+                            }
                             theDevice.processCamEventMessage(message);
                         })
                     }
@@ -160,6 +176,10 @@ class MyApp extends Homey.App
                         body = '';
                         response.writeHead(200);
                         response.end('ok');
+                        if (this.logLevel >= 3)
+                        {
+                            this.updateLog("Push event: " + soapMsg, 3)
+                        }
                         this.processEventMessage(soapMsg, eventIP);
                     });
                 }
@@ -833,7 +853,7 @@ class MyApp extends Homey.App
 
     updateLog(newMessage, ignoreSetting = 2)
     {
-        if (ignoreSetting > Homey.ManagerSettings.get('logLevel'))
+        if (ignoreSetting > this.logLevel)
         {
             return;
         }
