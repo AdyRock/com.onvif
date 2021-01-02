@@ -14,11 +14,6 @@ const path = require('path');
 const nodemailer = require("nodemailer");
 
 const http = require('http');
-const
-{
-    captureMessage
-} = require('homey-log/lib/Log');
-const Log = require('homey-log').Log;
 
 class MyApp extends Homey.App
 {
@@ -276,11 +271,6 @@ class MyApp extends Homey.App
 
         this.updateLog('====  Discovery Finished  ====');
         let devices = this.discoveredDevices;
-
-        Log.setExtra(
-        {
-            "cams": cams
-        });
 
         this.discoveredDevices = [];
         return devices;
@@ -910,10 +900,6 @@ class MyApp extends Homey.App
         oldText += newMessage;
         oldText += "\r\n";
         Homey.ManagerSettings.set('diagLog', oldText);
-        Log.setExtra(
-        {
-            "diagLog": Homey.ManagerSettings.get('diagLog')
-        });
         Homey.ManagerSettings.set('sendLog', "");
     }
 

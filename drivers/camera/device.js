@@ -63,6 +63,7 @@ class CameraDevice extends Homey.Device
             })
         }
 
+        this.enabled = settings.enabled;
         this.password = settings.password
         this.username = settings.username;
         this.ip = settings.ip;
@@ -226,6 +227,12 @@ class CameraDevice extends Homey.Device
             this.eventObjectID = this.eventObjectID.split(",");
         }
 
+        if (changedKeysArr.indexOf("enabled") >= 0)
+        {
+            this.enabled = newSettingsObj.enabled;
+            reconnect = true;
+        }
+
         if (changedKeysArr.indexOf("username") >= 0)
         {
             this.username = newSettingsObj.username;
@@ -329,6 +336,16 @@ class CameraDevice extends Homey.Device
 
     async connectCamera(addingCamera)
     {
+        if (!this.enabled)
+        {
+            if (this.cam)
+            {
+                this.cam = null;
+            }
+            
+            return;
+        }
+
         if (this.repairing)
         {
             // Wait while repairing and try again later
@@ -546,7 +563,7 @@ class CameraDevice extends Homey.Device
 
     async checkCamera()
     {
-        if (!this.repairing && this.isReady && Homey.ManagerSettings.get('logLevel') === '0')
+        if (this.enabled && !this.repairing && this.isReady && Homey.ManagerSettings.get('logLevel') === '0')
         {
             try
             {

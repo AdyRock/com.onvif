@@ -235,5 +235,8 @@
   },
   "1.1.25": {
     "en": "Stability improvements."
+  },
+  "1.1.26": {
+    "en": "Added option to disable a camera."
   }
 }

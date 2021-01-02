@@ -134,7 +134,24 @@
                 "nl": "Password nodig om in te loggen in de camera",
                 "it": "Password richiesta per il login con la camera."
             }
-        }]
+        },
+        {
+            "id": "enabled",
+            "type": "checkbox",
+            "label":
+            {
+                "en": "Camera Enabled",
+                "de": "Kamera aktiviert",
+                "nl": "Camera ingeschakeld",
+                "it": "Fotocamera abilitata,"
+            },
+            "value": true,
+            "hint":
+            {
+                "en": "When ticked the camera is enabled."
+            }
+        }
+    ]
     },
     {
         "type": "group",
