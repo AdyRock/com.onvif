@@ -12,7 +12,7 @@
     "Only_Push_Supported": "Only Push supported",
     "Not_Supported": "Not supported",
     "Motion_Event": "Motion Event",
-    "Now": "Now",
+    "Now": "Snapshot",
     "pair": {
         "manual_add":{
             "intro": "Enter Connection Details",

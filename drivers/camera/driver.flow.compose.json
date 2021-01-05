@@ -5,7 +5,7 @@
                 "en": "Motion enabled",
                 "de": "Bewegung eingeschaltet",
                 "nl": "Beweging actief",
-                "it": "Motion abilitato,"
+                "it": "Motion abilitato"
             }
         },
         {
@@ -14,25 +14,25 @@
                 "en": "Motion disabled",
                 "de": "Bewegung abgeschaltet",
                 "nl": "Beweging inactief",
-                "it": "Motion disabilitato,"
+                "it": "Motion disabilitato"
             }
         },
         {
             "id": "snapshotReadyTrigger",
             "title": {
-                "en": "Now snapshot ready",
-                "de": "Keine Standbilder bereit",
+                "en": "Snapshot ready",
+                "de": "Schnappschuss ist fertig",
                 "nl": "Snapshot beschikbaar",
-                "it": "Immagine Istantanea pronta,"
+                "it": "Immagine Istantanea pronta"
             },
             "tokens": [{
                 "name": "image",
                 "type": "image",
                 "title": {
-                    "en": "Now Image",
-                    "de": "Standbild erstellen",
+                    "en": "Snapshot",
+                    "de": "Schnappschuss",
                     "nl": "Snapshot",
-                    "it": "Immagine Istantanea,"
+                    "it": "Immagine Istantanea"
                 }
             }]
         },
@@ -42,16 +42,16 @@
                 "en": "Motion snapshot ready",
                 "de": "Momentaufnahme bereit",
                 "nl": "Bewegings snapshot beschikbaar",
-                "it": "Immagine di Movimento pronta,"
+                "it": "Immagine di Movimento pronta"
             },
             "tokens": [{
                 "name": "eventImage",
                 "type": "image",
                 "title": {
-                    "en": "Motion Image",
+                    "en": "Motion snapshot",
                     "de": "Momentaufnahme",
                     "nl": "Bewegings snapshot",
-                    "it": "Immagine di Movimento,"
+                    "it": "Immagine di Movimento"
                 }
             }]
         }
@@ -62,16 +62,22 @@
                 "en": "Motion is !{{enabled|disabled}}",
                 "de": "Bewegung ist !{{eingeschaltet|abgeschaltet}}",
                 "nl": "Beweging is !{{actief|inactief}}",
-                "it": "Movimento è !{{abilitato|disabilitato}},"
+                "it": "Movimento è !{{abilitato|disabilitato}}"
             }
         },
         {
             "id": "motionReadyCondition",
             "title": {
-                "en": "Motion image is ready within..."
+                "en": "Motion snapshot is ready within...",
+                "de": "Bewegungsschnappschuss ist innerhalb von ...",
+                "nl": "Bewegings snapshot is klaar binnen ...",
+                "it": "L'istantanea in movimento è pronta entro ..."
             },
             "titleFormatted": {
-                "en": "Motion image is !{{ready|not ready}} within [[waitTime]] seconds"
+                "en": "Motion snapshot is !{{ready|not ready}} within [[waitTime]] seconds",
+                "de": "Der Bewegungsschnappschuss ist !{{innerhalb|nicht innerhalb}} von 20 Sekunden fertig",
+                "nl": "Bewegingssnapshot is !{{binnen|niet binnen}} [[waitTime]] seconden !((klaar|gereed}}",
+                "it": "L'istantanea in movimento !{{è pronta|non è pronta}} entro 20 secondi"
             },
             "args": [{
                 "type": "number",
@@ -92,7 +98,7 @@
                 "en": "Enable motion",
                 "de": "Bewegung einschalten",
                 "nl": "Beweging actief",
-                "it": "Movimento Abilitato,"
+                "it": "Movimento Abilitato"
             }
         },
         {
@@ -101,13 +107,13 @@
                 "en": "Disable motion",
                 "de": "Bewegung abschalten",
                 "nl": "Beweging inactief",
-                "it": "Movimento Disabilitato,"
+                "it": "Movimento Disabilitato"
             }
         },
         {
             "id": "snapshotAction",
             "title": {
-                "en": "Update Now snapshot",
+                "en": "Update snapshot",
                 "de": "Standbild jetzt erneuern",
                 "nl": "Ververs snapshot",
                 "it": "Aggiorna Immagine Istantanea"

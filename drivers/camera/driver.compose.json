@@ -450,7 +450,10 @@
             "value": "0",
             "hint":
             {
-                "en": "The ONVIF service Port number of the camera. You can change this if required."
+                "en": "The ONVIF service Port number of the camera. You can change this if required.",
+                "de": "Die ONVIF-Service-Portnummer der Kamera. Sie können dies bei Bedarf ändern.",
+                "nl": "De ONVIF-service Poortnummer van de camera. U kunt dit desgewenst wijzigen.",
+                "it": "Il numero di porta del servizio ONVIF della telecamera. È possibile modificarlo se necessario."
             }
         },
         {
@@ -466,7 +469,10 @@
             "value": false,
             "hint":
             {
-                "en": "Specifies if the camera supports a snapshot. You can override this if the camera supports a snapshot that is not reported va the ONVIF protocol."
+                "en": "Specifies if the camera supports a snapshot. You can override this if the camera supports a snapshot that is not reported va the ONVIF protocol.",
+                "de": "Gibt an, ob die Kamera einen Schnappschuss unterstützt. Sie können dies überschreiben, wenn die Kamera einen Schnappschuss unterstützt, der nicht über das ONVIF-Protokoll gemeldet wird.",
+                "nl": "Geeft aan of de camera een momentopname ondersteunt. U kunt dit negeren als de camera een momentopname ondersteunt die niet wordt gerapporteerd via het ONVIF-protocol.",
+                "it": "Specifica se la telecamera supporta un'istantanea. È possibile sovrascriverlo se la telecamera supporta un'istantanea che non viene riportata dal protocollo ONVIF."
             }
         },
         {
@@ -482,7 +488,10 @@
             "value": "",
             "hint":
             {
-                "en": "The snapshot URL that is reported by the camera."
+                "en": "The snapshot URL that is reported by the camera.",
+                "de": "Die Snapshot-URL, die von der Kamera gemeldet wird.",
+                "nl": "De snapshot-URL die door de camera wordt gerapporteerd.",
+                "it": "L'URL dell'istantanea segnalato dalla telecamera."
             }
         },
         {
@@ -498,7 +507,10 @@
             "value": "",
             "hint":
             {
-                "en": "An alternative snapshot URL that overrides th detected one.\nLeave the field blank to use the detected URL."
+                "en": "An alternative snapshot URL that overrides th detected one.\nLeave the field blank to use the detected URL.",
+                "de": "Eine alternative Snapshot-URL, die die erkannte überschreibt. \ NCLassen Sie das Feld leer, um die erkannte URL zu verwenden.",
+                "nl": "Een alternatieve snapshot-URL die de gedetecteerde URL overschrijft. \ NLaat het veld leeg om de gedetecteerde URL te gebruiken.",
+                "it": "Un URL di istantanea alternativo che sostituisce quello rilevato.\nLascia il campo vuoto per utilizzare l'URL rilevato."
             }
         },
         {
@@ -514,7 +526,10 @@
             "value": "",
             "hint":
             {
-                "en": "The availble methods the camera has reported for detecting an event."
+                "en": "The availble methods the camera has reported for detecting an event.",
+                "de": "Die verfügbaren Methoden, die die Kamera zum Erkennen eines Ereignisses gemeldet hat.",
+                "nl": "De beschikbare methoden die de camera heeft gerapporteerd voor het detecteren van een gebeurtenis.",
+                "it": "I metodi disponibili segnalati dalla telecamera per rilevare un evento."
             }
         },
         {
@@ -530,7 +545,10 @@
             "value": "",
             "hint":
             {
-                "en": "Shows the types of event the camera supports. The app requires the MOTION event but detects notifications of IsMotion, IsInside for motion as well as IsTamper for tamper detection."
+                "en": "Shows the types of event the camera supports. The app requires the MOTION event but detects notifications of IsMotion, IsInside for motion as well as IsTamper for tamper detection.",
+                "de": "Zeigt die von der Kamera unterstützten Ereignistypen an. Die App erfordert das MOTION-Ereignis, erkennt jedoch Benachrichtigungen von IsMotion, IsInside für Bewegungen sowie IsTamper für die Manipulationserkennung.",
+                "nl": "Toont de soorten gebeurtenissen die de camera ondersteunt. De app vereist de MOTION-gebeurtenis, maar detecteert meldingen van IsMotion, IsInside voor beweging en IsTamper voor sabotagedetectie.",
+                "it": "Mostra i tipi di eventi supportati dalla telecamera. L'app richiede l'evento MOTION ma rileva le notifiche di IsMotion, IsInside per il movimento e IsTamper per il rilevamento delle manomissioni."
             }
         },
         {
@@ -538,7 +556,10 @@
             "type": "radio",
             "label":
             {
-                "en": "ONVIF Motion Notification to use"
+                "en": "ONVIF Motion Notification to use",
+                "de": "ONVIF Motion Notification zu verwenden",
+                "nl": "ONVIF Motion Notification te gebruiken",
+                "it": "Notifica di movimento ONVIF da utilizzare"
             },
             "value": "RuleEngine/CellMotionDetector/Motion:IsMotion",
             "values": [
@@ -572,7 +593,10 @@
             }],
             "hint":
             {
-                "en": "Select the type of notification to use for motion detect. If the selected type is not supported then the setting will fall back to MOTION IsMotion or MOTIONALARM"
+                "en": "Select the type of notification to use for motion detect. If the selected type is not supported then the setting will fall back to MOTION IsMotion or MOTIONALARM",
+                "de": "Wählen Sie die Art der Benachrichtigung aus, die für die Bewegungserkennung verwendet werden soll. Wenn der ausgewählte Typ nicht unterstützt wird, wird die Einstellung auf MOTION IsMotion oder MOTIONALARM zurückgesetzt",
+                "nl": "Selecteer het type melding dat u wilt gebruiken voor bewegingsdetectie. Als het geselecteerde type niet wordt ondersteund, valt de instelling terug op MOTION IsMotion of MOTIONALARM",
+                "it": "Seleziona il tipo di notifica da utilizzare per il rilevamento del movimento. Se il tipo selezionato non è supportato, l'impostazione tornerà a MOTION IsMotion o MOTIONALARM"
             }
         },
         {
@@ -585,7 +609,10 @@
             "value": "",
             "hint":
             {
-                "en": "The ID that is sent from the camera for the ANALYTICSSERVICE event. Leave empty to match any. Seperate multiples with a comma."
+                "en": "The ID that is sent from the camera for the ANALYTICSSERVICE event. Leave empty to match any. Seperate multiples with a comma.",
+                "de": "Die ID, die von der Kamera für das ANALYTICSSERVICE-Ereignis gesendet wird. Lassen Sie das Feld leer. Separate Vielfache mit einem Komma.",
+                "nl": "De ID die door de camera is verzonden voor de ANALYTICSSERVICE-gebeurtenis. Laat het leeg om het te matchen. Scheid veelvouden met een komma.",
+                "it": "L'ID inviato dalla telecamera per l'evento ANALYTICSSERVICE. Lascia vuoto per abbinare qualsiasi. Multipli separati con una virgola."
             }
         }]
     }],
