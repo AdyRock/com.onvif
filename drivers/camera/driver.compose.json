@@ -508,8 +508,8 @@
             "hint":
             {
                 "en": "An alternative snapshot URL that overrides th detected one.\nLeave the field blank to use the detected URL.",
-                "de": "Eine alternative Snapshot-URL, die die erkannte überschreibt. \ NCLassen Sie das Feld leer, um die erkannte URL zu verwenden.",
-                "nl": "Een alternatieve snapshot-URL die de gedetecteerde URL overschrijft. \ NLaat het veld leeg om de gedetecteerde URL te gebruiken.",
+                "de": "Eine alternative Snapshot-URL, die die erkannte überschreibt.\nCLassen Sie das Feld leer, um die erkannte URL zu verwenden.",
+                "nl": "Een alternatieve snapshot-URL die de gedetecteerde URL overschrijft.\nLaat het veld leeg om de gedetecteerde URL te gebruiken.",
                 "it": "Un URL di istantanea alternativo che sostituisce quello rilevato.\nLascia il campo vuoto per utilizzare l'URL rilevato."
             }
         },
