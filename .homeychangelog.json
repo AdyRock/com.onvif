@@ -238,5 +238,8 @@
   },
   "1.1.26": {
     "en": "Added option to disable a camera."
+  },
+  "1.1.27": {
+    "en": "Fix for adding multiple cameras on a different VLAN."
   }
 }

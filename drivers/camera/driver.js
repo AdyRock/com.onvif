@@ -216,6 +216,10 @@ class CameraDriver extends Homey.Driver
             if (!this.lastURN)
             {
                 this.lastURN = await Homey.ManagerArp.getMAC(this.lastHostName);
+                if (!this.lastURN)
+                {
+                    this.lastURN = Date.now();
+                }
             }
 
             Homey.app.updateLog("Login-----");

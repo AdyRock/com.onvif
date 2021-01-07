@@ -838,9 +838,17 @@ class CameraDevice extends Homey.Device
         {
             if (this.supportPushEvent && !this.preferPullEvents)
             {
-                Homey.app.updateLog('\r\n## Waiting for Push events (' + this.name + ') ##');
+                Homey.app.updateLog('\r\n## registering Push events (' + this.name + ') ##');
 
-                Homey.app.subscribeToCamPushEvents(this);
+                try
+                {
+                    await Homey.app.subscribeToCamPushEvents(this);
+                    Homey.app.updateLog('\r\n## Waiting for Push events (' + this.name + ') ##');
+                }
+                catch(error)
+                {
+                    Homey.app.updateLog('\r\n## FAILED to register Push events (' + this.name + ') ##', 0);
+                }
                 return;
             }
 
