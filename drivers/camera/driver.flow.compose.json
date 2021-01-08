@@ -75,9 +75,9 @@
             },
             "titleFormatted": {
                 "en": "Motion snapshot is !{{ready|not ready}} within [[waitTime]] seconds",
-                "de": "Der Bewegungsschnappschuss ist !{{innerhalb|nicht innerhalb}} von 20 Sekunden fertig",
+                "de": "Der Bewegungsschnappschuss ist !{{innerhalb|nicht innerhalb}} von [[waitTime]] Sekunden fertig",
                 "nl": "Bewegingssnapshot is !{{binnen|niet binnen}} [[waitTime]] seconden !((klaar|gereed}}",
-                "it": "L'istantanea in movimento !{{è pronta|non è pronta}} entro 20 secondi"
+                "it": "L'istantanea in movimento !{{è pronta|non è pronta}} entro [[waitTime]] secondi"
             },
             "args": [{
                 "type": "number",

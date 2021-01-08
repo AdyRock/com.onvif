@@ -241,5 +241,8 @@
   },
   "1.1.27": {
     "en": "Fix for adding multiple cameras on a different VLAN."
+  },
+  "1.1.28": {
+    "en": "Fix for adding multiple cameras on a different VLAN. Fix missing token identifier in a flow resource."
   }
 }
