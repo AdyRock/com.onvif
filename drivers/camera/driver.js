@@ -1,3 +1,4 @@
+/*jslint node: true */
 'use strict';
 
 const Homey = require('homey');
@@ -33,7 +34,7 @@ class CameraDriver extends Homey.Driver
                 while ((remainingTime > 0) && args.device.updatingEventImage)
                 {
                     // Wait for image to update
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    await Homey.app.asyncDelay(100);
                     remainingTime--;
                 }
                 return !args.device.updatingEventImage;
@@ -47,7 +48,7 @@ class CameraDriver extends Homey.Driver
                 console.log("motionEnabledAction");
                 args.device.onCapabilityMotionEnable(true, null);
                 return await args.device.setCapabilityValue('motion_enabled', true); // Promise<void>
-            })
+            });
 
         this.motionDisabledAction = new Homey.FlowCardAction('motionDisableAction');
         this.motionDisabledAction
@@ -58,7 +59,7 @@ class CameraDriver extends Homey.Driver
                 console.log("motionDisabledAction");
                 args.device.onCapabilityMotionEnable(false, null);
                 return await args.device.setCapabilityValue('motion_enabled', false); // Promise<void>
-            })
+            });
 
         this.snapshotAction = new Homey.FlowCardAction('snapshotAction');
         this.snapshotAction
@@ -71,15 +72,15 @@ class CameraDriver extends Homey.Driver
                 {
                     let tokens = {
                         'image': args.device.nowImage
-                    }
+                    };
 
                     args.device.snapshotReadyTrigger
                         .trigger(args.device, tokens)
                         .catch(args.device.error)
-                        .then(args.device.log("Now Snapshot ready (" + args.device.id + ")"))
+                        .then(args.device.log("Now Snapshot ready (" + args.device.id + ")"));
                 }
                 return err;
-            })
+            });
 
         this.motionUpdateAction = new Homey.FlowCardAction('updateMotionImageAction');
         this.motionUpdateAction
@@ -88,7 +89,7 @@ class CameraDriver extends Homey.Driver
             {
 
                 return args.device.updateMotionImage(0);
-            })
+            });
     }
 
     onPair(socket)
@@ -125,7 +126,7 @@ class CameraDriver extends Homey.Driver
                             "urn": "",
                             "channel": -1
                         }
-                    })
+                    });
 
                     callback(null, devices);
                 }).catch((err) =>
@@ -146,12 +147,12 @@ class CameraDriver extends Homey.Driver
                         // There is more tha 1 video source so add a device for each
                         Homey.app.updateLog("Adding source " + source + " to list");
                         let token = "";
-                        if (source["$"])
+                        if (source.$)
                         {
-                            token = source["$"].token;
+                            token = source.$.token;
                         }
                         let channelSuf = " (Ch" + (devices.length + 1) + ")";
-                        var data = {
+                        let data = {
                             "id": this.lastURN + channelSuf,
                             "port": this.lastPort
                         };
@@ -171,7 +172,7 @@ class CameraDriver extends Homey.Driver
                                 "channel": devices.length + 1,
                                 "token": token
                             }
-                        })
+                        });
                     }
                     Homey.app.updateLog("list_devices2: Listing ", devices);
                     callback(null, devices);
@@ -265,7 +266,7 @@ class CameraDriver extends Homey.Driver
                                     "urn": this.lastURN,
                                     "channel": -1
                                 }
-                            })
+                            });
                             callback(null, device);
                         }
                         else
@@ -329,22 +330,22 @@ class CameraDriver extends Homey.Driver
                         settings.password
                     );
 
-					let info = {};
-					try
-					{
-						info = await Homey.app.getDeviceInformation(cam);
-						Homey.app.updateLog("Camera Information: " + Homey.app.varToString(info));
-					}
-					catch (err)
-					{
-						Homey.app.updateLog("Get camera info error: " + Homey.app.varToString(err), 0);
-						return;
-					}
+                    let info = {};
+                    try
+                    {
+                        info = await Homey.app.getDeviceInformation(cam);
+                        Homey.app.updateLog("Camera Information: " + Homey.app.varToString(info));
+                    }
+                    catch (err)
+                    {
+                        Homey.app.updateLog("Get camera info error: " + Homey.app.varToString(err), 0);
+                        return;
+                    }
 
-					if ((info.serialNumber === settings.serialNumber) && (info.model === settings.model))
-					{
-						matched = true;
-					}
+                    if ((info.serialNumber === settings.serialNumber) && (info.model === settings.model))
+                    {
+                        matched = true;
+                    }
 
                     if (matched)
                     {
@@ -355,7 +356,7 @@ class CameraDriver extends Homey.Driver
                             'port': discoveredDevice.settings.port
                         });
                         device.cam = cam;
-                        device.setupImages()
+                        device.setupImages();
 
                         Homey.app.updateLog("Found the camera: " + Homey.app.varToString(info));
                         break;
@@ -381,7 +382,7 @@ class CameraDriver extends Homey.Driver
         {
             // Cleanup
             device.repairing = false;
-        })
+        });
 
     }
 }

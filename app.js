@@ -1,8 +1,9 @@
+/*jslint node: true */
 'use strict';
 
 if (process.env.DEBUG === '1')
 {
-    require('inspector').open(9222, '0.0.0.0', true)
+    require('inspector').open(9222, '0.0.0.0', true);
 }
 
 const Homey = require('homey');
@@ -52,6 +53,12 @@ class MyApp extends Homey.App
 
         this.checkCameras = this.checkCameras.bind(this);
         this.checkTimerId = setTimeout(this.checkCameras, 30000);
+
+        Homey.on('unload', async () =>
+        {
+            await this.unregisterCameras();
+        });
+
     }
 
     getMessageToken(message)
@@ -59,9 +66,9 @@ class MyApp extends Homey.App
         if (message.source && message.source.simpleItem)
         {
             let simpleItem = message.source.simpleItem[0];
-            if (simpleItem && simpleItem["$"])
+            if (simpleItem && simpleItem.$)
             {
-                return simpleItem["$"].Value;
+                return simpleItem.$.Value;
             }
         }
 
@@ -82,9 +89,9 @@ class MyApp extends Homey.App
                     {
                         data.notificationMessage = [data.notificationMessage];
                     }
-        
+
                     let messageToken = this.getMessageToken(data.notificationMessage[0].message.message);
-        
+
                     // Find the referenced device
                     const driver = Homey.ManagerDrivers.getDriver('camera');
                     var theDevice = null;
@@ -116,7 +123,7 @@ class MyApp extends Homey.App
                             }
                         }
                     }
-        
+
                     if (theDevice)
                     {
                         data.notificationMessage.forEach((message) =>
@@ -126,7 +133,7 @@ class MyApp extends Homey.App
                                 this.updateLog("Push Event process: " + this.varToString(message));
                             }
                             theDevice.processCamEventMessage(message);
-                        })
+                        });
                     }
                     else
                     {
@@ -173,7 +180,7 @@ class MyApp extends Homey.App
                         response.end('ok');
                         if (this.logLevel >= 3)
                         {
-                            this.updateLog("Push event: " + soapMsg, 3)
+                            this.updateLog("Push event: " + soapMsg, 3);
                         }
                         this.processEventMessage(soapMsg, eventIP);
                     });
@@ -191,7 +198,7 @@ class MyApp extends Homey.App
                 response.writeHead(405);
                 response.end('Method not allowed');
             }
-        }
+        };
 
         const server = http.createServer(requestListener);
         server.listen(this.pushServerPort);
@@ -235,7 +242,7 @@ class MyApp extends Homey.App
                                 "urn": mac,
                                 "channel": -1,
                             }
-                        })
+                        });
                     }
                     else
                     {
@@ -246,7 +253,7 @@ class MyApp extends Homey.App
                 {
                     this.updateLog("Discovery catch error: " + err.message + "\n" + err.stack, 0);
                 }
-            })
+            });
 
             onvif.Discovery.on('error', (msg, xml) =>
             {
@@ -255,7 +262,7 @@ class MyApp extends Homey.App
                 {
                     this.updateLog("xml: " + this.varToString(xml), 3);
                 }
-            })
+            });
         }
 
         // Start the discovery process running
@@ -329,6 +336,20 @@ class MyApp extends Homey.App
 
         this.checkCameras = this.checkCameras.bind(this);
         this.checkTimerId = setTimeout(this.checkCameras, 10000);
+    }
+
+    async unregisterCameras()
+    {
+        const driver = Homey.ManagerDrivers.getDriver('camera');
+        if (driver)
+        {
+            let devices = driver.getDevices();
+            for (var i = 0; i < devices.length; i++)
+            {
+                var device = devices[i];
+                await device.logout();
+            }
+        }
     }
 
     getHostName(cam_obj)
@@ -540,11 +561,11 @@ class MyApp extends Homey.App
                                 else
                                 {
                                     // descend into the child node, looking for the messageDescription
-                                    parseNode(node[child], topicPath + '/' + child, child)
+                                    parseNode(node[child], topicPath + '/' + child, child);
                                 }
                             }
-                        }
-                        parseNode(data.topicSet, '', '')
+                        };
+                        parseNode(data.topicSet, '', '');
                     }
                     return resolve(supportedEvents);
                 });
@@ -563,7 +584,7 @@ class MyApp extends Homey.App
 
             this.updateLog("App.subscribeToCamPushEvents: " + Device.name);
 
-            let unsubscribeRef = null
+            let unsubscribeRef = null;
             let pushEvent = this.pushEvents.find(element => element.devices.length > 0 && element.devices[0].cam.hostname === Device.cam.hostname);
             if (pushEvent)
             {
@@ -621,6 +642,11 @@ class MyApp extends Homey.App
                         var refreshTime = ((d2.valueOf() - d1.valueOf())) - 5000;
 
                         this.updateLog("Push renew every (" + Device.name + "): " + refreshTime);
+                        if (refreshTime < 0)
+                        {
+                            this.unsubscribe(Device);
+                        }
+
                         if (refreshTime < 3000)
                         {
                             refreshTime = 3000;
@@ -664,9 +690,14 @@ class MyApp extends Homey.App
                         var refreshTime = ((d2.valueOf() - d1.valueOf())) - 5000;
 
                         this.updateLog("Push renew every (" + Device.name + "): " + refreshTime + "s  @ " + unsubscribeRef, 1);
+                        if (refreshTime < 0)
+                        {
+                            this.unsubscribe(Device);
+                        }
+
                         if (refreshTime < 3000)
                         {
-                            refreshTime + 3000;
+                            refreshTime += 3000;
                         }
 
                         pushEvent.refreshTime = refreshTime;
@@ -699,7 +730,7 @@ class MyApp extends Homey.App
             if (pushEventIdx >= 0)
             {
                 this.updateLog("App.unsubscribe: Found entry for " + Device.cam.hostname);
-                pushEvent = this.pushEvents[pushEventIdx]
+                pushEvent = this.pushEvents[pushEventIdx];
                 // see if this device is registered
                 deviceIdx = pushEvent.devices.findIndex(element => element.id == Device.id);
                 if (deviceIdx < 0)
@@ -768,7 +799,7 @@ class MyApp extends Homey.App
         }
 
         this.updateLog('Camera (' + id + ') does NOT support PullPoint Events', 0);
-        return false
+        return false;
     }
 
     hasBaseEvents(services, id)
@@ -780,7 +811,7 @@ class MyApp extends Homey.App
         }
 
         this.updateLog('This camera (' + id + ') does NOT support Push Events', 0);
-        return false
+        return false;
     }
 
     stripNamespaces(topic)
@@ -792,21 +823,21 @@ class MyApp extends Homey.App
         let output = '';
         if (topic)
         {
-            let parts = topic.split('/')
+            let parts = topic.split('/');
             for (let index = 0; index < parts.length; index++)
             {
-                let stringNoNamespace = parts[index].split(':').pop() // split on :, then return the last item in the array
+                let stringNoNamespace = parts[index].split(':').pop(); // split on :, then return the last item in the array
                 if (output.length == 0)
                 {
-                    output += stringNoNamespace
+                    output += stringNoNamespace;
                 }
                 else
                 {
-                    output += '/' + stringNoNamespace
+                    output += '/' + stringNoNamespace;
                 }
             }
         }
-        return output
+        return output;
     }
 
     getUserDataPath(filename)
@@ -949,8 +980,8 @@ class MyApp extends Homey.App
             }
             catch (err)
             {
-                this.updateLog("Send log error: " + err.stack), 0;
-            };
+                this.updateLog("Send log error: " + err.stack, 0);
+            }
         }
         this.updateLog("Send log FAILED", 0);
     }

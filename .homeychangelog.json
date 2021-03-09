@@ -247,5 +247,8 @@
   },
   "1.1.29": {
     "en": "Fix for adding multiple cameras on a different VLAN. Fix for Pull Event subscription that was broken in 1.2.6."
+  },
+  "1.1.30": {
+    "en": "Fix for cameras that are not supporting pull refresh correctly"
   }
 }
