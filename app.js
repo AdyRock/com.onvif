@@ -27,7 +27,6 @@ class MyApp extends Homey.App
         this.discoveredDevices = [];
         this.discoveryInitialised = false;
         Homey.ManagerSettings.set('diagLog', "");
-        Homey.ManagerSettings.set('sendLog', "");
 
         this.homeyHash = await Homey.ManagerCloud.getHomeyId();
         this.homeyHash = this.hashCode(this.homeyHash).toString();
@@ -42,11 +41,7 @@ class MyApp extends Homey.App
 
         Homey.ManagerSettings.on('set', (setting) =>
         {
-            if (setting === 'sendLog' && (Homey.ManagerSettings.get('sendLog') === "send") && (Homey.ManagerSettings.get('diagLog') !== ""))
-            {
-                return this.sendLog();
-            }
-            else if (setting === 'logLevel')
+            if (setting === 'logLevel')
             {
                 this.logLevel = Homey.ManagerSettings.get('logLevel');
             }
@@ -943,7 +938,6 @@ class MyApp extends Homey.App
         oldText += newMessage;
         oldText += "\r\n";
         Homey.ManagerSettings.set('diagLog', oldText);
-        Homey.ManagerSettings.set('sendLog', "");
     }
 
     async sendLog()
