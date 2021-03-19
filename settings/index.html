@@ -3,12 +3,36 @@
 
 <head>
     <link rel="stylesheet" type="text/css" href="lwsa.css">
+    <link rel="stylesheet" type="text/css" href="busy_indicator.css" />
+
+    <style type="text/css">
+        .fog_div {
+            display: none;
+            position: fixed;
+            top: 0px;
+            left: 0px;
+            height: 100%;
+            width: 100%;
+            z-index: 100;
+            background-color: rgba(30, 30, 30, 0.5);
+        }
+
+        #busybox.show {
+            display: block;
+        }
+    </style>
 
     <!-- The '/homey.js' script must be included in your settings view to work -->
     <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
+    <script type="text/javascript" src="busy_indicator.js"></script>
 </head>
 
 <body>
+    <!-- Busy indicator -->
+    <div id="busybox" class="fog_div">
+        <div></div>
+    </div>
+
     <!-- Tab links -->
     <div class="tab">
         <button class="tablinks" onclick="setPage(event, 'log')" id="defaultOpen"><span data-i18n="settings.diagnosticsLog"></span></button>
@@ -22,7 +46,7 @@
                 <option value=0>Errors Only</option>
                 <option value=1>Basic Information</option>
                 <option value=2>Detailed Information</option>
-                <option value=3>Full Information</option>            
+                <option value=3>Full Information</option>
             </select>
             <P></P>
         </div>
@@ -33,45 +57,73 @@
     </div>
 
     <script type="text/javascript">
+        // Create the busy indicator
+        var busyi;
+        busyi = new busy_indicator(document.getElementById("busybox"), document.querySelector("#busybox div"));
+
         var diagLogElement = document.getElementById('diagLog');
         var logLevelElement = document.getElementById('logLevel');
         var clearLogElement = document.getElementById('clearLog');
         var sendLogElement = document.getElementById('sendLog');
 
         // a method named 'onHomeyReady' must be present in your code
-        function onHomeyReady(Homey) {
+        function onHomeyReady(Homey)
+        {
             document.getElementById("defaultOpen").click();
 
-            Homey.on('settings.set', function () {
-                Homey.get('logLevel', function (err, logLevel) {
+            Homey.on('settings.set', function()
+            {
+                Homey.get('logLevel', function(err, logLevel)
+                {
                     if (err) return Homey.alert(err);
                     logLevelElement.value = logLevel;
                 });
 
-                Homey.get('diagLog', function (err, diagLog) {
+                Homey.get('diagLog', function(err, diagLog)
+                {
                     if (err) return Homey.alert(err);
                     diagLogElement.value = diagLog;
                 });
             });
 
-            logLevelElement.addEventListener('change', function (e) {
-                Homey.set('logLevel', logLevelElement.value, function (err) {
+            logLevelElement.addEventListener('change', function(e)
+            {
+                Homey.set('logLevel', logLevelElement.value, function(err)
+                {
                     if (err) return Homey.alert(err);
                 });
             });
 
-            clearLogElement.addEventListener('click', function (e) {
-                Homey.set('diagLog', "", function (err) {
+            clearLogElement.addEventListener('click', function(e)
+            {
+                Homey.set('diagLog', "", function(err)
+                {
                     if (err) return Homey.alert(err);
                 });
                 diagLogElement.value = "";
             });
 
-            sendLogElement.addEventListener('click', function (e) {
-                Homey.confirm("Send the log contents to the developer?", null, function (e, ok) {
-                    if (ok) {
-                        Homey.set('sendLog', "send", function (err) {
-                            if (err) return Homey.alert(err);
+            sendLogElement.addEventListener('click', function(e)
+            {
+                Homey.confirm("Send the log contents to the developer?", null, function(e, ok)
+                {
+                    if (ok)
+                    {
+                        waitCursor(true);
+                        Homey.api('POST', '/SendLog/',
+                        {
+                            notify: true
+                        }, function(err, result)
+                        {
+                            if (err)
+                            {
+                                Homey.alert(err);
+                            }
+                            else
+                            {
+                                Homey.alert("Log sent successfully");
+                            }
+                            waitCursor(false);
                         });
                     }
                 });
@@ -79,20 +131,23 @@
 
             // Tell Homey we're ready to be displayed
             Homey.ready();
-        };
+        }
 
-        function setPage(evt, tabPage) {
+        function setPage(evt, tabPage)
+        {
             var i, tabcontent, tablinks;
 
             // Get all elements with class="tabcontent" and hide them
             tabcontent = document.getElementsByClassName("tabcontent");
-            for (i = 0; i < tabcontent.length; i++) {
+            for (i = 0; i < tabcontent.length; i++)
+            {
                 tabcontent[i].style.display = "none";
             }
 
             // Get all elements with class="tablinks" and remove the class "active"
             tablinks = document.getElementsByClassName("tablinks");
-            for (i = 0; i < tablinks.length; i++) {
+            for (i = 0; i < tablinks.length; i++)
+            {
                 tablinks[i].className = tablinks[i].className.replace(" active", "");
             }
 
@@ -100,14 +155,17 @@
             document.getElementById(tabPage).style.display = "block";
             evt.currentTarget.className += " active";
 
-            if (tabPage == 'log') {
+            if (tabPage == 'log')
+            {
                 // Refresh the log data
-                Homey.get('logLevel', function (err, logLevel) {
+                Homey.get('logLevel', function(err, logLevel)
+                {
                     if (err) return Homey.alert(err);
                     logLevelElement.value = logLevel;
                 });
 
-                Homey.get('diagLog', function (err, diagLog) {
+                Homey.get('diagLog', function(err, diagLog)
+                {
                     if (err) return Homey.alert(err);
                     diagLogElement.value = diagLog;
                 });
@@ -116,7 +174,19 @@
                 diagLogElement.setAttribute('cols', diagLogElement.parentElement.clientWidth / 8);
                 diagLogElement.style.height = (window.innerHeight - diagLogElement.offsetTop - 40) + 'px';
             }
-        };
+        }
+
+        function waitCursor(On)
+        {
+            if (On)
+            {
+                busyi.show();
+            }
+            else
+            {
+                busyi.hide();
+            }
+        }
     </script>
 
 </body>

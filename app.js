@@ -29,6 +29,9 @@ class MyApp extends Homey.App
         Homey.ManagerSettings.set('diagLog', "");
         Homey.ManagerSettings.set('sendLog', "");
 
+        this.homeyHash = await Homey.ManagerCloud.getHomeyId();
+        this.homeyHash = this.hashCode(this.homeyHash).toString();
+
         this.homeyId = await Homey.ManagerCloud.getHomeyId();
         this.homeyIP = await Homey.ManagerCloud.getLocalAddress();
         this.homeyIP = (this.homeyIP.split(":"))[0];
@@ -59,6 +62,12 @@ class MyApp extends Homey.App
             await this.unregisterCameras();
         });
 
+    }
+
+    hashCode(s)
+    {
+        for (var i = 0, h = 0; i < s.length; i++) h = Math.imul(31, h) + s.charCodeAt(i) | 0;
+        return h;
     }
 
     getMessageToken(message)
@@ -970,7 +979,7 @@ class MyApp extends Homey.App
                 {
                     from: '"Homey User" <' + Homey.env.MAIL_USER + '>', // sender address
                     to: Homey.env.MAIL_RECIPIENT, // list of receivers
-                    subject: "ONVIF log", // Subject line
+                    subject: "ONVIF log (" + this.homeyHash + " : " + Homey.manifest.version + ")", // Subject line
                     text: Homey.ManagerSettings.get('diagLog') // plain text body
                 });
 
