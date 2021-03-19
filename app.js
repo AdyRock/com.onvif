@@ -634,7 +634,7 @@ class MyApp extends Homey.App
                     }
                     else
                     {
-                        this.updateLog("Renew subscription response (" + Device.name + "): " + Device.cam.hostname + "info: " + this.varToString(info), 1);
+                        this.updateLog("Renew subscription response (" + Device.name + "): " + Device.cam.hostname + "\r\ninfo: " + this.varToString(info), 1);
                         let startTime = info[0].renewResponse[0].currentTime[0];
                         let endTime = info[0].renewResponse[0].terminationTime[0];
                         var d1 = new Date(startTime);
@@ -872,7 +872,7 @@ class MyApp extends Homey.App
         return source.toString();
     }
 
-    updateLog(newMessage, ignoreSetting = 2)
+    updateLog(newMessage, ignoreSetting = 2, insertBlankLine = false)
     {
         if (ignoreSetting > this.logLevel)
         {
@@ -907,17 +907,20 @@ class MyApp extends Homey.App
             this.logLastTime = nowTime;
         }
 
-        let dt = new Date(nowTime.getTime() - this.logLastTime.getTime());
         this.logLastTime = nowTime;
 
-        oldText += "+";
-        oldText += (dt.getHours() - 1);
+        if (insertBlankLine)
+        {
+            oldText += "\r\n";
+        }
+
+        oldText += (nowTime.getHours());
         oldText += ":";
-        oldText += dt.getMinutes();
+        oldText += nowTime.getMinutes();
         oldText += ":";
-        oldText += dt.getSeconds();
+        oldText += nowTime.getSeconds();
         oldText += ".";
-        let milliSeconds = dt.getMilliseconds().toString();
+        let milliSeconds = nowTime.getMilliseconds().toString();
         if (milliSeconds.length == 2)
         {
             oldText += '0';

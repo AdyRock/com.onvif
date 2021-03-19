@@ -576,14 +576,14 @@ class CameraDevice extends Homey.Device
 
     async checkCamera()
     {
-        if (this.enabled && !this.repairing && this.isReady && Homey.ManagerSettings.get('logLevel') === '0')
+        if (this.enabled && !this.repairing && this.isReady && (parseInt(Homey.ManagerSettings.get('logLevel')) < 2))
         {
             try
             {
                 let date = await Homey.app.getDateAndTime(this.cam);
                 if (this.getCapabilityValue('alarm_tamper'))
                 {
-                    Homey.app.updateLog("Check Camera (" + this.name + "): back online");
+                    Homey.app.updateLog("Check Camera (" + this.name + "): back online", 1);
                     this.setCapabilityValue('alarm_tamper', false);
                     this.setAvailable();
 
@@ -700,7 +700,7 @@ class CameraDevice extends Homey.Device
             storageStream.on('finish', () =>
             {
                 this.eventImage.update();
-                Homey.app.updateLog("Event Image Updated (" + this.name + ")");
+                Homey.app.updateLog("Event Image Updated (" + this.name + ")", 1);
 
                 let tokens = {
                     'eventImage': this.eventImage
@@ -791,11 +791,11 @@ class CameraDevice extends Homey.Device
         {
             if (!settings.single || dataValue != this.getCapabilityValue('alarm_motion'))
             {
-                Homey.app.updateLog("Event Processing (" + this.name + "):" + dataName + " = " + dataValue);
+                Homey.app.updateLog("Event Trigger (" + this.name + "):" + dataName + " = " + dataValue, 1);
                 this.setCapabilityValue('alarm_motion', dataValue);
                 if (dataValue)
                 {
-                    Homey.app.updateLog("Updating Motion Image in " + settings.delay + "seconds");
+                    Homey.app.updateLog("Updating Motion Image in " + settings.delay + "seconds", 1);
                     await this.updateMotionImage(settings.delay);
                 }
                 else
@@ -805,7 +805,7 @@ class CameraDevice extends Homey.Device
             }
             else
             {
-                Homey.app.updateLog("Ignoring unchanged event (" + this.name + ") " + dataName + " = " + dataValue);
+                Homey.app.updateLog("Ignoring unchanged event (" + this.name + ") " + dataName + " = " + dataValue, 1);
             }
         }
     }
@@ -930,7 +930,7 @@ class CameraDevice extends Homey.Device
                         objectId = camMessage.message.message.key.simpleItem.$.Value;
                     }
 
-                    Homey.app.updateLog("Event data: (" + this.name + ") " + eventTopic + ": " + dataName + " = " + dataValue + (objectId === "" ? "" : (" (" + objectId + ")")) + "\r\n", 1);
+                    Homey.app.updateLog("\Event data: (" + this.name + ") " + eventTopic + ": " + dataName + " = " + dataValue + (objectId === "" ? "" : (" (" + objectId + ")")), 1, true);
                     const compareSetting = eventTopic + ':' + dataName;
                     if ((compareSetting === this.eventTN) && ((this.eventObjectID === "") || (this.eventObjectID.indexOf(objectId) >= 0)))
                     {
