@@ -33,6 +33,7 @@ class CameraDevice extends Homey.Device
         this.cameraTime = null;
         this.authType = 0;
         this.snapshotSupported = true;
+        this.eventMinTimeId = null;
 
         // Upgrade old device settings where the ip and port where part of the data
         const settings = this.getSettings();
@@ -661,6 +662,15 @@ class CameraDevice extends Homey.Device
 
     async readEventImage()
     {
+        try
+        {
+            fs.unlinkSync(Homey.app.getUserDataPath(this.eventImageFilename));
+        }
+        catch (err)
+        {
+            console.log(err);
+        }
+
         const storageStream = fs.createWriteStream(Homey.app.getUserDataPath(this.eventImageFilename));
 
         if (this.invalidAfterConnect)
@@ -725,6 +735,9 @@ class CameraDevice extends Homey.Device
     {
         if (!this.updatingEventImage)
         {
+            const settings = this.getSettings();
+            Homey.app.updateLog("Updating Motion Image in " + settings.delay + "seconds", 1);
+
             this.updatingEventImage = true;
 
             // Safeguard against flag not being reset for some reason
@@ -735,7 +748,6 @@ class CameraDevice extends Homey.Device
 
             this.eventTime = new Date(Date.now());
             this.setStoreValue('eventTime', this.eventTime);
-            const settings = this.getSettings();
             this.setCapabilityValue('event_time', this.convertDate(this.eventTime, settings));
             if (this.snapshotSupported)
             {
@@ -762,6 +774,10 @@ class CameraDevice extends Homey.Device
                     }
                 }
             }
+            else
+            {
+                Homey.app.updateLog("Snapshot not supported (" + this.name + ")", 1);
+            }
             this.updatingEventImage = false;
             return true;
         }
@@ -774,38 +790,69 @@ class CameraDevice extends Homey.Device
 
     async triggerMotionEvent(dataName, dataValue)
     {
-        const settings = this.getSettings();
         this.setAvailable();
 
-        if (dataValue)
-        {
-            // Set a timer to clear the motion
-            clearTimeout(this.eventTimeoutId);
-            this.eventTimeoutId = setTimeout(() =>
-            {
-                this.setCapabilityValue('alarm_motion', false);
-                console.log("Event off timeout");
-            }, 180000);
-        }
         if (this.getCapabilityValue('motion_enabled'))
         {
-            if (!settings.single || dataValue != this.getCapabilityValue('alarm_motion'))
+            const settings = this.getSettings();
+            this.lastState = dataValue;
+
+            Homey.app.updateLog("Event Trigger (" + this.name + "):" + dataName + " = " + dataValue, 1);
+
+            if (dataValue)
             {
-                Homey.app.updateLog("Event Trigger (" + this.name + "):" + dataName + " = " + dataValue, 1);
-                this.setCapabilityValue('alarm_motion', dataValue);
-                if (dataValue)
+                // Motion detected so set a timer to clear the motion in case we miss the off event
+                clearTimeout(this.eventTimeoutId);
+                this.eventTimeoutId = setTimeout(() =>
                 {
-                    Homey.app.updateLog("Updating Motion Image in " + settings.delay + "seconds", 1);
-                    await this.updateMotionImage(settings.delay);
+                    this.setCapabilityValue('alarm_motion', false);
+                    console.log("Event off timeout");
+                }, 180000);
+
+                if (!settings.single || !this.getCapabilityValue('alarm_motion'))
+                {
+                    // Alarm was off or allowed multiple triggers so check if the minmum on time is up
+                    if (this.eventMinTimeId == null)
+                    {
+                        //start the minimum on time
+                        this.eventMinTimeId = setTimeout(() =>
+                        {
+                            console.log("Minimum event time elapsed");
+                            this.eventMinTimeId = null;
+                            if (!this.lastState)
+                            {
+                                // The event has been turned off already
+                                this.setCapabilityValue('alarm_motion', false);
+                                console.log("Turned off event alarm");
+                            }
+                        }, settings.on_time * 1000);
+
+                        this.setCapabilityValue('alarm_motion', true);
+                        await this.updateMotionImage(settings.delay);
+                    }
+                    else
+                    {
+                        Homey.app.updateLog("Ignoring event, too soon (" + this.name + ") " + dataName, 1);
+                    }
                 }
                 else
                 {
-                    clearTimeout(this.eventTimeoutId);
+                    Homey.app.updateLog("Ignoring unchanged event (" + this.name + ") " + dataName + " = " + dataValue, 1);
                 }
             }
             else
             {
-                Homey.app.updateLog("Ignoring unchanged event (" + this.name + ") " + dataName + " = " + dataValue, 1);
+                if (this.eventMinTimeId == null)
+                {
+                    // Minimum time has elapsed so switch the alarm of now
+                    this.setCapabilityValue('alarm_motion', false);
+                    console.log("Turned off event alarm", 1);
+                }
+                else
+                {
+                    console.log("Event alarm switch off delayed for minimum time", 1);
+                }
+                clearTimeout(this.eventTimeoutId);
             }
         }
     }

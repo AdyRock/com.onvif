@@ -528,7 +528,19 @@
                 "en": "Delay before image capture after motion triggered.",
                 "de": "Verzögerung bei Bewegung, bevor ein Standbild aufgenommen wird.",
                 "nl": "Vertraging voor Snapshot na beweging",
-                "it": "Ritardo prima che l'immgine sia catturata dopo un movimento rilevato.,"
+                "it": "Ritardo prima che l'immgine sia catturata dopo un movimento rilevato."
+              }
+            },
+            {
+              "id": "on_time",
+              "type": "number",
+              "label": {
+                "en": "Minimum On Time"
+              },
+              "value": 2,
+              "units": "seconds",
+              "hint": {
+                "en": "Minimum time the motion is active and the minimum time between image updates."
               }
             },
             {
