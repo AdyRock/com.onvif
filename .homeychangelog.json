@@ -256,5 +256,8 @@
   },
   "1.1.32": {
     "en": "Added Minimum On Time to advanced settings."
+  },
+  "1.1.33": {
+    "en": "Added support for line crossed, image too dark and storage broken alarms plus cpu usage report."
   }
 }
