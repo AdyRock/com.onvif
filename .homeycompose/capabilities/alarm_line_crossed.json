@@ -1,0 +1,9 @@
+{
+    "type": "boolean",
+    "title": {
+        "en": "Line crossed"
+    },
+    "getable": true,
+    "setable": false,
+    "icon": "/assets/cross-line.svg"
+}

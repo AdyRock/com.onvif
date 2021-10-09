@@ -11,10 +11,10 @@ const
 } = require('util');
 
 const notificationMap = {
-    "RuleEngine/CellMotionDetector/Motion:IsMotion": "MOTION",
-    "RuleEngine/FieldDetector/ObjectsInside:IsInside": "ANALYTICSSERVICE",
-    "VideoSource/MotionAlarm:State": "MOTIONALARM",
-    "Device/Trigger/DigitalInput:LogicalState": "DIGITALINPUT"
+    "RuleEngine/CellMotionDetector/Motion:IsMotion": ["MOTION"],
+    "RuleEngine/FieldDetector/ObjectsInside:IsInside": ["ANALYTICSSERVICE", "OBJECTSINSIDE"],
+    "VideoSource/MotionAlarm:State": ["MOTIONALARM"],
+    "Device/Trigger/DigitalInput:LogicalState": ["DIGITALINPUT"]
 };
 
 class CameraDevice extends Homey.Device
@@ -45,6 +45,67 @@ class CameraDevice extends Homey.Device
                 'ip': devData.id,
                 'port': devData.port.toString()
             });
+        }
+
+        if (settings.notificationTypes.indexOf('CROSSED') >= 0)
+        {
+            if (!this.hasCapability('alarm_line_crossed'))
+            {
+                this.addCapability('alarm_line_crossed');
+            }
+            this.setCapabilityValue('alarm_line_crossed', false).catch(this.error);
+        }
+        else
+        {
+            if (this.hasCapability('alarm_line_crossed'))
+            {
+                this.removeCapability('alarm_line_crossed');
+            }
+        }
+
+        if (settings.notificationTypes.indexOf('IMAGINGSERVICE') >= 0)
+        {
+            if (!this.hasCapability('alarm_dark_image'))
+            {
+                this.addCapability('alarm_dark_image');
+            }
+        }
+        else
+        {
+            if (this.hasCapability('alarm_dark_image'))
+            {
+                this.removeCapability('alarm_dark_image');
+            }
+        }
+
+        if (settings.notificationTypes.indexOf('STORAGEFAILURE') >= 0)
+        {
+            if (!this.hasCapability('alarm_storage'))
+            {
+                this.addCapability('alarm_storage');
+            }
+        }
+        else
+        {
+            if (this.hasCapability('alarm_storage'))
+            {
+                this.removeCapability('alarm_storage');
+            }
+        }
+
+        if (settings.notificationTypes.indexOf('PROCESSORUSAGE') >= 0)
+        {
+            if (!this.hasCapability('measure_cpu'))
+            {
+                this.addCapability('measure_cpu');
+            }
+        }
+        else
+        {
+            if (this.hasCapability('measure_cpu'))
+            {
+                this.removeCapability('measure_cpu');
+            }
         }
 
         this.preferPullEvents = settings.preferPullEvents;
@@ -90,7 +151,7 @@ class CameraDevice extends Homey.Device
 
         if (this.hasCapability('alarm_motion'))
         {
-            this.setCapabilityValue('alarm_motion', false);
+            this.setCapabilityValue('alarm_motion', false).catch(this.error);
         }
 
         let requiredClass = settings.classType;
@@ -178,7 +239,8 @@ class CameraDevice extends Homey.Device
         const availableTypes = settings.notificationTypes.split(",");
 
         // See if the required type is available
-        if (availableTypes.indexOf(searchType) >= 0)
+        if (availableTypes.map(function(type) { return searchType.indexOf(type);}))
+//        if (availableTypes.indexOf(searchType) >= 0)
         {
             return settings.notificationToUse;
         }
@@ -261,9 +323,9 @@ class CameraDevice extends Homey.Device
 
         if (changedKeysArr.indexOf("timeFormat") >= 0)
         {
-            this.setCapabilityValue('event_time', this.convertDate(this.eventTime, newSettingsObj));
-            this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, newSettingsObj));
-            this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, newSettingsObj));
+            this.setCapabilityValue('event_time', this.convertDate(this.eventTime, newSettingsObj)).catch(this.error);
+            this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, newSettingsObj)).catch(this.error);
+            this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, newSettingsObj)).catch(this.error);
         }
 
         if (changedKeysArr.indexOf("channel") >= 0)
@@ -559,7 +621,7 @@ class CameraDevice extends Homey.Device
 
                 this.setAvailable();
                 this.isReady = true;
-                this.setCapabilityValue('alarm_tamper', false);
+                this.setCapabilityValue('alarm_tamper', false).catch(this.error);
                 Homey.app.updateLog("Camera (" + this.name + ") is ready");
             }
             catch (err)
@@ -570,7 +632,7 @@ class CameraDevice extends Homey.Device
                     this.setUnavailable();
                 }
                 this.checkTimerId = setTimeout(this.connectCamera.bind(this, addingCamera), 5000);
-                this.setCapabilityValue('alarm_tamper', false);
+                this.setCapabilityValue('alarm_tamper', false).catch(this.error);
             }
         }
     }
@@ -585,7 +647,7 @@ class CameraDevice extends Homey.Device
                 if (this.getCapabilityValue('alarm_tamper'))
                 {
                     Homey.app.updateLog("Check Camera (" + this.name + "): back online", 1);
-                    this.setCapabilityValue('alarm_tamper', false);
+                    this.setCapabilityValue('alarm_tamper', false).catch(this.error);
                     this.setAvailable();
 
                     if (this.hasMotion && this.getCapabilityValue('motion_enabled'))
@@ -603,7 +665,7 @@ class CameraDevice extends Homey.Device
                 {
                     this.setAvailable();
                     this.cameraTime = date;
-                    this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, this.getSettings()));
+                    this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, this.getSettings())).catch(this.error);
 
                     if (!this.snapUri)
                     {
@@ -618,10 +680,10 @@ class CameraDevice extends Homey.Device
 
                 if (!this.getCapabilityValue('alarm_tamper'))
                 {
-                    this.setCapabilityValue('alarm_tamper', true);
+                    this.setCapabilityValue('alarm_tamper', true).catch(this.error);
                     this.alarmTime = new Date(Date.now());
                     this.setStoreValue('alarmTime', this.alarmTime);
-                    this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, this.getSettings()));
+                    this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, this.getSettings())).catch(this.error);
                 }
 
                 if (errStr.indexOf("EHOSTUNREACH") >= 0)
@@ -662,17 +724,6 @@ class CameraDevice extends Homey.Device
 
     async readEventImage()
     {
-        try
-        {
-            fs.unlinkSync(Homey.app.getUserDataPath(this.eventImageFilename));
-        }
-        catch (err)
-        {
-            console.log(err);
-        }
-
-        const storageStream = fs.createWriteStream(Homey.app.getUserDataPath(this.eventImageFilename));
-
         if (this.invalidAfterConnect)
         {
             // Suggestions on the internet say this has to be called before getting the snapshot if invalidAfterConnect = true
@@ -700,6 +751,8 @@ class CameraDevice extends Homey.Device
 
         return new Promise((resolve, reject) =>
         {
+            const storageStream = fs.createWriteStream(Homey.app.getUserDataPath(this.eventImageFilename));
+
             res.body.pipe(storageStream);
             storageStream.on('error', (err) =>
             {
@@ -748,7 +801,7 @@ class CameraDevice extends Homey.Device
 
             this.eventTime = new Date(Date.now());
             this.setStoreValue('eventTime', this.eventTime);
-            this.setCapabilityValue('event_time', this.convertDate(this.eventTime, settings));
+            this.setCapabilityValue('event_time', this.convertDate(this.eventTime, settings)).catch(this.error);
             if (this.snapshotSupported)
             {
                 if (delay > 0)
@@ -805,7 +858,7 @@ class CameraDevice extends Homey.Device
                 clearTimeout(this.eventTimeoutId);
                 this.eventTimeoutId = setTimeout(() =>
                 {
-                    this.setCapabilityValue('alarm_motion', false);
+                    this.setCapabilityValue('alarm_motion', false).catch(this.error);
                     console.log("Event off timeout");
                 }, 180000);
 
@@ -822,12 +875,12 @@ class CameraDevice extends Homey.Device
                             if (!this.lastState)
                             {
                                 // The event has been turned off already
-                                this.setCapabilityValue('alarm_motion', false);
+                                this.setCapabilityValue('alarm_motion', false).catch(this.error);
                                 console.log("Turned off event alarm");
                             }
                         }, settings.on_time * 1000);
 
-                        this.setCapabilityValue('alarm_motion', true);
+                        this.setCapabilityValue('alarm_motion', true).catch(this.error);
                         await this.updateMotionImage(settings.delay);
                     }
                     else
@@ -845,7 +898,7 @@ class CameraDevice extends Homey.Device
                 if (this.eventMinTimeId == null)
                 {
                     // Minimum time has elapsed so switch the alarm of now
-                    this.setCapabilityValue('alarm_motion', false);
+                    this.setCapabilityValue('alarm_motion', false).catch(this.error);
                     console.log("Turned off event alarm", 1);
                 }
                 else
@@ -865,18 +918,48 @@ class CameraDevice extends Homey.Device
         if (dataValue != this.getCapabilityValue('alarm_tamper'))
         {
             Homey.app.updateLog("Event Processing (" + this.name + "):" + dataName + " = " + dataValue);
-            this.setCapabilityValue('alarm_tamper', dataValue);
+            this.setCapabilityValue('alarm_tamper', dataValue).catch(this.error);
             if (dataValue)
             {
                 this.alarmTime = new Date(Date.now());
                 this.setStoreValue('alarmTime', this.alarmTime);
-                this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, this.getSettings()));
+                this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, this.getSettings())).catch(this.error);
             }
         }
         else
         {
             Homey.app.updateLog("Ignoring unchanged event (" + this.name + ") " + dataName + " = " + dataValue);
         }
+    }
+
+    async triggerLineCrossedEvent(ObjectId)
+    {
+        const settings = this.getSettings();
+        this.setAvailable();
+
+        Homey.app.updateLog("Event Processing (" + this.name + "):" + ObjectId);
+        this.setCapabilityValue('alarm_line_crossed', true).catch(this.error);
+
+        this.triggerMotionEvent('Line Crossed', true);
+
+        // This event doesn't clear so set a timer to clear it
+        clearTimeout(this.lineCrossedTimeoutId);
+        this.lineCrossedTimeoutId = setTimeout(() =>
+        {
+            this.setCapabilityValue('alarm_line_crossed', false).catch(this.error);
+            this.triggerMotionEvent('Line Crossed', false);
+            console.log("Line crossed off");
+        }, 5000);
+
+    }
+
+    async triggerDarkImageEvent(value)
+    {
+        const settings = this.getSettings();
+        this.setAvailable();
+
+        Homey.app.updateLog("Event Processing (" + this.name + "):" + value);
+        this.setCapabilityValue('alarm_dark_image', value).catch(this.error);
     }
 
     async listenForEvents(cam_obj)
@@ -983,6 +1066,26 @@ class CameraDevice extends Homey.Device
                     {
                         this.triggerMotionEvent(dataName, dataValue);
                     }
+                    else if ((compareSetting === "RuleEngine/LineDetector/Crossed:ObjectId") && ((this.eventObjectID === "") || (this.eventObjectID.indexOf(dataValue) >= 0)))
+                    {
+                        // Line crossed
+                        this.triggerLineCrossedEvent(dataValue);
+                    }
+                    else if (compareSetting === "VideoSource/ImageTooDark/ImagingService:State")
+                    {
+                        // Image too dark dataName = 'State', 'dataValue = true / false
+                        this.triggerDarkImageEvent(dataValue);
+                    }
+                    else if (compareSetting === "Monitoring/ProcessorUsage:Value")
+                    {
+                        // Processor usage = 'Value', 'dataValue = %usage
+                        this.setCapabilityValue( 'measure_cpu', dataValue).catch(this.error);
+                    }
+                    else if (compareSetting === "Device/HardwareFailure/StorageFailure:Failed")
+                    {
+                        // Processor usage = 'Value', 'dataValue = %usage
+                        this.setCapabilityValue( 'alarm_storage', dataValue).catch(this.error);
+                    }
                     else if (dataName === "IsTamper")
                     {
                         this.triggerTamperEvent(dataName, dataValue);
@@ -1010,7 +1113,7 @@ class CameraDevice extends Homey.Device
                 clearTimeout(this.eventTimerId);
 
                 console.log("onCapabilityMotionEnable: ", value);
-                this.setCapabilityValue('alarm_motion', false);
+                this.setCapabilityValue('alarm_motion', false).catch(this.error);
 
                 if (value && this.hasMotion)
                 {

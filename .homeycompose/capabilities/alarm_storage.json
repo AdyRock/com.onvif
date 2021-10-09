@@ -1,0 +1,9 @@
+{
+    "type": "boolean",
+    "title": {
+        "en": "Storage failed"
+    },
+    "getable": true,
+    "setable": false,
+    "icon": "/assets/sd_card.svg"
+}

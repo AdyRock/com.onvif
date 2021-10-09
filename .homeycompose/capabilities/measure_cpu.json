@@ -1,0 +1,10 @@
+{
+    "type": "number",
+    "title": {
+        "en": "Processor usage"
+    },
+    "getable": true,
+    "setable": false,
+    "units": "%",
+    "icon": "/assets/cpu.svg"
+}

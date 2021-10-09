@@ -309,7 +309,8 @@ class CameraDriver extends Homey.Driver
                 'username': data.username,
                 'password': data.password,
                 "ip": data.ip,
-                "port": data.port
+                "port": data.port,
+                "enabled": true
             });
 
             let settings = device.getSettings();
@@ -359,6 +360,7 @@ class CameraDriver extends Homey.Driver
                         device.setupImages();
 
                         Homey.app.updateLog("Found the camera: " + Homey.app.varToString(info));
+                        device.setAvailable();
                         break;
                     }
                 }

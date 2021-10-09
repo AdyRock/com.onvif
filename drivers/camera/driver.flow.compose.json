@@ -111,6 +111,7 @@
             },
             "args": [{
                 "type": "number",
+                "title": "Wait Time",
                 "name": "waitTime",
                 "value": 0,
                 "units": "seconds",

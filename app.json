@@ -1,8 +1,11 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.onvif",
-  "version": "1.1.32",
+  "version": "1.1.33",
   "compatibility": ">=3.0.0",
+  "platforms": [
+    "local"
+  ],
   "sdk": 2,
   "brandColor": "#FF7D4B",
   "name": {
@@ -28,6 +31,7 @@
       }
     }
   },
+  "support": "https://github.com/AdyRock/com.onvif/issues",
   "bugs": {
     "url": "https://github.com/AdyRock/com.onvif/issues"
   },
@@ -214,6 +218,7 @@
           },
           {
             "type": "number",
+            "title": "Wait Time",
             "name": "waitTime",
             "value": 0,
             "units": "seconds",
@@ -325,6 +330,12 @@
         "de": "Kamera",
         "nl": "Camera"
       },
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "lan"
+      ],
       "class": "sensor",
       "capabilities": [
         "motion_enabled",
@@ -333,7 +344,11 @@
         "event_time",
         "tamper_time",
         "date_time",
-        "button.syncTime"
+        "button.syncTime",
+        "alarm_line_crossed",
+        "alarm_dark_image",
+        "measure_cpu",
+        "alarm_storage"
       ],
       "capabilitiesOptions": {
         "button.syncTime": {
@@ -889,6 +904,33 @@
     }
   ],
   "capabilities": {
+    "alarm_dark_image": {
+      "type": "boolean",
+      "title": {
+        "en": "Image too dark"
+      },
+      "getable": true,
+      "setable": false,
+      "icon": "/assets/dark_image.svg"
+    },
+    "alarm_line_crossed": {
+      "type": "boolean",
+      "title": {
+        "en": "Line crossed"
+      },
+      "getable": true,
+      "setable": false,
+      "icon": "/assets/cross-line.svg"
+    },
+    "alarm_storage": {
+      "type": "boolean",
+      "title": {
+        "en": "Storage failed"
+      },
+      "getable": true,
+      "setable": false,
+      "icon": "/assets/sd_card.svg"
+    },
     "date_time": {
       "type": "string",
       "title": {
@@ -912,6 +954,16 @@
       "icon": "/assets/motion_time.svg",
       "getable": true,
       "setable": false
+    },
+    "measure_cpu": {
+      "type": "number",
+      "title": {
+        "en": "Processor usage"
+      },
+      "getable": true,
+      "setable": false,
+      "units": "%",
+      "icon": "/assets/cpu.svg"
     },
     "motion_enabled": {
       "type": "boolean",

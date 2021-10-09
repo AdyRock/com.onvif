@@ -1,7 +1,10 @@
 {
   "id": "com.onvif",
-  "version": "1.1.32",
+  "version": "1.1.33",
   "compatibility": ">=3.0.0",
+  "platforms": [
+    "local"
+  ],
   "sdk": 2,
   "brandColor": "#FF7D4B",
   "name": {
@@ -27,6 +30,7 @@
       }
     }
   },
+  "support": "https://github.com/AdyRock/com.onvif/issues",
   "bugs": {
     "url": "https://github.com/AdyRock/com.onvif/issues"
   },

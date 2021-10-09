@@ -638,14 +638,15 @@ class MyApp extends Homey.App
                     }
                     else
                     {
-                        this.updateLog("Renew subscription response (" + Device.name + "): " + Device.cam.hostname + "\r\ninfo: " + this.varToString(info), 1);
+                        this.updateLog("Renew subscription response (" + Device.name + "): " + Device.cam.hostname + "\r\ninfo: " + this.varToString(info));
                         let startTime = info[0].renewResponse[0].currentTime[0];
                         let endTime = info[0].renewResponse[0].terminationTime[0];
                         var d1 = new Date(startTime);
                         var d2 = new Date(endTime);
-                        var refreshTime = ((d2.valueOf() - d1.valueOf())) - 5000;
+                        var refreshTime = ((d2.valueOf() - d1.valueOf()));
 
-                        this.updateLog("Push renew every (" + Device.name + "): " + refreshTime);
+                        this.updateLog("Push renew every (" + Device.name + "): " + (refreshTime / 1000), 1);
+                        refreshTime -= 5000;
                         if (refreshTime < 0)
                         {
                             this.unsubscribe(Device);
@@ -691,9 +692,10 @@ class MyApp extends Homey.App
                         let endTime = info[0].subscribeResponse[0].terminationTime[0];
                         var d1 = new Date(startTime);
                         var d2 = new Date(endTime);
-                        var refreshTime = ((d2.valueOf() - d1.valueOf())) - 5000;
+                        var refreshTime = ((d2.valueOf() - d1.valueOf()));
 
-                        this.updateLog("Push renew every (" + Device.name + "): " + refreshTime + "s  @ " + unsubscribeRef, 1);
+                        this.updateLog("Push renew every (" + Device.name + "): " + (refreshTime / 1000) + "s  @ " + unsubscribeRef, 1);
+                        refreshTime -= 5000;
                         if (refreshTime < 0)
                         {
                             this.unsubscribe(Device);
