@@ -1,0 +1,48 @@
+{
+  "name": "onvif",
+  "version": "1.7.2",
+  "author": "Andrew D.Laptev <a.d.laptev@gmail.com>",
+  "description": "Client to ONVIF NVT devices Profile S: cameras",
+  "main": "lib/onvif.js",
+  "contributors": [
+    {
+      "name": "Andrew D.Laptev",
+      "email": "a.d.laptev@gmail.com",
+      "url": "https://github.com/agsh/onvif"
+    },
+    {
+      "name": "Chris Wiggins",
+      "email": "chris@wiggins.nz",
+      "url": "https://github.com/chriswiggins"
+    },
+    {
+      "name": "Jeff Galbraith",
+      "email": "jgalbraith@intelliviewtech.com",
+      "url": "http://intelliviewtech.com"
+    },
+    {
+      "name": "Roger Hardiman",
+      "email": "opensource@rjh.org.uk",
+      "url": "http://www.rjh.org.uk"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AdyRock/com.onvif/tree/master/lib/onvif"
+  },
+  "dependencies": {
+    "lodash.get": "^4.4.2",
+    "xml2js": "^0.4.19"
+  },
+  "keywords": [
+    "onvif",
+    "video",
+    "PTZ",
+    "camera",
+    "RTSP"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=6.0"
+  }
+}

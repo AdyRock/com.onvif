@@ -1,0 +1,16 @@
+{
+    "settings": {
+        "diagnosticsLog": "Diagnoseprotokoll",
+        "logLevel": "Protokollstufe",
+        "ClearLog": "Protokoll löschen",
+        "SendLog": "Protokoll versenden"
+    },
+    "Push_Pull_Supported": "Übermitteln und Empfangen unterstützen: ",
+    "Using_Pull": "benutze Empfangen",
+    "Using_Push": "benutze Übermitteln",
+    "Only_Pull_Supported": "Nur Empfangen unterstützt",
+    "Only_Push_Supported": "nur Übermitteln unterstützt",
+    "Not_Supported": "Nicht unterstützt",
+    "Motion_Event": "Bewegung Erkannt",
+    "Now": "Schnappschuss"
+}

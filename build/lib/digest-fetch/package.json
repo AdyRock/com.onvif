@@ -1,0 +1,26 @@
+{
+  "name": "digest-fetch",
+  "version": "1.1.1",
+  "description": "digest auth request plugin for fetch/node-fetch also support http basic auth authentication",
+  "main": "digest-fetch-src.js",
+  "keywords": [
+    "digest",
+    "auth",
+    "fetch",
+    "node-feth",
+    "http",
+    "basic",
+    "authentication"
+  ],
+  "author": "stefanliu@outlook.com",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AdyRock/com.onvif/tree/master/lib/digest-fetch"
+  },
+  "homepage": "https://github.com/devfans/digest-fetch#readme",
+  "dependencies": {
+    "base-64": "^0.1.0",
+    "crypto-js": "^4.0.0"
+  }
+}
