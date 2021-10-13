@@ -4,8 +4,6 @@
  * @author Andrew D.Laptev <a.d.laptev@gmail.com>
  * @licence MIT
  */
-const Homey = require('homey');
-
 const xml2js = require('xml2js')
 	, numberRE = /^-?([1-9]\d*|0)(\.\d*)?$/
 	, dateRE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(.\d+)?Z$/
@@ -53,7 +51,6 @@ const linerase = function(xml) {
  * @param {ParseSOAPStringCallback} callback
  */
 const parseSOAPString = function(xmlOrigin, callback) {
-//	Homey.app.updateLog("parseSOAPString: " + Homey.app.varToString(xmlOrigin) + "\n", 3)
 	/* Filter out xml name spaces */
 	xml = xmlOrigin.replace(/xmlns([^=]*?)=(".*?")/g,'');
 
@@ -73,7 +70,6 @@ const parseSOAPString = function(xmlOrigin, callback) {
 			}
 			, function(err, result) {
 				if (!result || !result['envelope'] || !result['envelope']['body']) {
-					//Homey.app.updateLog("!!!!! parseSOAPString error 1: " + "\n" +  "------ Original xml: " + Homey.app.varToString(xmlOrigin) + "\n" + "------ Filtered xml: " + Homey.app.varToString(xml) + "\n", 0);
 					callback(new Error('Wrong ONVIF SOAP response'), null, xml);
 				} else {
 					if (!err && result['envelope']['body'][0]['fault']) {
@@ -110,16 +106,12 @@ const parseSOAPString = function(xmlOrigin, callback) {
 
 						// console.error('Fault:', reason, detail);
 						err = new Error('ONVIF SOAP Fault: ' + (reason) + (detail));
-						Homey.app.updateLog("!!!!! SOAP: Error returned. Reason: " + reason + ", Detail: " +  detail, 0);
-						Homey.app.updateLog("   --- xml: " + Homey.app.varToString(xml) + "\n", 3);
-
 					}
 					callback(err, result['envelope']['body'], xml);
 				}
 			}
 		);
 	} catch (err) {
-		Homey.app.updateLog("!!!!! parseSOAPString error 3: " + Homey.app.varToString(err) + "   --- Original xml: " + Homey.app.varToString(xmlOrigin) + "\n" + "   --- Filtered xml: " + Homey.app.varToString(xml) + "\n", 0);
 		callback(err, '', xml);
 	}
 };

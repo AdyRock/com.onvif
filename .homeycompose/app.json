@@ -1,11 +1,11 @@
 {
   "id": "com.onvif",
   "version": "1.1.33",
-  "compatibility": ">=3.0.0",
+  "compatibility": ">=5.0.0",
   "platforms": [
     "local"
   ],
-  "sdk": 2,
+  "sdk": 3,
   "brandColor": "#FF7D4B",
   "name": {
     "en": "ONVIF Camera",
@@ -56,5 +56,11 @@
         "name": "it - Andrea Mascioni"
       }
     ]
+  },
+  "api": {
+    "sendLog": {
+      "method": "post",
+      "path": "/sendLog/"
+    }
   }
 }

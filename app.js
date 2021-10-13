@@ -26,36 +26,103 @@ class MyApp extends Homey.App
         this.pushServerPort = 9998;
         this.discoveredDevices = [];
         this.discoveryInitialised = false;
-        Homey.ManagerSettings.set('diagLog', "");
+        this.homey.settings.set('diagLog', "");
 
-        this.homeyHash = await Homey.ManagerCloud.getHomeyId();
-        this.homeyHash = this.hashCode(this.homeyHash).toString();
+        this.homeyId = await this.homey.cloud.getHomeyId();
+        this.homeyHash = this.hashCode(this.homeyId).toString();
 
-        this.homeyId = await Homey.ManagerCloud.getHomeyId();
-        this.homeyIP = await Homey.ManagerCloud.getLocalAddress();
+        this.homeyIP = await this.homey.cloud.getLocalAddress();
         this.homeyIP = (this.homeyIP.split(":"))[0];
 
         this.pushEvents = [];
 
-        this.logLevel = Homey.ManagerSettings.get('logLevel');
+        this.logLevel = this.homey.settings.get('logLevel');
 
-        Homey.ManagerSettings.on('set', (setting) =>
+        this.homey.settings.on('set', (setting) =>
         {
             if (setting === 'logLevel')
             {
-                this.logLevel = Homey.ManagerSettings.get('logLevel');
+                this.logLevel = this.homey.settings.get('logLevel');
             }
         });
 
-        this.runsListener();
+        this.runsListener().catch(this.err);
 
         this.checkCameras = this.checkCameras.bind(this);
-        this.checkTimerId = setTimeout(this.checkCameras, 30000);
+        this.checkTimerId = this.homey.setTimeout(this.checkCameras, 30000);
 
-        Homey.on('unload', async () =>
+        this.homey.on('unload', async () =>
         {
             await this.unregisterCameras();
         });
+
+    }
+
+    async registerFlowCard()
+    {
+        this.motionCondition = this.homey.flow.getConditionCard('motionEnabledCondition');
+        this.motionCondition.registerRunListener(async (args, state) =>
+            {
+
+                return await args.device.getCapabilityValue('motion_enabled'); // Promise<boolean>
+            });
+
+        this.motionReadyCondition = this.homey.flow.getConditionCard('motionReadyCondition');
+        this.motionReadyCondition.registerRunListener(async (args, state) =>
+            {
+
+                let remainingTime = args.waitTime * 10;
+                while ((remainingTime > 0) && args.device.updatingEventImage)
+                {
+                    // Wait for image to update
+                    await this.homey.app.asyncDelay(100);
+                    remainingTime--;
+                }
+                return !args.device.updatingEventImage;
+            });
+
+        this.motionEnabledAction = this.homey.flow.getActionCard('motionEnableAction');
+        this.motionEnabledAction.registerRunListener(async (args, state) =>
+            {
+                console.log("motionEnabledAction");
+                args.device.onCapabilityMotionEnable(true, null);
+                return await args.device.setCapabilityValue('motion_enabled', true); // Promise<void>
+            });
+
+        this.motionDisabledAction = this.homey.flow.getActionCard('motionDisableAction');
+        this.motionDisabledAction.registerRunListener(async (args, state) =>
+            {
+
+                console.log("motionDisabledAction");
+                args.device.onCapabilityMotionEnable(false, null);
+                return await args.device.setCapabilityValue('motion_enabled', false); // Promise<void>
+            });
+
+        this.snapshotAction = this.homey.flow.getActionCard('snapshotAction');
+        this.snapshotAction.registerRunListener(async (args, state) =>
+            {
+
+                let err = await args.device.nowImage.update();
+                if (!err)
+                {
+                    let tokens = {
+                        'image': args.device.nowImage
+                    };
+
+                    args.device.snapshotReadyTrigger
+                        .trigger(args.device, tokens)
+                        .catch(args.device.error)
+                        .then(args.device.log("Now Snapshot ready (" + args.device.id + ")"));
+                }
+                return err;
+            });
+
+        this.motionUpdateAction = this.homey.flow.getActionCard('updateMotionImageAction');
+        this.motionUpdateAction.registerRunListener(async (args, state) =>
+            {
+
+                return args.device.updateMotionImage(0);
+            });
 
     }
 
@@ -97,7 +164,7 @@ class MyApp extends Homey.App
                     let messageToken = this.getMessageToken(data.notificationMessage[0].message.message);
 
                     // Find the referenced device
-                    const driver = Homey.ManagerDrivers.getDriver('camera');
+                    const driver = this.homey.drivers.getDriver('camera');
                     var theDevice = null;
                     if (driver)
                     {
@@ -226,7 +293,7 @@ class MyApp extends Homey.App
 
                     if (cam.href && cam.href.indexOf("onvif") >= 0)
                     {
-                        var mac = await Homey.ManagerArp.getMAC(cam.hostname);
+                        var mac = await this.homey.arp.getMAC(cam.hostname);
 
                         this.discoveredDevices.push(
                         {
@@ -276,7 +343,7 @@ class MyApp extends Homey.App
         });
 
         // Allow time for the process to finish
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        await new Promise(resolve => this.homey.setTimeout(resolve, 5000));
 
         // Add in a manual option
 
@@ -298,6 +365,7 @@ class MyApp extends Homey.App
 
                 let cam = new Cam(
                 {
+                    homeyApp: this.homey,
                     hostname: hostname,
                     username: username,
                     password: password,
@@ -327,7 +395,7 @@ class MyApp extends Homey.App
 
     async checkCameras()
     {
-        const driver = Homey.ManagerDrivers.getDriver('camera');
+        const driver = this.homey.drivers.getDriver('camera');
         if (driver)
         {
             let devices = driver.getDevices();
@@ -338,12 +406,12 @@ class MyApp extends Homey.App
             }
         }
 
-        this.checkTimerId = setTimeout(this.checkCameras, 10000);
+        this.checkTimerId = this.homey.setTimeout(this.checkCameras, 10000);
     }
 
     async unregisterCameras()
     {
-        const driver = Homey.ManagerDrivers.getDriver('camera');
+        const driver = this.homey.drivers.getDriver('camera');
         if (driver)
         {
             let devices = driver.getDevices();
@@ -593,7 +661,7 @@ class MyApp extends Homey.App
             {
                 this.updateLog("App.subscribeToCamPushEvents: Found entry for " + Device.cam.hostname);
                 // An event is already registered for this IP address
-                clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
+                this.homey.clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
                 unsubscribeRef = pushEvent.unsubscribeRef;
                 pushEvent.eventSubscriptionRenewTimerId = null;
 
@@ -631,7 +699,7 @@ class MyApp extends Homey.App
                         setImmediate(() =>
                         {
                             this.updateLog("Resubscribing");
-                            this.subscribeToCamPushEvents(Device);
+                            this.subscribeToCamPushEvents(Device).catch(this.err);
                         });
                         return resolve(true);
                     }
@@ -648,7 +716,7 @@ class MyApp extends Homey.App
                         refreshTime -= 5000;
                         if (refreshTime < 0)
                         {
-                            this.unsubscribe(Device);
+                            this.unsubscribe(Device).catch(this.err);
                         }
 
                         if (refreshTime < 3000)
@@ -658,10 +726,10 @@ class MyApp extends Homey.App
 
                         pushEvent.refreshTime = refreshTime;
                         pushEvent.unsubscribeRef = unsubscribeRef;
-                        pushEvent.eventSubscriptionRenewTimerId = setTimeout(() =>
+                        pushEvent.eventSubscriptionRenewTimerId = this.homey.setTimeout(() =>
                         {
                             this.updateLog("Renewing subscription");
-                            this.subscribeToCamPushEvents(Device);
+                            this.subscribeToCamPushEvents(Device).catch(this.err);
                         }, refreshTime);
                         return resolve(true);
                     }
@@ -697,7 +765,7 @@ class MyApp extends Homey.App
                         refreshTime -= 5000;
                         if (refreshTime < 0)
                         {
-                            this.unsubscribe(Device);
+                            this.unsubscribe(Device).catch(this.err);
                         }
 
                         if (refreshTime < 3000)
@@ -707,10 +775,10 @@ class MyApp extends Homey.App
 
                         pushEvent.refreshTime = refreshTime;
                         pushEvent.unsubscribeRef = unsubscribeRef;
-                        pushEvent.eventSubscriptionRenewTimerId = setTimeout(() =>
+                        pushEvent.eventSubscriptionRenewTimerId = this.homey.setTimeout(() =>
                         {
                             this.updateLog("Renewing subscription");
-                            this.subscribeToCamPushEvents(Device);
+                            this.subscribeToCamPushEvents(Device).catch(this.err);
                         }, refreshTime);
                         return resolve(true);
                     }
@@ -764,7 +832,7 @@ class MyApp extends Homey.App
             if ((pushEvent.devices.length == 0) && pushEvent.unsubscribeRef)
             {
                 // No devices left so unregister the event
-                clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
+                this.homey.clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
                 this.updateLog('Unsubscribe push event (' + Device.cam.hostname + '): ' + pushEvent.unsubscribeRef, 1);
                 Device.cam.UnsubscribePushEventSubscription(pushEvent.unsubscribeRef, (err, info, xml) =>
                 {
@@ -891,7 +959,7 @@ class MyApp extends Homey.App
 
         this.log(newMessage);
 
-        var oldText = Homey.ManagerSettings.get('diagLog');
+        var oldText = this.homey.settings.get('diagLog');
         if (oldText.length > 30000)
         {
             // Remove the first 5000 characters.
@@ -912,7 +980,7 @@ class MyApp extends Homey.App
             oldText += nowTime.toJSON();
             oldText += "\r\n";
             oldText += "App version ";
-            oldText += Homey.manifest.version;
+            oldText += this.homey.manifest.version;
             oldText += "\r\n\r\n";
             this.logLastTime = nowTime;
         }
@@ -943,7 +1011,7 @@ class MyApp extends Homey.App
         oldText += ": ";
         oldText += newMessage;
         oldText += "\r\n";
-        Homey.ManagerSettings.set('diagLog', oldText);
+        this.homey.settings.set('diagLog', oldText);
     }
 
     async sendLog()
@@ -958,14 +1026,14 @@ class MyApp extends Homey.App
                 // create reusable transporter object using the default SMTP transport
                 let transporter = nodemailer.createTransport(
                 {
-                    host: Homey.env.MAIL_HOST, //Homey.env.MAIL_HOST,
+                    host: this.homey.env.MAIL_HOST, //this.homey.env.MAIL_HOST,
                     port: 465,
                     ignoreTLS: false,
                     secure: true, // true for 465, false for other ports
                     auth:
                     {
-                        user: Homey.env.MAIL_USER, // generated ethereal user
-                        pass: Homey.env.MAIL_SECRET // generated ethereal password
+                        user: this.homey.env.MAIL_USER, // generated ethereal user
+                        pass: this.homey.env.MAIL_SECRET // generated ethereal password
                     },
                     tls:
                     {
@@ -977,10 +1045,10 @@ class MyApp extends Homey.App
                 // send mail with defined transport object
                 let info = await transporter.sendMail(
                 {
-                    from: '"Homey User" <' + Homey.env.MAIL_USER + '>', // sender address
-                    to: Homey.env.MAIL_RECIPIENT, // list of receivers
-                    subject: "ONVIF log (" + this.homeyHash + " : " + Homey.manifest.version + ")", // Subject line
-                    text: Homey.ManagerSettings.get('diagLog') // plain text body
+                    from: '"Homey User" <' + this.homey.env.MAIL_USER + '>', // sender address
+                    to: this.homey.env.MAIL_RECIPIENT, // list of receivers
+                    subject: "ONVIF log (" + this.homeyHash + " : " + this.homey.manifest.version + ")", // Subject line
+                    text: this.homey.settings.get('diagLog') // plain text body
                 });
 
                 this.updateLog("Message sent: " + info.messageId);

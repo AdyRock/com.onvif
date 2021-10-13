@@ -4,8 +4,6 @@
  * @author Andrew D.Laptev <a.d.laptev@gmail.com>
  * @licence MIT
  */
-const Homey = require('homey');
-
 module.exports = function (Cam) {
 
 	/**
@@ -58,7 +56,7 @@ module.exports = function (Cam) {
 				this.events.properties = linerase(res).getEventPropertiesResponse;
 			}
 			else{
-				Homey.app.updateLog("!!!!! getEventServiceCapabilities error: " + Homey.app.varToString(err) + "\n", 0);
+				this.homey.app.updateLog("!!!!! getEventServiceCapabilities error: " + this.homey.app.varToString(err) + "\n", 0);
 			}
 			callback.call(this, err, err ? null : this.events.properties, xml);
 		}.bind(this));
@@ -75,11 +73,12 @@ module.exports = function (Cam) {
 				'<GetServiceCapabilities xmlns="http://www.onvif.org/ver10/events/wsdl"/>' +
 				this._envelopeFooter()
 		}, function (err, res, xml) {
+            var data = null;
 			if (!err) {
-				var data = linerase(res[0].getServiceCapabilitiesResponse[0].capabilities[0].$);
+				data = linerase(res[0].getServiceCapabilitiesResponse[0].capabilities[0].$);
 			}
 			else{
-				Homey.app.updateLog("!!!!! getEventServiceCapabilities error: " + Homey.app.varToString(err) + "\n", 0);
+				this.homey.app.updateLog("!!!!! getEventServiceCapabilities error: " + this.homey.app.varToString(err) + "\n", 0);
 			}
 			callback.call(this, err, data, xml);
 		}.bind(this));
@@ -90,7 +89,7 @@ module.exports = function (Cam) {
 	 * @param {function} callback
 	 */
 	Cam.prototype.createPullPointSubscription = function (callback) {
-		Homey.app.updateLog("\n\n--------------------createPullPointSubscription--------------------\n");
+		this.homey.app.updateLog("\n\n--------------------createPullPointSubscription--------------------\n");
 		this._request({
 			service: 'events',
 			body: this._envelopeHeader() +
@@ -102,16 +101,16 @@ module.exports = function (Cam) {
 			if (!err) {
 				this.events.subscription = linerase(res[0].createPullPointSubscriptionResponse[0]);
 
-				//Homey.app.updateLog("createPullPointSubscription: " + Homey.app.varToString(res) + "\naddress: " + Homey.app.varToString(this.events.subscription.subscriptionReference.address) + "\n");
+				//this.homey.app.updateLog("createPullPointSubscription: " + this.homey.app.varToString(res) + "\naddress: " + this.homey.app.varToString(this.events.subscription.subscriptionReference.address) + "\n");
 				this.events.subscription.subscriptionReference.address = this.events.subscription.subscriptionReference.address.replace("255.255.255.255", this.hostname);
 				this.events.subscription.subscriptionReference.address = this._parseUrl(this.events.subscription.subscriptionReference.address);
 				this.events.terminationTime = _terminationTime(this.events.subscription);
 
-				Homey.app.updateLog("createPullPointSubscription parsed: " + Homey.app.varToString(this.events.subscription.subscriptionReference.address) + "\n");
+				this.homey.app.updateLog("createPullPointSubscription parsed: " + this.homey.app.varToString(this.events.subscription.subscriptionReference.address) + "\n");
 
 			}
 			else{
-				Homey.app.updateLog("\n!!!!! createPullPointSubscription error: " + Homey.app.varToString(err) + "\n", 0);
+				this.homey.app.updateLog("\n!!!!! createPullPointSubscription error: " + this.homey.app.varToString(err) + "\n", 0);
 				if (err.message === 'ONVIF SOAP Fault: "SOAP-ENV:Sender"')
 				{
 					// Reboot the camera
@@ -122,7 +121,7 @@ module.exports = function (Cam) {
 			try {
 				callback.call(this, err, err ? null : this.events.subscription, xml);
 			} catch (err) {
-				Homey.app.updateLog("!!!!! createPullPointSubscription callback error: " + Homey.app.varToString(err) + "\n", 0);
+				this.homey.app.updateLog("!!!!! createPullPointSubscription callback error: " + this.homey.app.varToString(err) + "\n", 0);
 				this.emit('error', err, xml);
 			}
 
@@ -146,7 +145,7 @@ module.exports = function (Cam) {
 				'</a:ReplyTo>' +
 
 				'<a:To s:mustunderstand="1">' +
-				this.uri['events'].href +
+				this.uri.events.href +
 				'</a:To>' +
 
 				'</s:Header>' +
@@ -259,7 +258,7 @@ module.exports = function (Cam) {
 		}
 
 		try {
-			subscriptionId = this.events.subscription.subscriptionReference.referenceParameters.subscriptionId
+			subscriptionId = this.events.subscription.subscriptionReference.referenceParameters.subscriptionId;
 		} catch (e) {
 			subscriptionId = null;
 		}
@@ -267,27 +266,28 @@ module.exports = function (Cam) {
 		let sendXml = this._envelopeHeader(true);
 
 		if (!subscriptionId) {
-			sendXml += '<a:To>' + urlAddress.href + '</a:To>'
+			sendXml += '<a:To>' + urlAddress.href + '</a:To>';
 		} else {
 			// Axis Cameras use a PullPoint URL and the Subscription ID
 			sendXml += '<a:To mustUnderstand="1">' + urlAddress.href + '</a:To>' +
-				'<SubscriptionId xmlns="http://www.axis.com/2009/event" a:IsReferenceParameter="true">' + this.events.subscription.subscriptionReference.referenceParameters.subscriptionId + '</SubscriptionId>'
+				'<SubscriptionId xmlns="http://www.axis.com/2009/event" a:IsReferenceParameter="true">' + this.events.subscription.subscriptionReference.referenceParameters.subscriptionId + '</SubscriptionId>';
 		}
 		sendXml += '</s:Header>' +
 			'<s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
 			'<Renew xmlns="http://docs.oasis-open.org/wsn/b-2">' +
 			'<TerminationTime>PT60S</TerminationTime>' +
 			'</Renew>' +
-			this._envelopeFooter()
+			this._envelopeFooter();
 		this._request({
 			url: urlAddress,
 			body: sendXml
 		}, function (err, res, xml) {
+            var data = null;
 			if (!err) {
-				var data = linerase(res).renewResponse;
+				data = linerase(res).renewResponse;
 			}
 			else{
-				Homey.app.updateLog("!!!!! renew error: " + Homey.app.varToString(err) + "\n", 0);
+				this.homey.app.updateLog("!!!!! renew error: " + this.homey.app.varToString(err) + "\n", 0);
 			}
 			callback.call(this, err, data, xml);
 		}.bind(this));
@@ -333,7 +333,7 @@ module.exports = function (Cam) {
 		}
 
 		try {
-			subscriptionId = this.events.subscription.subscriptionReference.referenceParameters.subscriptionId
+			subscriptionId = this.events.subscription.subscriptionReference.referenceParameters.subscriptionId;
 		} catch (e) {
 			subscriptionId = null;
 		}
@@ -341,11 +341,11 @@ module.exports = function (Cam) {
 		let sendXml = this._envelopeHeader(true);
 
 		if (!subscriptionId) {
-			sendXml += '<a:To>' + urlAddress.href + '</a:To>'
+			sendXml += '<a:To>' + urlAddress.href + '</a:To>';
 		} else {
 			// Axis Cameras use a PullPoint URL and the Subscription ID
 			sendXml += '<a:To mustUnderstand="1">' + urlAddress.href + '</a:To>' +
-				'<SubscriptionId xmlns="http://www.axis.com/2009/event" a:IsReferenceParameter="true">' + subscriptionId + '</SubscriptionId>'
+				'<SubscriptionId xmlns="http://www.axis.com/2009/event" a:IsReferenceParameter="true">' + subscriptionId + '</SubscriptionId>';
 		}
 		sendXml += '</s:Header>' +
 			'<s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
@@ -359,11 +359,12 @@ module.exports = function (Cam) {
 			body: sendXml,
 			timeout: 120000,
 		}, function (err, res, xml) {
+            var data = null;
 			if (!err) {
-				var data = linerase(res).pullMessagesResponse;
+				data = linerase(res).pullMessagesResponse;
 			}
 			else{
-				Homey.app.updateLog("!!!!! pullMessage error: " + Homey.app.varToString(err) + "\n", 0);
+				this.homey.app.updateLog("!!!!! pullMessage error: " + this.homey.app.varToString(err) + "\n", 0);
 			}
 			callback.call(this, err, data, xml);
 		}.bind(this));
@@ -384,7 +385,7 @@ module.exports = function (Cam) {
 		}
 
 		try {
-			subscriptionId = this.events.subscription.subscriptionReference.referenceParameters.subscriptionId
+			subscriptionId = this.events.subscription.subscriptionReference.referenceParameters.subscriptionId;
 		} catch (e) {
 			subscriptionId = null;
 		}
@@ -392,26 +393,27 @@ module.exports = function (Cam) {
 		let sendXml = this._envelopeHeader(true);
 
 		if (!subscriptionId) {
-			sendXml += '<a:To>' + urlAddress.href + '</a:To>'
+			sendXml += '<a:To>' + urlAddress.href + '</a:To>';
 		} else {
 			// Axis Cameras use a PullPoint URL and the Subscription ID
 			sendXml += '<a:To mustUnderstand="1">' + urlAddress.href + '</a:To>' +
-				'<SubscriptionId xmlns="http://www.axis.com/2009/event" a:IsReferenceParameter="true">' + subscriptionId + '</SubscriptionId>'
+				'<SubscriptionId xmlns="http://www.axis.com/2009/event" a:IsReferenceParameter="true">' + subscriptionId + '</SubscriptionId>';
 		}
 		sendXml += '</s:Header>' +
 			'<s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
 			'<Unsubscribe xmlns="http://docs.oasis-open.org/wsn/b-2"/>' +
-			this._envelopeFooter()
+			this._envelopeFooter();
 		this._request({
 			url: urlAddress,
 			body: sendXml
 		}, function (err, res, xml) {
+            var data = null;
 			if (!err) {
 				this.eventEmitter.removeAllListeners('event'); // We can subscribe again only if there is no 'event' listener
-				var data = linerase(res).unsubscribeResponse;
+				data = linerase(res).unsubscribeResponse;
 			}
 			else{
-				Homey.app.updateLog("!!!!! unsubscribe error: " + this.hostname + " - "  + Homey.app.varToString(err) + "\n", 0);
+				this.homey.app.updateLog("!!!!! unsubscribe error: " + this.hostname + " - "  + this.homey.app.varToString(err) + "\n", 0);
 			}
 			if (callback) {
 				callback.call(this, err, data, xml);
@@ -460,8 +462,8 @@ module.exports = function (Cam) {
 				delete this.events.terminationTime;
 				this.unsubscribe();
 			} else {
-				Homey.app.updateLog("!!!!! _eventPull error 1: " + this.hostname + " - " + Homey.app.varToString(err) + "\n", 0);
-				setTimeout(this._eventRequest.bind(this), 5000);
+				this.homey.app.updateLog("!!!!! _eventPull error 1: " + this.hostname + " - " + this.homey.app.varToString(err) + "\n", 0);
+				this.homey.setTimeout(this._eventRequest.bind(this), 5000);
 			}
 		}
 		else if (this.eventEmitter.listeners('event').length) { // check for event listeners, if zero, stop pulling
@@ -491,18 +493,18 @@ module.exports = function (Cam) {
 							this.events.terminationTime = _terminationTime(data);
 						}
 						else{
-							Homey.app.updateLog("!!!!! _eventPull renew error: " + this.hostname + " - "  + Homey.app.varToString(err) + "\n", 0);
+							this.homey.app.updateLog("!!!!! _eventPull renew error: " + this.hostname + " - "  + this.homey.app.varToString(err) + "\n", 0);
 						}
-					})
+					});
 				}
 				else{
-					Homey.app.updateLog("!!!!! _eventPull error 3: " + this.hostname + " - "  + Homey.app.varToString(err) + "\n", 0);
-					setTimeout(this._eventRequest.bind(this), 1000, true);
+					this.homey.app.updateLog("!!!!! _eventPull error 3: " + this.hostname + " - "  + this.homey.app.varToString(err) + "\n", 0);
+					this.homey.setTimeout(this._eventRequest.bind(this), 1000, true);
 					return;
 				}
 				// this._eventRequest = this._eventRequest.bind(this);
-				// setTimeout(this._eventRequest, 500);
-				this._eventRequest()
+				// this.homey.setTimeout(this._eventRequest, 500);
+				this._eventRequest();
 			}.bind(this));
 		} else {
 			delete this.events.terminationTime;

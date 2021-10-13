@@ -70,6 +70,7 @@ const Homey = require('homey');
  */
 var Cam = function (options, callback) {
 	callback = callback || emptyFn;
+    this.homey = options.homeyApp;
 	this.hostname = options.hostname;
 	this.username = options.username;
 	this.password = options.password;
@@ -108,49 +109,49 @@ var Cam = function (options, callback) {
 // util.inherits(Cam, events.EventEmitter); // Do not inherit! Because the EventEmitter becomes static (same for all instances of Cam object)
 Cam.prototype.addListener = function (eventName, listener) {
 	return this.eventEmitter.addListener(eventName, listener);
-}
+};
 Cam.prototype.emit = function (event, ...data) {
 	return this.eventEmitter.emit(event, ...data);
-}
+};
 Cam.prototype.eventNames = function () {
 	return this.eventEmitter.eventNames();
-}
+};
 Cam.prototype.getMaxListeners = function () {
 	return this.eventEmitter.getMaxListeners();
-}
+};
 Cam.prototype.listenerCount = function (eventName) {
 	return this.eventEmitter.listenerCount(eventName);
-}
+};
 Cam.prototype.listeners = function (eventName) {
 	return this.eventEmitter.listeners(eventName);
-}
+};
 Cam.prototype.off = function (eventName, listener) {
 	return this.eventEmitter.off(eventName, listener);
-}
+};
 Cam.prototype.on = function (eventName, listener) {
 	return this.eventEmitter.on(eventName, listener);
-}
+};
 Cam.prototype.once = function (eventName, listener) {
 	return this.eventEmitter.once(eventName, listener);
-}
+};
 Cam.prototype.prependListener = function (eventName, listener) {
 	return this.eventEmitter.prependListener(eventName, listener);
-}
+};
 Cam.prototype.prependOnceListener = function (eventName, listener) {
 	return this.eventEmitter.prependOnceListener(eventName, listener);
-}
+};
 Cam.prototype.removeAllListeners = function (eventName) {
 	return this.eventEmitter.removeAllListeners(eventName);
-}
+};
 Cam.prototype.removeListener = function (eventName, listener) {
 	return this.eventEmitter.removeListener(eventName, listener);
-}
+};
 Cam.prototype.setMaxListeners = function (n) {
 	return this.eventEmitter.setMaxListeners(n);
-}
+};
 Cam.prototype.rawListeners = function (eventName) {
 	return this.eventEmitter.rawListeners(eventName);
-}
+};
 
 /**
  * Connect to the camera and fill device information properties
@@ -164,15 +165,15 @@ Cam.prototype.connect = function (callback) {
 
 	this.getSystemDateAndTime(function (err, date, xml) {
 		if (err) {
-			Homey.app.updateLog("getSystemDateAndTime error (" + this.hostname + "):" + Homey.app.varToString(err), 0);
+			this.homey.app.updateLog("getSystemDateAndTime error (" + this.hostname + "):" + this.homey.app.varToString(err), 0);
 			return callback.call(this, err, null, xml);
 		}
 		this.getServices(true, function (err) {
 			if (err) {
-				Homey.app.updateLog("getServices error (" + this.hostname + "):" + Homey.app.varToString(err), 0);
+				this.homey.app.updateLog("getServices error (" + this.hostname + "):" + this.homey.app.varToString(err), 0);
 				return this.getCapabilities(function (err, data, xml) {
 					if (err) {
-						Homey.app.updateLog("getCapabilities error (" + this.hostname + "):" + Homey.app.varToString(err), 0);
+						this.homey.app.updateLog("getCapabilities error (" + this.hostname + "):" + this.homey.app.varToString(err), 0);
 						return callback.call(this, err, null, xml);
 					}
 					return callUpstartFunctions.call(this);
@@ -182,7 +183,7 @@ Cam.prototype.connect = function (callback) {
 		}.bind(this));
 
 		function callUpstartFunctions() {
-			Homey.app.updateLog("callUpstartFunctions (" + this.hostname + "): Started *****");
+			this.homey.app.updateLog("callUpstartFunctions (" + this.hostname + "): Started *****");
 
 			var upstartFunctions = [];
 
@@ -211,7 +212,7 @@ Cam.prototype.connect = function (callback) {
 								 * @event Cam#connect
 								 */
 								this.emit('connect');
-								Homey.app.updateLog("callUpstartFunctions (" + this.hostname + "): Finished -----");
+								this.homey.app.updateLog("callUpstartFunctions (" + this.hostname + "): Finished -----");
 								if (callback) {
 									return callback.call(this, err);
 								}
@@ -221,7 +222,7 @@ Cam.prototype.connect = function (callback) {
 				}.bind(this));
 			} else {
 				this.emit('connect');
-				Homey.app.updateLog("callUpstartFunctions (" + this.hostname + "): Finished -----");
+				this.homey.app.updateLog("callUpstartFunctions (" + this.hostname + "): Finished -----");
 				if (callback) {
 					return callback.call(this, false);
 				}
@@ -292,10 +293,11 @@ Cam.prototype._request = function (options, callback) {
 	};
 
 	reqOptions.method = 'POST';
-	Homey.app.updateLog("\n_request (" + this.hostname + "): " + Homey.app.varToString(reqOptions) + "\nBody: " + Homey.app.varToString(options.body) + "\n", 3);
+	this.homey.app.updateLog("\n_request (" + this.hostname + "): " + this.homey.app.varToString(reqOptions) + "\nBody: " + this.homey.app.varToString(options.body) + "\n", 3);
 
+    var req = null;
 	try {
-		var req = http.request(reqOptions, function (res) {
+		req = http.request(reqOptions, function (res) {
 			var bufs = [],
 				length = 0;
 			res.on('data', function (chunk) {
@@ -309,7 +311,7 @@ Cam.prototype._request = function (options, callback) {
 				callbackExecuted = true;
 				var xml = Buffer.concat(bufs, length).toString('utf8');
 
-				Homey.app.updateLog("\n_request response (" + _this.hostname + "): " + Homey.app.varToString(xml) + "\n", 3);
+				_this.homey.app.updateLog("\n_request response (" + _this.hostname + "): " + _this.homey.app.varToString(xml) + "\n", 3);
 
 				/**
 				 * Indicates raw xml response from device.
@@ -321,7 +323,7 @@ Cam.prototype._request = function (options, callback) {
 			});
 		});
 	} catch (err) {
-		Homey.app.updateLog("Request error (" + _this.hostname + "): " + Homey.app.varToString(err), 0);
+		_this.homey.app.updateLog("Request error (" + _this.hostname + "): " + _this.homey.app.varToString(err), 0);
 		callback(new Error(err));
 		return;
 	}
@@ -332,13 +334,13 @@ Cam.prototype._request = function (options, callback) {
 		} else {
 			callbackExecuted = true;
 		}
-		Homey.app.updateLog("Request timeout (" + _this.hostname + ")", 0);
+		_this.homey.app.updateLog("Request timeout (" + _this.hostname + ")", 0);
 		callback(new Error('Network timeout'));
 		req.abort();
 	});
 
 	req.on('error', function (err) {
-		Homey.app.updateLog("Request error (" + _this.hostname + "): " + Homey.app.varToString(err), 0);
+		_this.homey.app.updateLog("Request error (" + _this.hostname + "): " + _this.homey.app.varToString(err), 0);
 		if (callbackExecuted === true) {
 			return;
 		}
@@ -380,7 +382,7 @@ Cam.prototype.getSystemDateAndTime = function (callback) {
 	// correct timestamp in nonce authentication header.
 	// But.. Panasonic and Digital Barriers both have devices that implement ONVIF that only work with
 	// authenticated getSystemDateAndTime
-	Homey.app.updateLog("getSystemDateAndTime (" + this.hostname + "): Started *****");
+	this.homey.app.updateLog("getSystemDateAndTime (" + this.hostname + "): Started *****");
 	this._request({
 		body: '<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">' +
 			'<s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
@@ -390,22 +392,22 @@ Cam.prototype.getSystemDateAndTime = function (callback) {
 	}, function (err, data, xml) {
 		if (!err) {
 			if (data && data[0] &&
-				data[0]['getSystemDateAndTimeResponse'] &&
-				data[0]['getSystemDateAndTimeResponse'][0] &&
-				data[0]['getSystemDateAndTimeResponse'][0]['systemDateAndTime'] &&
-				data[0]['getSystemDateAndTimeResponse'][0]['systemDateAndTime'][0] &&
-				data[0]['getSystemDateAndTimeResponse'][0]['systemDateAndTime'][0]['UTCDateTime'] &&
-				data[0]['getSystemDateAndTimeResponse'][0]['systemDateAndTime'][0]['UTCDateTime'][0]) {
+				data[0].getSystemDateAndTimeResponse &&
+				data[0].getSystemDateAndTimeResponse[0] &&
+				data[0].getSystemDateAndTimeResponse[0].systemDateAndTime &&
+				data[0].getSystemDateAndTimeResponse[0].systemDateAndTime[0] &&
+				data[0].getSystemDateAndTimeResponse[0].systemDateAndTime[0].UTCDateTime &&
+				data[0].getSystemDateAndTimeResponse[0].systemDateAndTime[0].UTCDateTime[0]) {
 				try {
-					var dt = linerase(data[0]['getSystemDateAndTimeResponse'][0]['systemDateAndTime'][0]['UTCDateTime'][0]),
+					var dt = linerase(data[0].getSystemDateAndTimeResponse[0].systemDateAndTime[0].UTCDateTime[0]),
 						time = new Date(Date.UTC(dt.date.year, dt.date.month - 1, dt.date.day, dt.time.hour, dt.time.minute, dt.time.second));
 					if (!this.timeShift) {
 						this.timeShift = time - Date.now();
 					}
-					Homey.app.updateLog("getSystemDateAndTime (" + this.hostname + "): Finished -----");
+					this.homey.app.updateLog("getSystemDateAndTime (" + this.hostname + "): Finished -----");
 					callback.call(this, err, time, xml);
 				} catch (err) {
-					Homey.app.updateLog("getSystemDateAndTime (" + this.hostname + "): !err Error " + err + "\nxml:\n" + xml + "\ndata:\n" + data ? "\ndata:\n" + Homey.app.varToString(data) : "", 0);
+					this.homey.app.updateLog("getSystemDateAndTime (" + this.hostname + "): !err Error " + err + "\nxml:\n" + xml + "\ndata:\n" + data ? "\ndata:\n" + this.homey.app.varToString(data) : "", 0);
 					//callback.call(this, err, null, xml);
 				}
 			} else {
@@ -421,33 +423,33 @@ Cam.prototype.getSystemDateAndTime = function (callback) {
 					this._envelopeFooter()
 			}, function (err, data, xml) {
 				if (err) {
-					Homey.app.updateLog("getSystemDateAndTime (" + this.hostname + "): err Error " + err + "\nxml:\n" + xml + data ? "\ndata:\n" + Homey.app.varToString(data) : "", 0);
+					this.homey.app.updateLog("getSystemDateAndTime (" + this.hostname + "): err Error " + err + "\nxml:\n" + xml + data ? "\ndata:\n" + this.homey.app.varToString(data) : "", 0);
 					callback.call(this, err, null, xml);
 				} else {
 					if (data && data[0] &&
-						data[0]['getSystemDateAndTimeResponse'] &&
-						data[0]['getSystemDateAndTimeResponse'][0] &&
-						data[0]['getSystemDateAndTimeResponse'][0]['systemDateAndTime'] &&
-						data[0]['getSystemDateAndTimeResponse'][0]['systemDateAndTime'][0] &&
-						data[0]['getSystemDateAndTimeResponse'][0]['systemDateAndTime'][0]['UTCDateTime'] &&
-						data[0]['getSystemDateAndTimeResponse'][0]['systemDateAndTime'][0]['UTCDateTime'][0]) {
+						data[0].getSystemDateAndTimeResponse &&
+						data[0].getSystemDateAndTimeResponse[0] &&
+						data[0].getSystemDateAndTimeResponse[0].systemDateAndTime &&
+						data[0].getSystemDateAndTimeResponse[0].systemDateAndTime[0] &&
+						data[0].getSystemDateAndTimeResponse[0].systemDateAndTime[0].UTCDateTime &&
+						data[0].getSystemDateAndTimeResponse[0].systemDateAndTime[0].UTCDateTime[0]) {
 						try {
-							var dt = linerase(data[0]['getSystemDateAndTimeResponse'][0]['systemDateAndTime'][0]['UTCDateTime'][0]),
+							var dt = linerase(data[0].getSystemDateAndTimeResponse[0].systemDateAndTime[0].UTCDateTime[0]),
 								time = new Date(Date.UTC(dt.date.year, dt.date.month - 1, dt.date.day, dt.time.hour, dt.time.minute, dt.time.second));
 							if (!this.timeShift) {
 								this.timeShift = time - Date.now();
 							}
 
-							Homey.app.updateLog("getSystemDateAndTime (" + this.hostname + "): Finished -----");
+							this.homey.app.updateLog("getSystemDateAndTime (" + this.hostname + "): Finished -----");
 							callback.call(this, err, time, xml);
 						} catch (err) {
-							Homey.app.updateLog("getSystemDateAndTime (" + this.hostname + "): err err Error " + err + "\nxml:\n" + xml + "\ndata:\n" + data ? "\ndata:\n" + Homey.app.varToString(data) : "", 0);
+							this.homey.app.updateLog("getSystemDateAndTime (" + this.hostname + "): err err Error " + err + "\nxml:\n" + xml + "\ndata:\n" + data ? "\ndata:\n" + this.homey.app.varToString(data) : "", 0);
 							callback.call(this, err, null, xml);
 						}
 					}
 					else{
-						var time =  Date.now();
-						Homey.app.updateLog("getSystemDateAndTime (" + this.hostname + "): Finished using Homey time-----");
+						let time =  Date.now();
+						this.homey.app.updateLog("getSystemDateAndTime (" + this.hostname + "): Finished using this.homey time-----");
 						callback.call(this, err, time, xml);
 				}
 				}
@@ -604,7 +606,7 @@ Cam.prototype.setSystemDateAndTime = function (options, callback) {
  * @param {Cam~GetCapabilitiesCallback} [callback]
  */
 Cam.prototype.getCapabilities = function (callback) {
-	Homey.app.updateLog("getCapabilities (" + this.hostname + "): Started *****");
+	this.homey.app.updateLog("getCapabilities (" + this.hostname + "): Started *****");
 
 	this._request({
 		body: this._envelopeHeader() +
@@ -619,7 +621,7 @@ Cam.prototype.getCapabilities = function (callback) {
 			 * @name Cam#capabilities
 			 * @type {Cam~Capabilities}
 			 */
-			this.capabilities = linerase(data[0]['getCapabilitiesResponse'][0]['capabilities'][0]);
+			this.capabilities = linerase(data[0].getCapabilitiesResponse[0].capabilities[0]);
 			// fill Cam#uri property
 			if (!this.uri) {
 				/**
@@ -648,12 +650,12 @@ Cam.prototype.getCapabilities = function (callback) {
 				}.bind(this));
 			}
 			// HACK for a Profile G NVR that has 'replay' but did not have 'recording' in GetCapabilities
-			if ((this.uri['replay']) && !this.uri['recording']) {
-				var tempRecorderXaddr = this.uri['replay'].href.replace('replay', 'recording');
+			if ((this.uri.replay) && !this.uri.recording) {
+				var tempRecorderXaddr = this.uri.replay.href.replace('replay', 'recording');
 				console.warn("WARNING: Adding " + tempRecorderXaddr + " for bad Profile G device");
-				this.uri['recording'] = url.parse(tempRecorderXaddr);
+				this.uri.recording = url.parse(tempRecorderXaddr);
 			}
-			Homey.app.updateLog("getCapabilities (" + this.hostname + "): Finished -----");
+			this.homey.app.updateLog("getCapabilities (" + this.hostname + "): Finished -----");
 
 		}
 		if (callback) {
@@ -723,7 +725,7 @@ Cam.prototype.getActiveSources = function () {
 	 * @type {Array.<Cam~ActiveSource>}
 	 */
 	this.activeSources = [];
-	Homey.app.updateLog("VideoSources (" + this.hostname + "): " + Homey.app.varToString(this.videoSources));
+	this.homey.app.updateLog("VideoSources (" + this.hostname + "): " + this.homey.app.varToString(this.videoSources));
 
 	this.videoSources.forEach(function (videoSource, idx) {
 		// let's choose first appropriate profile for our video source and make it default
@@ -752,8 +754,8 @@ Cam.prototype.getActiveSources = function () {
 
 		this.defaultProfiles[idx] = appropriateProfiles[0];
 
-		Homey.app.updateLog("ActiveSource (" + this.hostname + ") [" + idx + "] = " + Homey.app.varToString(this.defaultProfiles[idx].videoEncoderConfiguration));
-		Homey.app.updateLog("VideoSource (" + this.hostname + ") [" + idx + "] = " + Homey.app.varToString(videoSource));
+		this.homey.app.updateLog("ActiveSource (" + this.hostname + ") [" + idx + "] = " + this.homey.app.varToString(this.defaultProfiles[idx].videoEncoderConfiguration));
+		this.homey.app.updateLog("VideoSource (" + this.hostname + ") [" + idx + "] = " + this.homey.app.varToString(videoSource));
 		this.activeSources[idx] = {
 			sourceToken: videoSource.$.token,
 			profileToken: this.defaultProfiles[idx].$.token,
@@ -818,7 +820,7 @@ Cam.prototype.getActiveSources = function () {
  * @param {Cam~GetServicesCallback} [callback]
  */
 Cam.prototype.getServices = function (includeCapability, callback) {
-	Homey.app.updateLog("getServices (" + this.hostname + "): Started *****");
+	this.homey.app.updateLog("getServices (" + this.hostname + "): Started *****");
 
 	if (typeof includeCapability == 'function') {
 		callback = includeCapability;
@@ -837,7 +839,7 @@ Cam.prototype.getServices = function (includeCapability, callback) {
 			 * @name Cam#services
 			 * @type {Cam~Services}
 			 */
-			Homey.app.updateLog("getServices (" + this.hostname + "): " + Homey.app.varToString(data), 3 );
+			this.homey.app.updateLog("getServices (" + this.hostname + "): " + this.homey.app.varToString(data), 3 );
 			this.services = linerase(data).getServicesResponse.service;
 
 			if (!Array.isArray(this.services))
@@ -869,14 +871,14 @@ Cam.prototype.getServices = function (includeCapability, callback) {
 						}
 					}
 					else{
-						Homey.app.updateLog("getServices (" + this.hostname + "): Unrecognised namespace for service " + service);
+						this.homey.app.updateLog("getServices (" + this.hostname + "): Unrecognised namespace for service " + service);
 					}
 				}
 				else{
-					Homey.app.updateLog("getServices (" + this.hostname + "): Missing namespace for service " + service);
+					this.homey.app.updateLog("getServices (" + this.hostname + "): Missing namespace for service " + service);
 				}
 			});
-			Homey.app.updateLog("getServices (" + this.hostname + "): Finished -----");
+			this.homey.app.updateLog("getServices (" + this.hostname + "): Finished -----");
 
 		}
 		if (callback) {
@@ -1061,7 +1063,7 @@ Cam.prototype.setSystemFactoryDefault = function (hard, callback) {
 			callback.call(this, err, null, xml);
 		}
 	});
-}
+};
 
 /**
  * Generate arguments for digest auth
