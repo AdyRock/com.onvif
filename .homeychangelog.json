@@ -259,5 +259,8 @@
   },
   "1.1.33": {
     "en": "Added support for line crossed, image too dark and storage broken alarms plus cpu usage report."
+  },
+  "2.0.0": {
+    "en": "Converted to SDK3. Added extra capabilities (line crossed, camera cpu usage, audio, dark imae, SD card faliure) when supported by the camera."
   }
 }
