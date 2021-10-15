@@ -3,6 +3,10 @@
     "title": {
         "en": "Image too dark"
     },
+    "insights": true,
+    "insightsTitleTrue": {
+      "en": "Image too dark"
+    },
     "getable": true,
     "setable": false,
     "icon": "/assets/dark_image.svg"

@@ -177,6 +177,71 @@
             "filter": "driver_id=camera"
           }
         ]
+      },
+      {
+        "id": "alarm_sound_true",
+        "title": {
+          "en": "The sound alarm turned on"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          }
+        ]
+      },
+      {
+        "id": "alarm_line_crossed_true",
+        "title": {
+          "en": "The line crossed alarm turned on"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          }
+        ]
+      },
+      {
+        "id": "alarm_dark_image_true",
+        "title": {
+          "en": "The dark image turned on"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          }
+        ]
+      },
+      {
+        "id": "alarm_storage_true",
+        "title": {
+          "en": "The storage alarm turned on"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          }
+        ]
+      },
+      {
+        "id": "alarm_storage_false",
+        "title": {
+          "en": "The storage alarm turned off"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          }
+        ]
       }
     ],
     "conditions": [
@@ -232,6 +297,19 @@
             "max": 30,
             "step": 1,
             "placeholder": "Seconds to wait"
+          }
+        ]
+      },
+      {
+        "id": "alarm_sound",
+        "title": {
+          "en": "The sound alarm is !{{on|off}}"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
           }
         ]
       }
@@ -346,6 +424,7 @@
       "capabilities": [
         "motion_enabled",
         "alarm_motion",
+        "alarm_sound",
         "alarm_tamper",
         "event_time",
         "tamper_time",
@@ -915,6 +994,10 @@
       "title": {
         "en": "Image too dark"
       },
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "Image too dark"
+      },
       "getable": true,
       "setable": false,
       "icon": "/assets/dark_image.svg"
@@ -924,14 +1007,41 @@
       "title": {
         "en": "Line crossed"
       },
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "Line crossed alarm turned on"
+      },
       "getable": true,
       "setable": false,
       "icon": "/assets/cross-line.svg"
+    },
+    "alarm_sound": {
+      "type": "boolean",
+      "title": {
+        "en": "Noise Alarm"
+      },
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "Audio alarm turned on"
+      },
+      "insightsTitleFalse": {
+        "en": "Audio alarm turned off"
+      },
+      "getable": true,
+      "setable": false,
+      "icon": "/assets/ear.svg"
     },
     "alarm_storage": {
       "type": "boolean",
       "title": {
         "en": "Storage failed"
+      },
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "Storage alarm turned on"
+      },
+      "insightsTitleFalse": {
+        "en": "Storage alarm turned off"
       },
       "getable": true,
       "setable": false,

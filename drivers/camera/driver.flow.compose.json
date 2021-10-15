@@ -1,5 +1,6 @@
 {
-    "triggers": [{
+    "triggers": [
+        {
             "id": "motionEnabledTrigger",
             "title": {
                 "en": "Motion enabled",
@@ -43,16 +44,18 @@
                 "nl": "Snapshot beschikbaar",
                 "it": "Immagine Istantanea pronta"
             },
-            "tokens": [{
-                "name": "image",
-                "type": "image",
-                "title": {
-                    "en": "Snapshot",
-                    "de": "Schnappschuss",
-                    "nl": "Snapshot",
-                    "it": "Immagine Istantanea"
+            "tokens": [
+                {
+                    "name": "image",
+                    "type": "image",
+                    "title": {
+                        "en": "Snapshot",
+                        "de": "Schnappschuss",
+                        "nl": "Snapshot",
+                        "it": "Immagine Istantanea"
+                    }
                 }
-            }]
+            ]
         },
         {
             "id": "eventShotReadyTrigger",
@@ -68,19 +71,52 @@
                 "nl": "Bewegings snapshot beschikbaar",
                 "it": "Immagine di Movimento pronta"
             },
-            "tokens": [{
-                "name": "eventImage",
-                "type": "image",
-                "title": {
-                    "en": "Motion snapshot",
-                    "de": "Momentaufnahme",
-                    "nl": "Bewegings snapshot",
-                    "it": "Immagine di Movimento"
+            "tokens": [
+                {
+                    "name": "eventImage",
+                    "type": "image",
+                    "title": {
+                        "en": "Motion snapshot",
+                        "de": "Momentaufnahme",
+                        "nl": "Bewegings snapshot",
+                        "it": "Immagine di Movimento"
+                    }
                 }
-            }]
+            ]
+        },
+        {
+            "id": "alarm_sound_true",
+            "title": {
+                "en": "The sound alarm turned on"
+            }
+        },
+        {
+            "id": "alarm_line_crossed_true",
+            "title": {
+                "en": "The line crossed alarm turned on"
+            }
+        },
+        {
+            "id": "alarm_dark_image_true",
+            "title": {
+                "en": "The dark image turned on"
+            }
+        },
+        {
+            "id": "alarm_storage_true",
+            "title": {
+                "en": "The storage alarm turned on"
+            }
+        },
+        {
+            "id": "alarm_storage_false",
+            "title": {
+                "en": "The storage alarm turned off"
+            }
         }
     ],
-    "conditions": [{
+    "conditions": [
+        {
             "id": "motionEnabledCondition",
             "title": {
                 "en": "Motion is enabled",
@@ -109,21 +145,23 @@
                 "nl": "Bewegingssnapshot is !{{binnen|niet binnen}} [[waitTime]] seconden !((klaar|gereed}}",
                 "it": "L'istantanea in movimento !{{è pronta|non è pronta}} entro [[waitTime]] secondi"
             },
-            "args": [{
-                "type": "number",
-                "title": "Wait Time",
-                "name": "waitTime",
-                "value": 0,
-                "units": "seconds",
-                "min": 0,
-                "max": 30,
-                "step": 1,
-                "placeholder": "Seconds to wait"
-            }]
-
+            "args": [
+                {
+                    "type": "number",
+                    "title": "Wait Time",
+                    "name": "waitTime",
+                    "value": 0,
+                    "units": "seconds",
+                    "min": 0,
+                    "max": 30,
+                    "step": 1,
+                    "placeholder": "Seconds to wait"
+                }
+            ]
         }
     ],
-    "actions": [{
+    "actions": [
+        {
             "id": "motionEnableAction",
             "title": {
                 "en": "Enable motion",

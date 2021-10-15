@@ -3,6 +3,10 @@
     "title": {
         "en": "Line crossed"
     },
+    "insights": true,
+    "insightsTitleTrue": {
+      "en": "Line crossed alarm turned on"
+    },
     "getable": true,
     "setable": false,
     "icon": "/assets/cross-line.svg"

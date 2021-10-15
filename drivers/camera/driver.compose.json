@@ -15,6 +15,7 @@
     "capabilities": [
         "motion_enabled",
         "alarm_motion",
+        "alarm_sound",
         "alarm_tamper",
         "event_time",
         "tamper_time",

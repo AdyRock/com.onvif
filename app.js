@@ -322,7 +322,7 @@ class MyApp extends Homey.App
                 }
                 catch (err)
                 {
-                    this.updateLog("Discovery catch error: " + err.message + "\n" + err.stack, 0);
+                    this.updateLog("Discovery catch error: " + err.message + "\n" + err.message, 0);
                 }
             });
 
@@ -387,7 +387,7 @@ class MyApp extends Homey.App
             }
             catch (err)
             {
-                this.updateLog("Connect to camera " + hostname + " error: " + err.stack, 0);
+                this.updateLog("Connect to camera " + hostname + " error: " + err.message, 0);
                 return reject(err);
             }
         });
@@ -935,7 +935,7 @@ class MyApp extends Homey.App
         }
         if (source instanceof Error)
         {
-            let stack = source.stack.replace('/\\n/g', '\n');
+            let stack = source.message.replace('/\\n/g', '\n');
             return source.message + '\n' + stack;
         }
         if (typeof(source) === "object")
@@ -1060,7 +1060,7 @@ class MyApp extends Homey.App
             }
             catch (err)
             {
-                this.updateLog("Send log error: " + err.stack, 0);
+                this.updateLog("Send log error: " + err.message, 0);
             }
         }
         this.updateLog("Send log FAILED", 0);
