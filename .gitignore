@@ -4,3 +4,4 @@ example*
 test.js
 .vscode/
 .vs/
+build/
