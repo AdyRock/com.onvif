@@ -261,6 +261,9 @@
     "en": "Added support for line crossed, image too dark and storage broken alarms plus cpu usage report."
   },
   "2.0.0": {
-    "en": "Converted to SDK3. Added extra capabilities (line crossed, camera cpu usage, audio, dark imae, SD card faliure) when supported by the camera."
+    "en": "Converted to SDK3. Added extra capabilities (line crossed, camera cpu usage, audio, dark image, SD card failure) when supported by the camera."
+  },
+  "2.0.1": {
+    "en": "Converted to SDK3. Added extra capabilities (line crossed, camera cpu usage, audio, dark image, SD card failure) when supported by the camera. Fixed seTimeout issue introduce in v2.0.0"
   }
 }

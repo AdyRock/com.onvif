@@ -175,7 +175,7 @@ Discovery.probe = function(options, callback) {
 	socket.on('message', listener);
 	socket.send(request, 0, request.length, 3702, '239.255.255.250');
 
-	this.homey.setTimeout(function() {
+	setTimeout(function() {
 		socket.removeListener('message', listener);
 		socket.close();
 		callback(errors.length ? errors : null, Object.keys(cams).map(function(addr) { return cams[addr]; }));
