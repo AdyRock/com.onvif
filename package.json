@@ -1,6 +1,6 @@
 {
   "name": "com.onvif",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "main": "app.js",
   "devDependencies": {
     "homey": "^2.23.1"

@@ -46,6 +46,8 @@ class MyApp extends Homey.App
             }
         });
 
+        this.registerFlowCard().catch(this.error);
+
         this.runsListener().catch(this.err);
 
         this.checkCameras = this.checkCameras.bind(this);
@@ -62,67 +64,66 @@ class MyApp extends Homey.App
     {
         this.motionCondition = this.homey.flow.getConditionCard('motionEnabledCondition');
         this.motionCondition.registerRunListener(async (args, state) =>
-            {
+        {
 
-                return await args.device.getCapabilityValue('motion_enabled'); // Promise<boolean>
-            });
+            return await args.device.getCapabilityValue('motion_enabled'); // Promise<boolean>
+        });
 
         this.motionReadyCondition = this.homey.flow.getConditionCard('motionReadyCondition');
         this.motionReadyCondition.registerRunListener(async (args, state) =>
-            {
+        {
 
-                let remainingTime = args.waitTime * 10;
-                while ((remainingTime > 0) && args.device.updatingEventImage)
-                {
-                    // Wait for image to update
-                    await this.homey.app.asyncDelay(100);
-                    remainingTime--;
-                }
-                return !args.device.updatingEventImage;
-            });
+            let remainingTime = args.waitTime * 10;
+            while ((remainingTime > 0) && args.device.updatingEventImage)
+            {
+                // Wait for image to update
+                await this.homey.app.asyncDelay(100);
+                remainingTime--;
+            }
+            return !args.device.updatingEventImage;
+        });
 
         this.motionEnabledAction = this.homey.flow.getActionCard('motionEnableAction');
         this.motionEnabledAction.registerRunListener(async (args, state) =>
-            {
-                console.log("motionEnabledAction");
-                args.device.onCapabilityMotionEnable(true, null);
-                return await args.device.setCapabilityValue('motion_enabled', true); // Promise<void>
-            });
+        {
+            console.log("motionEnabledAction");
+            args.device.onCapabilityMotionEnable(true, null);
+            return await args.device.setCapabilityValue('motion_enabled', true); // Promise<void>
+        });
 
         this.motionDisabledAction = this.homey.flow.getActionCard('motionDisableAction');
         this.motionDisabledAction.registerRunListener(async (args, state) =>
-            {
+        {
 
-                console.log("motionDisabledAction");
-                args.device.onCapabilityMotionEnable(false, null);
-                return await args.device.setCapabilityValue('motion_enabled', false); // Promise<void>
-            });
+            console.log("motionDisabledAction");
+            args.device.onCapabilityMotionEnable(false, null);
+            return await args.device.setCapabilityValue('motion_enabled', false); // Promise<void>
+        });
 
         this.snapshotAction = this.homey.flow.getActionCard('snapshotAction');
         this.snapshotAction.registerRunListener(async (args, state) =>
+        {
+
+            let err = await args.device.nowImage.update();
+            if (!err)
             {
+                let tokens = {
+                    'image': args.device.nowImage
+                };
 
-                let err = await args.device.nowImage.update();
-                if (!err)
-                {
-                    let tokens = {
-                        'image': args.device.nowImage
-                    };
-
-                    args.device.snapshotReadyTrigger
-                        .trigger(args.device, tokens)
-                        .catch(args.device.error)
-                        .then(args.device.log("Now Snapshot ready (" + args.device.id + ")"));
-                }
-                return err;
-            });
+                args.device.snapshotReadyTrigger
+                    .trigger(args.device, tokens)
+                    .catch(args.device.error)
+                    .then(args.device.log("Now Snapshot ready (" + args.device.id + ")"));
+            }
+            return err;
+        });
 
         this.motionUpdateAction = this.homey.flow.getActionCard('updateMotionImageAction');
         this.motionUpdateAction.registerRunListener(async (args, state) =>
-            {
-
-                return args.device.updateMotionImage(0);
-            });
+        {
+            return args.device.updateMotionImage(0);
+        });
 
     }
 
