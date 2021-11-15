@@ -1279,8 +1279,6 @@ class CameraDevice extends Homey.Device
                         if (!res.ok)
                         {
                             this.homey.app.updateLog("Fetch NOW error (" + this.name + "): " + res.statusText, 0);
-                            console.log(res);
-                            console.log(res.headers.raw());
                             throw new Error(res.statusText);
                         }
 
