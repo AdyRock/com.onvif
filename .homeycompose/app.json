@@ -1,6 +1,6 @@
 {
   "id": "com.onvif",
-  "version": "2.0.3",
+  "version": "2.0.5",
   "compatibility": ">=5.0.0",
   "platforms": [
     "local"
@@ -14,10 +14,7 @@
     "it": "ONVIF Camera"
   },
   "description": {
-    "en": "Support for ONVIF compatible cameras",
-    "de": "Unterstützung für ONVIF kompatible Kameras",
-    "nl": "Ondersteuning voor ONVIF-compatibele camera's",
-    "it": "Supporto per fotocamere compatibili ONVIF"
+    "en": "Trigger Homey events and view snapshots with an ONVIF compatible camera"
   },
   "category": [
     "video"

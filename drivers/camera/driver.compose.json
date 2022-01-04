@@ -1,9 +1,9 @@
 {
     "id": "camera",
     "name": {
-        "en": "Camera",
-        "de": "Kamera",
-        "nl": "Camera"
+        "en": "ONVIF Camera",
+        "de": "ONVIF Kamera",
+        "nl": "ONVIF Camera"
     },
     "platforms": [
         "local"

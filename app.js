@@ -7,7 +7,7 @@ if (process.env.DEBUG === '1')
 }
 
 const Homey = require('homey');
-var onvif = require('/lib/onvif');
+let onvif = require('/lib/onvif');
 let Cam = require('/lib/onvif').Cam;
 const parseSOAPString = require('/lib/onvif/lib/utils').parseSOAPString;
 const linerase = require('/lib/onvif/lib/utils').linerase;
@@ -153,7 +153,7 @@ class MyApp extends Homey.App
         {
             if (!err && res)
             {
-                var data = linerase(res).notify;
+                let data = linerase(res).notify;
 
                 if (data && data.notificationMessage)
                 {
@@ -166,13 +166,13 @@ class MyApp extends Homey.App
 
                     // Find the referenced device
                     const driver = this.homey.drivers.getDriver('camera');
-                    var theDevice = null;
+                    let theDevice = null;
                     if (driver)
                     {
                         let devices = driver.getDevices();
-                        for (var i = 0; i < devices.length; i++)
+                        for (let i = 0; i < devices.length; i++)
                         {
-                            var device = devices[i];
+                            let device = devices[i];
                             if (device.ip == eventIP)
                             {
                                 // Correct IP so check the token for multiple cameras on this IP
@@ -294,7 +294,7 @@ class MyApp extends Homey.App
 
                     if (cam.href && cam.href.indexOf("onvif") >= 0)
                     {
-                        var mac = await this.homey.arp.getMAC(cam.hostname);
+                        let mac = await this.homey.arp.getMAC(cam.hostname);
 
                         this.discoveredDevices.push(
                         {
@@ -400,9 +400,9 @@ class MyApp extends Homey.App
         if (driver)
         {
             let devices = driver.getDevices();
-            for (var i = 0; i < devices.length; i++)
+            for (let i = 0; i < devices.length; i++)
             {
-                var device = devices[i];
+                let device = devices[i];
                 await device.checkCamera();
             }
         }
@@ -416,9 +416,9 @@ class MyApp extends Homey.App
         if (driver)
         {
             let devices = driver.getDevices();
-            for (var i = 0; i < devices.length; i++)
+            for (let i = 0; i < devices.length; i++)
             {
-                var device = devices[i];
+                let device = devices[i];
                 await device.logout();
             }
         }
@@ -709,9 +709,9 @@ class MyApp extends Homey.App
                         this.updateLog("Renew subscription response (" + Device.name + "): " + Device.cam.hostname + "\r\ninfo: " + this.varToString(info));
                         let startTime = info[0].renewResponse[0].currentTime[0];
                         let endTime = info[0].renewResponse[0].terminationTime[0];
-                        var d1 = new Date(startTime);
-                        var d2 = new Date(endTime);
-                        var refreshTime = ((d2.valueOf() - d1.valueOf()));
+                        let d1 = new Date(startTime);
+                        let d2 = new Date(endTime);
+                        let refreshTime = ((d2.valueOf() - d1.valueOf()));
 
                         this.updateLog("Push renew every (" + Device.name + "): " + (refreshTime / 1000), 1);
                         refreshTime -= 5000;
@@ -738,7 +738,7 @@ class MyApp extends Homey.App
             }
             else
             {
-                //                const url = "http://" + this.homeyIP + ":" + this.pushServerPort + "/onvif/events?deviceId=" + Device.cam.hostname;
+                // const url = "http://" + this.homeyIP + ":" + this.pushServerPort + "/onvif/events?deviceId=" + Device.cam.hostname;
                 const hostPath = Device.cam.hostname;
 
                 const url = "http://" + this.homeyIP + ":" + this.pushServerPort + "/onvif/events/" + hostPath;
@@ -758,9 +758,9 @@ class MyApp extends Homey.App
 
                         let startTime = info[0].subscribeResponse[0].currentTime[0];
                         let endTime = info[0].subscribeResponse[0].terminationTime[0];
-                        var d1 = new Date(startTime);
-                        var d2 = new Date(endTime);
-                        var refreshTime = ((d2.valueOf() - d1.valueOf()));
+                        let d1 = new Date(startTime);
+                        let d2 = new Date(endTime);
+                        let refreshTime = ((d2.valueOf() - d1.valueOf()));
 
                         this.updateLog("Push renew every (" + Device.name + "): " + (refreshTime / 1000) + "s  @ " + unsubscribeRef, 1);
                         refreshTime -= 5000;
@@ -960,12 +960,12 @@ class MyApp extends Homey.App
 
         this.log(newMessage);
 
-        var oldText = this.homey.settings.get('diagLog');
+        let oldText = this.homey.settings.get('diagLog');
         if (oldText.length > 30000)
         {
-            // Remove the first 5000 characters.
+            // Remove the first 1000 characters.
             oldText = oldText.substring(1000);
-            var n = oldText.indexOf("\n");
+            let n = oldText.indexOf("\n");
             if (n >= 0)
             {
                 // Remove up to and including the first \n so the log starts on a whole line
@@ -975,8 +975,9 @@ class MyApp extends Homey.App
 
         const nowTime = new Date(Date.now());
 
-        if (oldText.length == 0)
+        if ((oldText.length == 0) || (this.logDay !== nowTime.getDate()))
         {
+            this.logDay = nowTime.getDate();
             oldText = "Log ID: ";
             oldText += nowTime.toJSON();
             oldText += "\r\n";

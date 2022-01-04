@@ -65,7 +65,7 @@ class CameraDriver extends Homey.Driver
                     this.homey.app.updateLog("list_devices2: Multiple Sources ", tempCam.videoSources);
 
                     let devices = [];
-                    for (var i = 0; i < tempCam.videoSources.length; i++)
+                    for (let i = 0; i < tempCam.videoSources.length; i++)
                     {
                         const source = tempCam.videoSources[i];
                         // There is more tha 1 video source so add a device for each
@@ -121,7 +121,7 @@ class CameraDriver extends Homey.Driver
 
         session.setHandler('manual_connection_setup', async () =>
         {
-            var loginInfo = {
+            let loginInfo = {
                 username: this.lastUsername,
                 password: this.lastPassword,
                 ip: this.lastHostName,
@@ -209,7 +209,7 @@ class CameraDriver extends Homey.Driver
 
         session.setHandler('repair_connection_setup', async (data) =>
         {
-            var loginInfo = {
+            let loginInfo = {
                 username: device.username,
                 password: device.password,
                 ip: device.ip,
@@ -235,9 +235,9 @@ class CameraDriver extends Homey.Driver
 
             console.log("Discovered devices: ", devices);
 
-            var matched = false;
+            let matched = false;
 
-            for (var discoveredDevice of devices)
+            for (let discoveredDevice of devices)
             {
                 try
                 {

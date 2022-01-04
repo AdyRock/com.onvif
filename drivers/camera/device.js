@@ -2,7 +2,7 @@
 'use strict';
 
 const Homey = require('homey');
-const DigestFetch = require('/lib/digest-fetch');
+const DigestFetch = require('digest-fetch');
 const fetch = require('node-fetch');
 const fs = require('fs');
 const
@@ -112,8 +112,8 @@ class CameraDevice extends Homey.Device
 
             Date.prototype.stdTimezoneOffset = function()
             {
-                var jan = new Date(this.getFullYear(), 0, 1);
-                var jul = new Date(this.getFullYear(), 6, 1);
+                let jan = new Date(this.getFullYear(), 0, 1);
+                let jul = new Date(this.getFullYear(), 6, 1);
                 return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
             };
 
@@ -124,8 +124,8 @@ class CameraDevice extends Homey.Device
 
             try
             {
-                var d = new Date();
-                var dls = d.isDstObserved();
+                let d = new Date();
+                let dls = d.isDstObserved();
 
                 this.cam.setSystemDateAndTime(
                     {
@@ -576,7 +576,7 @@ class CameraDevice extends Homey.Device
                 }
                 else if (this.supportPushEvent)
                 {
-                    notificationMethods += this.homey.__("OnlyPush_Supported"); // "Only Push supported";
+                    notificationMethods += this.homey.__("Only_Push_Supported"); // "Only Push supported";
                 }
                 else
                 {
@@ -723,10 +723,10 @@ class CameraDevice extends Homey.Device
 
     convertDate(date, settings)
     {
-        var strDate = "";
+        let strDate = "";
         if (date)
         {
-            var d = new Date(date);
+            let d = new Date(date);
 
             if (settings.timeFormat == "mm_dd")
             {
@@ -763,12 +763,12 @@ class CameraDevice extends Homey.Device
 
         if (!this.snapUri)
         {
-            this.homey.app.updateLog("Invalid Snapshot URL, it must be http or https: " + this.homey.app.varToString(this.snapURL.uri).replace(this.password, "YOUR_PASSWORD"), 0);
+            this.homey.app.updateLog("Invalid Snapshot URL, it must be http or https: null", 0);
             return;
         }
         this.homey.app.updateLog("Event snapshot URL (" + this.name + "): " + this.homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
 
-        var res = await this.doFetch("MOTION EVENT");
+        let res = await this.doFetch("MOTION EVENT");
         if (!res.ok)
         {
             this.homey.app.updateLog(this.homey.app.varToString(res));
@@ -1161,7 +1161,6 @@ class CameraDevice extends Homey.Device
 
                 console.log("onCapabilityMotionEnable: ", value);
                 this.setCapabilityValue('alarm_motion', false).catch(this.error);
-                this.setCapabilityValue('measure_cpu', null).catch(this.error);
 
                 if (value && this.hasMotion)
                 {
@@ -1275,10 +1274,11 @@ class CameraDevice extends Homey.Device
                             await this.homey.app.getSnapshotURL(this.cam);
                         }
 
-                        var res = await this.doFetch("NOW");
+                        let res = await this.doFetch("NOW");
                         if (!res.ok)
                         {
                             this.homey.app.updateLog("Fetch NOW error (" + this.name + "): " + res.statusText, 0);
+                            this.setWarning(res.statusText);
                             throw new Error(res.statusText);
                         }
 
@@ -1327,7 +1327,7 @@ class CameraDevice extends Homey.Device
                         await this.homey.app.getSnapshotURL(this.cam);
                     }
 
-                    var res = await this.doFetch("Motion Event");
+                    let res = await this.doFetch("Motion Event");
                     if (!res.ok)
                     {
                         this.homey.app.updateLog("Fetch MOTION error (" + this.name + "): " + this.homey.app.varToString(res), 0);
@@ -1377,7 +1377,7 @@ class CameraDevice extends Homey.Device
 
     async doFetch(name)
     {
-        var res = {};
+        let res = {};
         try
         {
             if (this.authType == 0)

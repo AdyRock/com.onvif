@@ -1,6 +1,6 @@
 {
   "name": "com.onvif",
-  "version": "2.0.3",
+  "version": "2.0.5",
   "main": "app.js",
   "devDependencies": {
     "homey": "^2.23.7"
@@ -12,10 +12,11 @@
   "dependencies": {
     "base-64": "^0.1.0",
     "crypto-js": "^4.1.1",
+    "digest-fetch": "^1.2.1",
     "encoding": "^0.1.13",
     "lodash.get": "^4.4.2",
     "node-fetch": "^2.6.6",
-    "nodemailer": "^6.7.1",
+    "nodemailer": "^6.7.2",
     "xml2js": "^0.4.23"
   },
   "license": "GPL-3.0"
