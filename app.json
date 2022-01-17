@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.onvif",
-  "version": "2.0.4",
+  "version": "2.0.6",
   "compatibility": ">=5.0.0",
   "platforms": [
     "local"
@@ -15,10 +15,7 @@
     "it": "ONVIF Camera"
   },
   "description": {
-    "en": "Support for ONVIF compatible cameras",
-    "de": "Unterstützung für ONVIF kompatible Kameras",
-    "nl": "Ondersteuning voor ONVIF-compatibele camera's",
-    "it": "Supporto per fotocamere compatibili ONVIF"
+    "en": "Use an ONVIF compatible camera so Homey can improve your home security"
   },
   "category": [
     "video"
@@ -397,9 +394,9 @@
     {
       "id": "camera",
       "name": {
-        "en": "Camera",
-        "de": "Kamera",
-        "nl": "Camera"
+        "en": "ONVIF Camera",
+        "de": "ONVIF Kamera",
+        "nl": "ONVIF Camera"
       },
       "platforms": [
         "local"

@@ -279,7 +279,6 @@ class MyApp extends Homey.App
     async discoverCameras()
     {
         this.discoveredDevices = [];
-        let cams = [];
         this.updateLog('====  Discovery Starting  ====');
         if (!this.discoveryInitialised)
         {
@@ -289,8 +288,7 @@ class MyApp extends Homey.App
                 try
                 {
                     // function will be called as soon as NVT responds
-                    this.updateLog('Reply from ' + this.varToString(cam));
-                    cams.push(cam);
+                    this.updateLog('Reply from ' + this.varToString(cam), 1);
 
                     if (cam.href && cam.href.indexOf("onvif") >= 0)
                     {
@@ -311,7 +309,7 @@ class MyApp extends Homey.App
                                 "password": "",
                                 "ip": cam.hostname,
                                 "port": cam.port ? cam.port.toString() : "",
-                                "urn": mac,
+                                "urn": cam.urn ? cam.urn : mac,
                                 "channel": -1,
                             }
                         });

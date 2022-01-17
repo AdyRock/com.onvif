@@ -33,7 +33,7 @@ class CameraDriver extends Homey.Driver
             {
                 listDevices = 2;
                 let devices = await this.homey.app.discoverCameras();
-                this.homey.app.updateLog("Discovered: " + this.homey.app.varToString(devices, null, 3));
+                this.homey.app.updateLog("Discovered: " + this.homey.app.varToString(devices, null, 3), 1);
 
                 // Add the manual entry
                 devices.push(
@@ -62,14 +62,14 @@ class CameraDriver extends Homey.Driver
             {
                 if (tempCam)
                 {
-                    this.homey.app.updateLog("list_devices2: Multiple Sources ", tempCam.videoSources);
+                    this.homey.app.updateLog("list_devices2: Multiple Sources = " + this.homey.app.varToString(tempCam.videoSources, null, 3), 1);
 
                     let devices = [];
                     for (let i = 0; i < tempCam.videoSources.length; i++)
                     {
                         const source = tempCam.videoSources[i];
                         // There is more tha 1 video source so add a device for each
-                        this.homey.app.updateLog("Adding source " + source + " to list");
+                        this.homey.app.updateLog("list_devices2: Adding source " + source + " to list", 1);
                         let token = "";
                         if (source.$)
                         {
@@ -98,7 +98,7 @@ class CameraDriver extends Homey.Driver
                             }
                         });
                     }
-                    this.homey.app.updateLog("list_devices2: Listing ", devices);
+                    this.homey.app.updateLog("list_devices2: Listing " + this.homey.app.varToString(devices, null, 3), 1);
                     return devices;
                 }
                 else
@@ -137,10 +137,11 @@ class CameraDriver extends Homey.Driver
             this.lastPassword = data.password;
             this.lastHostName = data.ip;
             this.lastPort = data.port;
+            const mac = await this.homey.arp.getMAC(this.lastHostName);
 
             if (!this.lastURN)
             {
-                this.lastURN = await this.homey.arp.getMAC(this.lastHostName);
+                this.lastURN = mac;
                 if (!this.lastURN)
                 {
                     this.lastURN = Date.now().toString();
@@ -156,12 +157,12 @@ class CameraDriver extends Homey.Driver
                 this.lastPassword
             );
 
-            this.homey.app.updateLog("Credentials OK. Adding " + this.homey.app.varToString(cam.videoSources));
+            this.homey.app.updateLog("Credentials OK. Adding " + this.homey.app.varToString(cam.videoSources), 1);
 
             if (Array.isArray(cam.videoSources) && (cam.videoSources.length > 1))
             {
                 // There is more tha 1 video source so show the list for the user to select
-                this.homey.app.updateLog("Multiple source found. Adding " + cam.videoSources.length + " more devices");
+                this.homey.app.updateLog("Multiple source found. Adding " + cam.videoSources.length + " more devices", 1);
                 tempCam = cam;
                 listDevices = 2;
 
@@ -176,7 +177,7 @@ class CameraDriver extends Homey.Driver
                         "name": cam.hostname,
                         data:
                         {
-                            "id": this.lastURN
+                            "id": mac
                         },
                         settings:
                         {
@@ -190,6 +191,8 @@ class CameraDriver extends Homey.Driver
                             "channel": -1
                         }
                     });
+                    this.homey.app.updateLog("Adding " + this.homey.app.varToString(device), 1);
+
                     return device;
                 }
                 else

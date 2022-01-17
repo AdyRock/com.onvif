@@ -276,6 +276,9 @@
     "en": "Updated all libraries to improve robustness of the app."
   },
   "2.0.5": {
-    "en": "Updated images to current Athom store standards."
+    "en": "Updated store images to current Athom store standards."
+  },
+  "2.0.6": {
+    "en": "Add more diagnostics for camera discover."
   }
 }

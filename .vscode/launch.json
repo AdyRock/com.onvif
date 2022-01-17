@@ -3,7 +3,18 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
-    "configurations": [{
+    "configurations": [
+    {
+        "type": "node",
+        "request": "attach",
+        "restart": true,
+        "name": "Attach to Docker Homey",
+        "address": "0.0.0.0",
+        "port": 9229,
+        "localRoot": "${workspaceFolder}",
+        "remoteRoot": "/"
+    },
+    {
         "type": "node",
         "request": "attach",
         "restart": true,
@@ -12,5 +23,15 @@
         "port": 9222,
         "localRoot": "${workspaceFolder}",
         "remoteRoot": "/"
-    }, ]
+    },
+    {
+        "type": "node",
+        "request": "attach",
+        "restart": true,
+        "name": "Attach to Homey USB",
+        "address": "10.76.225.1",
+        "port": 9222,
+        "localRoot": "${workspaceFolder}",
+        "remoteRoot": "/"
+    }]
 }

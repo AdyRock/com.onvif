@@ -5,3 +5,7 @@ test.js
 .vscode/
 .vs/
 build/
+
+
+# Added by Homey CLI
+/.homeybuild/
