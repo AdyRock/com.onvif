@@ -52,6 +52,7 @@ class CameraDriver extends Homey.Driver
                         "ip": "",
                         "port": "",
                         "urn": "",
+                        "mac": "",
                         "channel": -1
                     }
                 });
@@ -69,6 +70,8 @@ class CameraDriver extends Homey.Driver
                     {
                         const source = tempCam.videoSources[i];
                         // There is more tha 1 video source so add a device for each
+                        const mac = await this.homey.arp.getMAC(this.lastHostName);
+
                         this.homey.app.updateLog("list_devices2: Adding source " + source + " to list", 1);
                         let token = "";
                         if (source.$)
@@ -93,6 +96,7 @@ class CameraDriver extends Homey.Driver
                                 "ip": this.lastHostName,
                                 "port": this.lastPort,
                                 "urn": this.lastURN,
+                                "mac": mac,
                                 "channel": devices.length + 1,
                                 "token": token
                             }
@@ -188,6 +192,7 @@ class CameraDriver extends Homey.Driver
                             "ip": cam.hostname,
                             "port": cam.port ? cam.port.toString() : "",
                             "urn": this.lastURN,
+                            "mac": mac,
                             "channel": -1
                         }
                     });
@@ -271,10 +276,17 @@ class CameraDriver extends Homey.Driver
                     if (matched)
                     {
                         // found it
+                        let mac = await discoveredDevice.settings.mac;
+                        if (!mac)
+                        {
+                            mac = await this.homey.arp.getMAC(discoveredDevice.settings.ip);
+                        }
+
                         await device.setSettings(
                         {
                             'ip': discoveredDevice.settings.ip,
-                            'port': discoveredDevice.settings.port
+                            'port': discoveredDevice.settings.port,
+                            'mac': mac,
                         });
                         device.cam = cam;
                         device.setupImages();

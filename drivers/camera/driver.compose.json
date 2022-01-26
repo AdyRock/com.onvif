@@ -338,7 +338,18 @@
                     },
                     "value": "",
                     "hint": {
-                        "en": "Unique identifer for the camera. This is the network MAC address when the camera is added by later versions of the app."
+                        "en": "Unique identifer for the camera."
+                    }
+                },
+                {
+                    "id": "mac",
+                    "type": "label",
+                    "label": {
+                        "en": "MAC Address"
+                    },
+                    "value": "",
+                    "hint": {
+                        "en": "Unique network identifer for the camera."
                     }
                 },
                 {
