@@ -1378,81 +1378,111 @@ class CameraDevice extends Homey.Device
     async doFetch(name)
     {
         let res = {};
-        try
+        const startAuthType = this.authType;
+        do
         {
-            if (this.authType == 0)
+            try
             {
-                this.homey.app.updateLog("Fetching (" + this.name + ") " + name + " image from: " + this.homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
-                res = await fetch(this.snapUri);
-                if (res.status == 401)
+                if (this.authType == 0)
                 {
-                    // Try Basic Authentication
-                    this.authType = 1;
+                    this.homey.app.updateLog("Fetching (" + this.name + ") " + name + " image with no Auth from: " + this.homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"), 1);
+                    res = await fetch(this.snapUri);
+                    this.homey.app.updateLog(`SnapShot fetch result (${this.name}): Status: ${res.ok}, Message: ${res.statusText}, Code: ${res.status}\r\n`, 1);
+                    if (!res.ok)
+                    {
+                        // Try Basic Authentication
+                        this.authType = 1;
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
-        }
-        catch (err)
-        {
-            this.homey.app.updateLog("SnapShot error (" + this.name + "): " + err.message, 0);
-            // Try Basic Authentication
-            this.authType = 1;
-        }
-
-        try
-        {
-            if (this.authType == 1)
+            catch (err)
             {
-                this.homey.app.updateLog("Fetching (" + this.name + ") " + name + " image with Basic Auth. From: " + this.homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
+                this.homey.app.updateLog("SnapShot error (" + this.name + "): " + err.message, 0);
+                // Try Basic Authentication
+                this.authType = 1;
 
-                const client = new DigestFetch(this.username, this.password,
+                res = {
+                    'ok': false,
+                    'statusText': err.message
+                };
+            }
+
+            try
+            {
+                if (this.authType == 1)
                 {
-                    basic: true
-                });
-                res = await client.fetch(this.snapUri);
-                if (res.status == 401)
-                {
-                    // Try Digest Authentication
-                    this.authType = 2;
+                    this.homey.app.updateLog("Fetching (" + this.name + ") " + name + " image with Basic Auth. From: " + this.homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"), 1);
+
+                    const client = new DigestFetch(this.username, this.password,
+                    {
+                        basic: true
+                    });
+                    res = await client.fetch(this.snapUri);
+                    this.homey.app.updateLog(`SnapShot fetch result (${this.name}): Status: ${res.ok}, Message: ${res.statusText}, Code: ${res.status}\r\n`, 1);
+                    if (!res.ok)
+                    {
+                        // Try Digest Authentication
+                        this.authType = 2;
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
-        }
-        catch (err)
-        {
-            this.homey.app.updateLog("SnapShot error (" + this.name + "): " + err.message, 0);
-            // Try Digest Authentication
-            this.authType = 2;
-        }
-
-        try
-        {
-            if (this.authType >= 2)
+            catch (err)
             {
-                this.homey.app.updateLog("Fetching (" + this.name + ") " + name + " image with Digest Auth. From: " + this.homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
+                this.homey.app.updateLog("SnapShot error (" + this.name + "): " + err.message, 0);
+                // Try Digest Authentication
+                this.authType = 2;
 
-                const client = new DigestFetch(this.username, this.password,
+                res = {
+                    'ok': false,
+                    'statusText': err.message
+                };
+            }
+
+            try
+            {
+                if (this.authType >= 2)
                 {
-                    algorithm: 'MD5'
-                });
-                res = await client.fetch(this.snapUri);
-                if (res.status == 401)
-                {
-                    // Go back to no Authentication
-                    this.authType = 0;
+                    this.homey.app.updateLog("Fetching (" + this.name + ") " + name + " image with Digest Auth. From: " + this.homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"), 1);
+
+                    const client = new DigestFetch(this.username, this.password,
+                    {
+                        algorithm: 'MD5'
+                    });
+                    res = await client.fetch(this.snapUri);
+                    this.homey.app.updateLog(`SnapShot fetch result (${this.name}): Status: ${res.ok}, Message: ${res.statusText}, Code: ${res.status}\r\n`, 1);
+                    if (!res.ok)
+                    {
+                        // Go back to no Authentication
+                        this.authType = 0;
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
-        }
-        catch (err)
-        {
-            this.homey.app.updateLog("SnapShot error (" + this.name + "): " + err.message, 0);
+            catch (err)
+            {
+                this.homey.app.updateLog("SnapShot error (" + this.name + "): " + err.message, 0);
 
-            // Go back to no Authentication
-            this.authType = 0;
+                // Go back to no Authentication
+                this.authType = 0;
 
-            res = {
-                'ok': false,
-                'statusText': err.message
-            };
+                res = {
+                    'ok': false,
+                    'statusText': err.message
+                };
+            }
         }
+        while(this.authType !== startAuthType);
 
         return res;
     }

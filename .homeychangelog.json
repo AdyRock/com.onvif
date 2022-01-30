@@ -280,5 +280,8 @@
   },
   "2.0.6": {
     "en": "Add more diagnostics for camera discover."
+  },
+  "2.0.7": {
+    "en": "Attemp each Auth mode if fetching a snapshot fails any time."
   }
 }

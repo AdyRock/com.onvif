@@ -342,7 +342,7 @@ class MyApp extends Homey.App
         });
 
         // Allow time for the process to finish
-        await new Promise(resolve => this.homey.setTimeout(resolve, 5000));
+        await new Promise(resolve => this.homey.setTimeout(resolve, 10000));
 
         // Add in a manual option
 
@@ -924,26 +924,50 @@ class MyApp extends Homey.App
 
     varToString(source)
     {
-        if (source === null)
+        try
         {
-            return "null";
+            if (source === null)
+            {
+                return 'null';
+            }
+            if (source === undefined)
+            {
+                return 'undefined';
+            }
+            if (source instanceof Error)
+            {
+                const stack = source.stack.replace('/\\n/g', '\n');
+                return `${source.message}\n${stack}`;
+            }
+            if (typeof (source) === 'object')
+            {
+                const getCircularReplacer = () =>
+                {
+                    const seen = new WeakSet();
+                    return (key, value) =>
+                    {
+                        if (typeof value === 'object' && value !== null)
+                        {
+                            if (seen.has(value))
+                            {
+                                return '';
+                            }
+                            seen.add(value);
+                        }
+                        return value;
+                    };
+                };
+
+                return JSON.stringify(source, getCircularReplacer(), 2);
+            }
+            if (typeof (source) === 'string')
+            {
+                return source;
+            }
         }
-        if (source === undefined)
+        catch (err)
         {
-            return "undefined";
-        }
-        if (source instanceof Error)
-        {
-            let stack = source.message.replace('/\\n/g', '\n');
-            return source.message + '\n' + stack;
-        }
-        if (typeof(source) === "object")
-        {
-            return JSON.stringify(source, null, 2);
-        }
-        if (typeof(source) === "string")
-        {
-            return source;
+            this.homey.app.updateLog(`VarToString Error: ${err}`, 0);
         }
 
         return source.toString();
