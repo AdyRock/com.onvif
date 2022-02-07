@@ -282,6 +282,9 @@
     "en": "Add more diagnostics for camera discover."
   },
   "2.0.7": {
-    "en": "Attemp each Auth mode if fetching a snapshot fails any time."
+    "en": "Attempt each Auth mode if fetching a snapshot fails any time."
+  },
+  "2.0.8": {
+    "en": "Filtered flow cards so only applicable cards are shown."
   }
 }
