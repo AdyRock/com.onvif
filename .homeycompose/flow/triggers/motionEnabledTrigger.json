@@ -1,0 +1,21 @@
+{
+    "title": {
+        "en": "Motion enabled",
+        "de": "Bewegung eingeschaltet",
+        "nl": "Beweging actief",
+        "it": "Motion abilitato"
+    },
+    "titleFormatted": {
+        "en": "Motion enabled",
+        "de": "Bewegung eingeschaltet",
+        "nl": "Beweging actief",
+        "it": "Motion abilitato"
+    },
+    "args": [
+        {
+        "type": "device",
+        "name": "device",
+        "filter": "driver_id=camera&capabilities=motion_enabled"
+        }
+    ]
+}

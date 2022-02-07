@@ -1,0 +1,22 @@
+{
+    "title": {
+        "en": "Update snapshot",
+        "de": "Standbild jetzt erneuern",
+        "nl": "Ververs snapshot",
+        "it": "Aggiorna Immagine Istantanea"
+    },
+    "titleFormatted": {
+        "en": "Update snapshot",
+        "de": "Standbild jetzt erneuern",
+        "nl": "Ververs snapshot",
+        "it": "Aggiorna Immagine Istantanea"
+    },
+    "args": [
+        {
+        "type": "device",
+        "name": "device",
+        "filter": "driver_id=camera&capabilities=motion_enabled"
+        }
+    ],
+    "deprecated": true
+}

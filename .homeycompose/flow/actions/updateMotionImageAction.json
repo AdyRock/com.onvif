@@ -1,0 +1,21 @@
+{
+    "title": {
+        "en": "Update Motion snapshot",
+        "de": "Motion-Snapshot aktualisieren",
+        "nl": "Bewegingssnapshot bijwerken",
+        "it": "Aggiorna istantanea in movimento"
+    },
+    "titleFormatted": {
+        "en": "Update Motion snapshot",
+        "de": "Motion-Snapshot aktualisieren",
+        "nl": "Bewegingssnapshot bijwerken",
+        "it": "Aggiorna istantanea in movimento"
+    },
+    "args": [
+        {
+        "type": "device",
+        "name": "device",
+        "filter": "driver_id=camera&capabilities=motion_enabled"
+        }
+    ]
+}

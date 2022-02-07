@@ -1,0 +1,21 @@
+{
+    "title": {
+        "en": "Disable motion",
+        "de": "Bewegung abschalten",
+        "nl": "Beweging inactief",
+        "it": "Movimento Disabilitato"
+    },
+    "titleFormatted": {
+        "en": "Disable motion",
+        "de": "Bewegung abschalten",
+        "nl": "Beweging inactief",
+        "it": "Movimento Disabilitato"
+    },
+    "args": [
+        {
+        "type": "device",
+        "name": "device",
+        "filter": "driver_id=camera&capabilities=motion_enabled"
+        }
+    ]
+}

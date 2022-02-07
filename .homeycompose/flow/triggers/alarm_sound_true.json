@@ -1,0 +1,12 @@
+{
+    "title": {
+        "en": "The sound alarm turned on"
+    },
+    "args": [
+        {
+        "type": "device",
+        "name": "device",
+        "filter": "driver_id=camera&capabilities=alarm_sound"
+        }
+    ]
+}

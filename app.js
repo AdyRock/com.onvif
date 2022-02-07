@@ -342,7 +342,7 @@ class MyApp extends Homey.App
         });
 
         // Allow time for the process to finish
-        await new Promise(resolve => this.homey.setTimeout(resolve, 10000));
+        await new Promise(resolve => this.homey.setTimeout(resolve, 5000));
 
         // Add in a manual option
 
@@ -1050,14 +1050,14 @@ class MyApp extends Homey.App
                 // create reusable transporter object using the default SMTP transport
                 let transporter = nodemailer.createTransport(
                 {
-                    host: this.homey.env.MAIL_HOST, //this.homey.env.MAIL_HOST,
+                    host: Homey.env.MAIL_HOST, //Homey.env.MAIL_HOST,
                     port: 465,
                     ignoreTLS: false,
                     secure: true, // true for 465, false for other ports
                     auth:
                     {
-                        user: this.homey.env.MAIL_USER, // generated ethereal user
-                        pass: this.homey.env.MAIL_SECRET // generated ethereal password
+                        user: Homey.env.MAIL_USER, // generated ethereal user
+                        pass: Homey.env.MAIL_SECRET // generated ethereal password
                     },
                     tls:
                     {
@@ -1069,8 +1069,8 @@ class MyApp extends Homey.App
                 // send mail with defined transport object
                 let info = await transporter.sendMail(
                 {
-                    from: '"Homey User" <' + this.homey.env.MAIL_USER + '>', // sender address
-                    to: this.homey.env.MAIL_RECIPIENT, // list of receivers
+                    from: '"Homey User" <' + Homey.env.MAIL_USER + '>', // sender address
+                    to: Homey.env.MAIL_RECIPIENT, // list of receivers
                     subject: "ONVIF log (" + this.homeyHash + " : " + this.homey.manifest.version + ")", // Subject line
                     text: this.homey.settings.get('diagLog') // plain text body
                 });
@@ -1088,6 +1088,7 @@ class MyApp extends Homey.App
             }
         }
         this.updateLog("Send log FAILED", 0);
+        throw(new Error("Send log FAILED"));
     }
 }
 

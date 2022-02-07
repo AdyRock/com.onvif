@@ -1,0 +1,33 @@
+{
+    "title": {
+        "en": "Snapshot ready",
+        "de": "Schnappschuss ist fertig",
+        "nl": "Snapshot beschikbaar",
+        "it": "Immagine Istantanea pronta"
+    },
+    "titleFormatted": {
+        "en": "Snapshot ready",
+        "de": "Schnappschuss ist fertig",
+        "nl": "Snapshot beschikbaar",
+        "it": "Immagine Istantanea pronta"
+    },
+    "tokens": [
+        {
+            "name": "image",
+            "type": "image",
+            "title": {
+                "en": "Snapshot",
+                "de": "Schnappschuss",
+                "nl": "Snapshot",
+                "it": "Immagine Istantanea"
+            }
+        }
+    ],
+    "args": [
+        {
+        "type": "device",
+        "name": "device",
+        "filter": "driver_id=camera"
+        }
+    ]
+}

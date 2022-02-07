@@ -476,13 +476,14 @@ class CameraDevice extends Homey.Device
                 try
                 {
                     let capabilities = await this.homey.app.getServiceCapabilities(this.cam);
-                    this.homey.app.updateLog("** service capabilities " + this.name + " = " + capabilities);
+                    this.homey.app.updateLog("** service capabilities " + this.name + " = " + this.homey.app.varToString(capabilities));
 
                     let services = await this.homey.app.getServices(this.cam);
                     if (Array.isArray(services))
                     {
                         services.forEach((service) =>
                         {
+                            this.homey.app.updateLog("** Service " + this.name + this.homey.app.varToString(service));
                             if (service.namespace.search('.org/') > 0)
                             {
                                 let namespaceSplitted = service.namespace.split('.org/')[1].split('/');
@@ -657,7 +658,7 @@ class CameraDevice extends Homey.Device
                     this.homey.app.updateLog("Connect to camera error (" + this.name + "): " + err.message, 0);
                     this.setUnavailable().catch(this.err);
                 }
-                this.checkTimerId = this.homey.setTimeout(this.connectCamera.bind(this, addingCamera), 5000);
+                this.checkTimerId = this.homey.setTimeout(this.connectCamera.bind(this, addingCamera), 15000);
                 this.setCapabilityValue('alarm_tamper', false).catch(this.error);
             }
         }
@@ -1260,7 +1261,7 @@ class CameraDevice extends Homey.Device
                 "url": publicSnapURL
             });
 
-            this.homey.app.updateLog("Snapshot URL: " + this.homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"));
+            this.homey.app.updateLog("Snapshot URL: " + publicSnapURL);
 
             try
             {

@@ -1,0 +1,12 @@
+{
+    "title": {
+        "en": "The dark image turned on"
+    },
+    "args": [
+        {
+        "type": "device",
+        "name": "device",
+        "filter": "driver_id=camera&capabilities=alarm_dark_image"
+        }
+    ]
+}

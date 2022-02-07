@@ -1,0 +1,33 @@
+{
+    "title": {
+        "en": "Motion snapshot ready",
+        "de": "Momentaufnahme bereit",
+        "nl": "Bewegings snapshot beschikbaar",
+        "it": "Immagine di Movimento pronta"
+    },
+    "titleFormatted": {
+        "en": "Motion snapshot ready",
+        "de": "Momentaufnahme bereit",
+        "nl": "Bewegings snapshot beschikbaar",
+        "it": "Immagine di Movimento pronta"
+    },
+    "tokens": [
+        {
+            "name": "eventImage",
+            "type": "image",
+            "title": {
+                "en": "Motion snapshot",
+                "de": "Momentaufnahme",
+                "nl": "Bewegings snapshot",
+                "it": "Immagine di Movimento"
+            }
+        }
+    ],
+    "args": [
+        {
+        "type": "device",
+        "name": "device",
+        "filter": "driver_id=camera&capabilities=motion_enabled"
+        }
+    ]
+}
