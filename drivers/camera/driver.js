@@ -181,7 +181,7 @@ class CameraDriver extends Homey.Driver
                         "name": cam.hostname,
                         data:
                         {
-                            "id": mac
+                            "id": mac ? mac : this.lastURN
                         },
                         settings:
                         {
@@ -192,7 +192,7 @@ class CameraDriver extends Homey.Driver
                             "ip": cam.hostname,
                             "port": cam.port ? cam.port.toString() : "",
                             "urn": this.lastURN,
-                            "mac": mac,
+                            "mac": mac ? mac : 'Unknown',
                             "channel": -1
                         }
                     });

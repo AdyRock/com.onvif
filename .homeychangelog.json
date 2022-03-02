@@ -286,5 +286,8 @@
   },
   "2.0.8": {
     "en": "Filtered flow cards so only applicable cards are shown."
+  },
+  "2.0.9": {
+    "en": "Use the current date and time for the camera id if the mac address is not detected."
   }
 }
