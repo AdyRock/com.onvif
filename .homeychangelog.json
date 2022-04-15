@@ -289,5 +289,8 @@
   },
   "2.0.9": {
     "en": "Use the current date and time for the camera id if the mac address is not detected."
+  },
+  "2.0.10": {
+    "en": "Fix to enable mostion when the MOTION type is not supported but other types are."
   }
 }

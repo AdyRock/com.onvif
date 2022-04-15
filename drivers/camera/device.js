@@ -584,7 +584,7 @@ class CameraDevice extends Homey.Device
                     notificationMethods = this.homey.__("Not_Supported"); //"Not supported";
                 }
 
-                this.hasMotion = ((supportedEvents.indexOf('MOTION') >= 0) && (this.hasPullPoints || this.supportPushEvent));
+                this.hasMotion = (((supportedEvents.indexOf('MOTION') >= 0) || (supportedEvents.indexOf('MOTIONALARM') >= 0) || (supportedEvents.indexOf('DIGITALINPUT') >= 0)) && (this.hasPullPoints || this.supportPushEvent));
                 await this.setSettings(
                 {
                     "manufacturer": info.manufacturer,
