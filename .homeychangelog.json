@@ -292,5 +292,8 @@
   },
   "2.0.10": {
     "en": "Fix to enable mostion when the MOTION type is not supported but other types are."
+  },
+  "2.0.11": {
+    "en": "Extra error reporting."
   }
 }

@@ -58,6 +58,10 @@ class MyApp extends Homey.App
             await this.unregisterCameras();
         });
 
+        process.on('unhandledRejection', (reason, p) => {
+            console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+            this.updateLog(`Unhandled Rejection at: Promise, ${this.varToString(p)}, reason: ${this.varToString(reason)}`, 0);
+          });
     }
 
     async registerFlowCard()
@@ -357,38 +361,30 @@ class MyApp extends Homey.App
     {
         return new Promise((resolve, reject) =>
         {
-            try
-            {
-                this.updateLog("--------------------------");
-                this.updateLog('Connect to Camera ' + hostname + ':' + port + " - " + username);
+            this.updateLog("--------------------------");
+            this.updateLog('Connect to Camera ' + hostname + ':' + port + " - " + username);
 
-                let cam = new Cam(
-                {
-                    homeyApp: this.homey,
-                    hostname: hostname,
-                    username: username,
-                    password: password,
-                    port: parseInt(port),
-                    timeout: 15000,
-                }, (err) =>
-                {
-                    if (err)
-                    {
-                        this.updateLog('Connection Failed for ' + hostname + ' Port: ' + port + ' Username: ' + username, 0);
-                        return reject(err);
-                    }
-                    else
-                    {
-                        this.updateLog('CONNECTED to ' + hostname);
-                        return resolve(cam);
-                    }
-                });
-            }
-            catch (err)
+            let cam = new Cam(
             {
-                this.updateLog("Connect to camera " + hostname + " error: " + err.message, 0);
-                return reject(err);
-            }
+                homeyApp: this.homey,
+                hostname: hostname,
+                username: username,
+                password: password,
+                port: parseInt(port),
+                timeout: 15000,
+            }, (err) =>
+            {
+                if (err)
+                {
+                    this.updateLog('Connection Failed for ' + hostname + ' Port: ' + port + ' Username: ' + username, 0);
+                    return reject(err);
+                }
+                else
+                {
+                    this.updateLog('CONNECTED to ' + hostname);
+                    return resolve(cam);
+                }
+            });
         });
     }
 
@@ -426,24 +422,17 @@ class MyApp extends Homey.App
     {
         return new Promise((resolve, reject) =>
         {
-            try
+            cam_obj.getHostname((err, date, xml) =>
             {
-                cam_obj.getHostname((err, date, xml) =>
+                if (err)
                 {
-                    if (err)
-                    {
-                        return reject(err);
-                    }
-                    else
-                    {
-                        return resolve(date);
-                    }
-                });
-            }
-            catch (err)
-            {
-                return reject(err);
-            }
+                    return reject(err);
+                }
+                else
+                {
+                    return resolve(date);
+                }
+            });
         });
     }
 
@@ -451,24 +440,17 @@ class MyApp extends Homey.App
     {
         return new Promise((resolve, reject) =>
         {
-            try
+            cam_obj.getSystemDateAndTime((err, date, xml) =>
             {
-                cam_obj.getSystemDateAndTime((err, date, xml) =>
+                if (err)
                 {
-                    if (err)
-                    {
-                        return reject(err);
-                    }
-                    else
-                    {
-                        return resolve(date);
-                    }
-                });
-            }
-            catch (err)
-            {
-                return reject(err);
-            }
+                    return reject(err);
+                }
+                else
+                {
+                    return resolve(date);
+                }
+            });
         });
     }
 
@@ -476,24 +458,17 @@ class MyApp extends Homey.App
     {
         return new Promise((resolve, reject) =>
         {
-            try
+            cam_obj.getDeviceInformation((err, info, xml) =>
             {
-                cam_obj.getDeviceInformation((err, info, xml) =>
+                if (err)
                 {
-                    if (err)
-                    {
-                        return reject(err);
-                    }
-                    else
-                    {
-                        return resolve(info);
-                    }
-                });
-            }
-            catch (err)
-            {
-                return reject(err);
-            }
+                    return reject(err);
+                }
+                else
+                {
+                    return resolve(info);
+                }
+            });
         });
     }
 
@@ -501,24 +476,17 @@ class MyApp extends Homey.App
     {
         return new Promise((resolve, reject) =>
         {
-            try
+            cam_obj.getCapabilities((err, info, xml) =>
             {
-                cam_obj.getCapabilities((err, info, xml) =>
+                if (err)
                 {
-                    if (err)
-                    {
-                        return reject(err);
-                    }
-                    else
-                    {
-                        return resolve(info);
-                    }
-                });
-            }
-            catch (err)
-            {
-                return reject(err);
-            }
+                    return reject(err);
+                }
+                else
+                {
+                    return resolve(info);
+                }
+            });
         });
     }
 
@@ -526,24 +494,17 @@ class MyApp extends Homey.App
     {
         return new Promise((resolve, reject) =>
         {
-            try
+            cam_obj.getServices(true, (err, info, xml) =>
             {
-                cam_obj.getServices(true, (err, info, xml) =>
+                if (err)
                 {
-                    if (err)
-                    {
-                        return reject(err);
-                    }
-                    else
-                    {
-                        return resolve(info);
-                    }
-                });
-            }
-            catch (err)
-            {
-                return reject(err);
-            }
+                    return reject(err);
+                }
+                else
+                {
+                    return resolve(info);
+                }
+            });
         });
     }
 
@@ -551,24 +512,17 @@ class MyApp extends Homey.App
     {
         return new Promise((resolve, reject) =>
         {
-            try
+            cam_obj.getServiceCapabilities((err, capabilities, xml) =>
             {
-                cam_obj.getServiceCapabilities((err, capabilities, xml) =>
+                if (err)
                 {
-                    if (err)
-                    {
-                        return reject(err);
-                    }
-                    else
-                    {
-                        return resolve(capabilities);
-                    }
-                });
-            }
-            catch (err)
-            {
-                return reject(err);
-            }
+                    return reject(err);
+                }
+                else
+                {
+                    return resolve(capabilities);
+                }
+            });
         });
     }
 
@@ -576,24 +530,17 @@ class MyApp extends Homey.App
     {
         return new Promise((resolve, reject) =>
         {
-            try
+            cam_obj.getSnapshotUri((err, info, xml) =>
             {
-                cam_obj.getSnapshotUri((err, info, xml) =>
+                if (err)
                 {
-                    if (err)
-                    {
-                        return reject(err);
-                    }
-                    else
-                    {
-                        return resolve(info);
-                    }
-                });
-            }
-            catch (err)
-            {
-                return reject(err);
-            }
+                    return reject(err);
+                }
+                else
+                {
+                    return resolve(info);
+                }
+            });
         });
     }
 
@@ -601,49 +548,42 @@ class MyApp extends Homey.App
     {
         return new Promise((resolve, reject) =>
         {
-            try
+            let supportedEvents = [];
+            cam_obj.getEventProperties((err, data, xml) =>
             {
-                let supportedEvents = [];
-                cam_obj.getEventProperties((err, data, xml) =>
+                if (err)
                 {
-                    if (err)
+                    return reject(err);
+                }
+                else
+                {
+                    // Display the available Topics
+                    let parseNode = (node, topicPath, nodeName) =>
                     {
-                        return reject(err);
-                    }
-                    else
-                    {
-                        // Display the available Topics
-                        let parseNode = (node, topicPath, nodeName) =>
+                        // loop over all the child nodes in this node
+                        for (const child in node)
                         {
-                            // loop over all the child nodes in this node
-                            for (const child in node)
+                            if (child == "$")
                             {
-                                if (child == "$")
-                                {
-                                    continue;
-                                }
-                                else if (child == "messageDescription")
-                                {
-                                    // we have found the details that go with an event
-                                    supportedEvents.push(nodeName.toUpperCase());
-                                    return;
-                                }
-                                else
-                                {
-                                    // descend into the child node, looking for the messageDescription
-                                    parseNode(node[child], topicPath + '/' + child, child);
-                                }
+                                continue;
                             }
-                        };
-                        parseNode(data.topicSet, '', '');
-                    }
-                    return resolve(supportedEvents);
-                });
-            }
-            catch (err)
-            {
-                return reject(err);
-            }
+                            else if (child == "messageDescription")
+                            {
+                                // we have found the details that go with an event
+                                supportedEvents.push(nodeName.toUpperCase());
+                                return;
+                            }
+                            else
+                            {
+                                // descend into the child node, looking for the messageDescription
+                                parseNode(node[child], topicPath + '/' + child, child);
+                            }
+                        }
+                    };
+                    parseNode(data.topicSet, '', '');
+                }
+                return resolve(supportedEvents);
+            });
         });
     }
 
