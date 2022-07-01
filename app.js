@@ -3,7 +3,7 @@
 
 if (process.env.DEBUG === '1')
 {
-    require('inspector').open(9222, '0.0.0.0', true);
+    require('inspector').open(9225, '0.0.0.0', true);
 }
 
 const Homey = require('homey');
@@ -58,10 +58,11 @@ class MyApp extends Homey.App
             await this.unregisterCameras();
         });
 
-        process.on('unhandledRejection', (reason, p) => {
+        process.on('unhandledRejection', (reason, p) =>
+        {
             console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
             this.updateLog(`Unhandled Rejection at: Promise, ${this.varToString(p)}, reason: ${this.varToString(reason)}`, 0);
-          });
+        });
     }
 
     async registerFlowCard()
@@ -397,7 +398,14 @@ class MyApp extends Homey.App
             for (let i = 0; i < devices.length; i++)
             {
                 let device = devices[i];
-                await device.checkCamera();
+                try
+                {
+                    await device.checkCamera();
+                }
+                catch (err)
+                {
+                    this.updateLog('checkCameras' + err.message, 0);
+                }
             }
         }
 
@@ -413,7 +421,14 @@ class MyApp extends Homey.App
             for (let i = 0; i < devices.length; i++)
             {
                 let device = devices[i];
-                await device.logout();
+                try
+                {
+                    await device.logout();
+                }
+                catch (err)
+                {
+                    this.updateLog('unregisterCameras' + err.message, 0);
+                }
             }
         }
     }
@@ -879,7 +894,7 @@ class MyApp extends Homey.App
                 const stack = source.stack.replace('/\\n/g', '\n');
                 return `${source.message}\n${stack}`;
             }
-            if (typeof (source) === 'object')
+            if (typeof(source) === 'object')
             {
                 const getCircularReplacer = () =>
                 {
@@ -900,7 +915,7 @@ class MyApp extends Homey.App
 
                 return JSON.stringify(source, getCircularReplacer(), 2);
             }
-            if (typeof (source) === 'string')
+            if (typeof(source) === 'string')
             {
                 return source;
             }
@@ -1028,7 +1043,7 @@ class MyApp extends Homey.App
             }
         }
         this.updateLog("Send log FAILED", 0);
-        throw(new Error("Send log FAILED"));
+        throw (new Error("Send log FAILED"));
     }
 }
 

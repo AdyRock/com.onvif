@@ -393,7 +393,14 @@ class CameraDevice extends Homey.Device
             if (this.hasMotion && this.getCapabilityValue('motion_enabled'))
             {
                 // Switch off the current even mode
-                await this.homey.app.unsubscribe(this);
+                try
+                {
+                    await this.homey.app.unsubscribe(this);
+                }
+                catch(err)
+                {
+                    this.homey.app.updateLog("unsubscribe error (" + this.name + "): " + this.homey.app.varToString(err.mesage), 0);
+                }
 
                 if (!reconnect)
                 {
@@ -437,7 +444,14 @@ class CameraDevice extends Homey.Device
                     //Stop listening for motion events
                     this.cam.removeAllListeners('event');
 
-                    await this.homey.app.unsubscribe(this);
+                    try
+                    {
+                        await this.homey.app.unsubscribe(this);
+                    }
+                    catch(err)
+                    {
+                        this.homey.app.updateLog("unsubscribe error (" + this.name + "): " + this.homey.app.varToString(err.mesage), 0);                        
+                    }
                 }
                 this.cam = null;
             }
@@ -716,7 +730,14 @@ class CameraDevice extends Homey.Device
                 if (errStr.indexOf("EHOSTUNREACH") >= 0)
                 {
                     this.setUnavailable().catch(this.err);
-                    await this.homey.app.unsubscribe(this);
+                    try
+                    {
+                        await this.homey.app.unsubscribe(this);
+                    }
+                    catch(err)
+                    {
+                        this.log(err);
+                    }
                 }
             }
         }
@@ -754,10 +775,18 @@ class CameraDevice extends Homey.Device
         if (this.invalidAfterConnect)
         {
             // Suggestions on the internet say this has to be called before getting the snapshot if invalidAfterConnect = true
-            const snapURL = await this.homey.app.getSnapshotURL(this.cam);
-            this.snapUri = snapURL.uri;
-            if (snapURL.uri.indexOf("http") < 0)
+            try
             {
+                const snapURL = await this.homey.app.getSnapshotURL(this.cam);
+                this.snapUri = snapURL.uri;
+                if (snapURL.uri.indexOf("http") < 0)
+                {
+                    this.snapUri = null;
+                }
+            }
+            catch(err)
+            {
+                this.homey.app.updateLog("Failed to fetch Snapshot URL: " + err.message, 0);
                 this.snapUri = null;
             }
         }
@@ -1408,8 +1437,14 @@ class CameraDevice extends Homey.Device
 
                 res = {
                     'ok': false,
-                    'statusText': err.message
+                    'statusText': err.code
                 };
+
+                if (startAuthType === this.authType)
+                {
+                    // Tried all the methods now
+                    break;
+                }
             }
 
             try
@@ -1443,8 +1478,14 @@ class CameraDevice extends Homey.Device
 
                 res = {
                     'ok': false,
-                    'statusText': err.message
+                    'statusText': err.code
                 };
+
+                if (startAuthType === this.authType)
+                {
+                    // Tried all the methods now
+                    break;
+                }
             }
 
             try
@@ -1479,11 +1520,22 @@ class CameraDevice extends Homey.Device
 
                 res = {
                     'ok': false,
-                    'statusText': err.message
+                    'statusText': err.code
                 };
+
+                if (startAuthType === this.authType)
+                {
+                    // Tried all the methods now
+                    break;
+                }
             }
         }
         while(this.authType !== startAuthType);
+
+        if (!res.ok)
+        {
+            this.setWarning(res.statusText);            
+        }
 
         return res;
     }
