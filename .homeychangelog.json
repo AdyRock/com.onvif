@@ -298,5 +298,8 @@
   },
   "2.0.12": {
     "en": "Extra error checking."
+  },
+  "2.0.13": {
+    "en": "More error checking."
   }
 }
