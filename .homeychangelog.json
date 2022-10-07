@@ -301,5 +301,8 @@
   },
   "2.0.13": {
     "en": "More error checking."
+  },
+  "2.0.14": {
+    "en": "Made upstart functions synchronous incase the camera can't cope with multiple simultaneous requests."
   }
 }
