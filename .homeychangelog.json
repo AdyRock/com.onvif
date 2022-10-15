@@ -304,5 +304,8 @@
   },
   "2.0.14": {
     "en": "Made upstart functions synchronous incase the camera can't cope with multiple simultaneous requests."
+  },
+  "2.0.15": {
+    "en": "Fixed an issue connecting to a camera that returns the firmware version as a number instead of a string."
   }
 }

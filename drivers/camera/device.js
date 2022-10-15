@@ -599,17 +599,24 @@ class CameraDevice extends Homey.Device
                 }
 
                 this.hasMotion = (((supportedEvents.indexOf('MOTION') >= 0) || (supportedEvents.indexOf('MOTIONALARM') >= 0) || (supportedEvents.indexOf('DIGITALINPUT') >= 0)) && (this.hasPullPoints || this.supportPushEvent));
-                await this.setSettings(
+                try
                 {
-                    "manufacturer": info.manufacturer,
-                    "model": info.model,
-                    "serialNumber": info.serialNumber.toString(),
-                    "firmwareVersion": info.firmwareVersion,
-                    "hasMotion": this.hasMotion,
-                    'notificationMethods': notificationMethods,
-                    'notificationTypes': supportedEvents.toString(),
-                    'hasSnapshot': this.snapshotSupported,
-                });
+                    await this.setSettings(
+                    {
+                        "manufacturer": info.manufacturer,
+                        "model": info.model,
+                        "serialNumber": info.serialNumber.toString(),
+                        "firmwareVersion": info.firmwareVersion.toString(),
+                        "hasMotion": this.hasMotion,
+                        'notificationMethods': notificationMethods,
+                        'notificationTypes': supportedEvents.toString(),
+                        'hasSnapshot': this.snapshotSupported,
+                    });
+                }
+                catch (err)
+                {
+                    this.homey.app.updateLog("Connect to camera set settings error (" + this.name + "): " + err.message, 0);
+                }
 
                 let settings = this.getSettings();
                 this.notificationTypesUpdated(settings.notificationTypes);
