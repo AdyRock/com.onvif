@@ -307,5 +307,8 @@
   },
   "2.0.15": {
     "en": "Fixed an issue connecting to a camera that returns the firmware version as a number instead of a string."
+  },
+  "2.0.16": {
+    "en": "Increased Push notification buffer allowance."
   }
 }

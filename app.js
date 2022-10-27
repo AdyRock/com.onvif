@@ -240,7 +240,7 @@ class MyApp extends Homey.App
                     request.on('data', chunk =>
                     {
                         body += chunk.toString(); // convert Buffer to string
-                        if (body.length > 10000)
+                        if (body.length > 20000)
                         {
                             this.updateLog("Push data error: Payload too large", 0);
                             response.writeHead(413);
