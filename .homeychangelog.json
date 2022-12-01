@@ -310,5 +310,8 @@
   },
   "2.0.16": {
     "en": "Increased Push notification buffer allowance."
+  },
+  "2.0.17": {
+    "en": "Added detection of RuleEngine/MyRuleDetector/Visitor to activate the alarm_generic."
   }
 }

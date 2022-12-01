@@ -1165,12 +1165,21 @@ class CameraDevice extends Homey.Device
                         // Processor usage = 'Value', 'dataValue = %usage
                         this.setCapabilityValue('alarm_storage', dataValue).catch(this.error);
                     }
-                     else if (compareSetting === "AudioAnalytics/Audio/DetectedSound:IsSoundDetected")
+                    else if (compareSetting === "AudioAnalytics/Audio/DetectedSound:IsSoundDetected")
                     {
                         // Processor usage = 'Value', 'dataValue = %usage
                         this.setCapabilityValue('alarm_sound', dataValue).catch(this.error);
                     }
-                   else if (dataName === "IsTamper")
+                    else if (compareSetting === "RuleEngine/MyRuleDetector/Visitor")
+                    {
+                        // 'dataValue' = true/false
+                        if (!this.hasCapability('alarm_generic'))
+                        {
+                            await this.addCapability('alarm_generic');
+                        }
+                        this.setCapabilityValue('alarm_generic', dataValue).catch(this.error);
+                    }
+                    else if (dataName === "IsTamper")
                     {
                         this.triggerTamperEvent(dataName, dataValue).catch(this.err);
                     }
