@@ -1170,7 +1170,7 @@ class CameraDevice extends Homey.Device
                         // Processor usage = 'Value', 'dataValue = %usage
                         this.setCapabilityValue('alarm_sound', dataValue).catch(this.error);
                     }
-                    else if (compareSetting === "RuleEngine/MyRuleDetector/Visitor")
+                    else if (compareSetting === "RuleEngine/MyRuleDetector/Visitor:State")
                     {
                         // 'dataValue' = true/false
                         if (!this.hasCapability('alarm_generic'))
