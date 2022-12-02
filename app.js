@@ -378,12 +378,12 @@ class MyApp extends Homey.App
                 if (err)
                 {
                     this.updateLog('Connection Failed for ' + hostname + ' Port: ' + port + ' Username: ' + username, 0);
-                    return reject(err);
+                    reject(err);
                 }
                 else
                 {
                     this.updateLog('CONNECTED to ' + hostname);
-                    return resolve(cam);
+                    resolve(cam);
                 }
             });
         });
@@ -441,11 +441,11 @@ class MyApp extends Homey.App
             {
                 if (err)
                 {
-                    return reject(err);
+                    reject(err);
                 }
                 else
                 {
-                    return resolve(date);
+                    resolve(date);
                 }
             });
         });
@@ -459,11 +459,11 @@ class MyApp extends Homey.App
             {
                 if (err)
                 {
-                    return reject(err);
+                    reject(err);
                 }
                 else
                 {
-                    return resolve(date);
+                    resolve(date);
                 }
             });
         });
@@ -477,11 +477,11 @@ class MyApp extends Homey.App
             {
                 if (err)
                 {
-                    return reject(err);
+                    reject(err);
                 }
                 else
                 {
-                    return resolve(info);
+                    resolve(info);
                 }
             });
         });
@@ -495,11 +495,11 @@ class MyApp extends Homey.App
             {
                 if (err)
                 {
-                    return reject(err);
+                    reject(err);
                 }
                 else
                 {
-                    return resolve(info);
+                    resolve(info);
                 }
             });
         });
@@ -513,11 +513,11 @@ class MyApp extends Homey.App
             {
                 if (err)
                 {
-                    return reject(err);
+                    reject(err);
                 }
                 else
                 {
-                    return resolve(info);
+                    resolve(info);
                 }
             });
         });
@@ -531,11 +531,11 @@ class MyApp extends Homey.App
             {
                 if (err)
                 {
-                    return reject(err);
+                    reject(err);
                 }
                 else
                 {
-                    return resolve(capabilities);
+                    resolve(capabilities);
                 }
             });
         });
@@ -549,11 +549,11 @@ class MyApp extends Homey.App
             {
                 if (err)
                 {
-                    return reject(err);
+                    reject(err);
                 }
                 else
                 {
-                    return resolve(info);
+                    resolve(info);
                 }
             });
         });
@@ -568,7 +568,7 @@ class MyApp extends Homey.App
             {
                 if (err)
                 {
-                    return reject(err);
+                    reject(err);
                 }
                 else
                 {
@@ -597,7 +597,7 @@ class MyApp extends Homey.App
                     };
                     parseNode(data.topicSet, '', '');
                 }
-                return resolve(supportedEvents);
+                resolve(supportedEvents);
             });
         });
     }
@@ -655,7 +655,7 @@ class MyApp extends Homey.App
                             this.updateLog("Resubscribing");
                             this.subscribeToCamPushEvents(Device).catch(this.err);
                         });
-                        return resolve(true);
+                        resolve(true);
                     }
                     else
                     {
@@ -685,7 +685,7 @@ class MyApp extends Homey.App
                             this.updateLog("Renewing subscription");
                             this.subscribeToCamPushEvents(Device).catch(this.err);
                         }, refreshTime);
-                        return resolve(true);
+                        resolve(true);
                     }
                 });
             }
@@ -701,7 +701,7 @@ class MyApp extends Homey.App
                     if (err)
                     {
                         this.updateLog("Subscribe err (" + Device.name + "): " + err, 0);
-                        return reject(err);
+                        reject(err);
                     }
                     else
                     {
@@ -734,7 +734,7 @@ class MyApp extends Homey.App
                             this.updateLog("Renewing subscription");
                             this.subscribeToCamPushEvents(Device).catch(this.err);
                         }, refreshTime);
-                        return resolve(true);
+                        resolve(true);
                     }
                 });
             }
@@ -769,14 +769,14 @@ class MyApp extends Homey.App
                 {
                     // Not registered so do nothing
                     this.updateLog("App.unsubscribe: No Push entry for device: " + Device.cam.hostname, 0);
-                    return resolve(null);
+                    resolve(null);
                 }
             }
             else
             {
                 this.updateLog("App.unsubscribe: No Push entry for host: " + Device.cam.hostname, 0);
                 Device.cam.removeAllListeners('event');
-                return resolve(null);
+                resolve(null);
             }
 
             // Remove this device reference
@@ -793,13 +793,13 @@ class MyApp extends Homey.App
                     if (err)
                     {
                         this.updateLog("Push unsubscribe error (" + Device.cam.hostname + "): " + this.varToString(err), 0);
-                        return reject(err);
+                        reject(err);
                     }
                     else
                     {
                         this.updateLog("Push unsubscribe response (" + Device.cam.hostname + "): " + this.varToString(info), 2);
                     }
-                    return resolve(null);
+                    resolve(null);
                 });
 
                 Device.cam.removeAllListeners('event');
@@ -817,7 +817,7 @@ class MyApp extends Homey.App
                 this.updateLog('App.unsubscribe: Keep subscription as devices are still registered');
 
                 Device.cam.removeAllListeners('event');
-                return resolve(null);
+                resolve(null);
             }
         });
     }

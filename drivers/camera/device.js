@@ -825,7 +825,7 @@ class CameraDevice extends Homey.Device
             storageStream.on('error', (err) =>
             {
                 this.homey.app.updateLog(this.homey.app.varToString(err));
-                return reject(err);
+                reject(err);
                 //throw new Error(err);
             });
             storageStream.on('finish', () =>
@@ -844,11 +844,11 @@ class CameraDevice extends Homey.Device
                         .catch(err =>
                         {
                             this.homey.app.updateLog("Snapshot error (" + this.name + "): " + this.homey.app.varToString(err), 0);
-                            return reject(err);
+                            reject(err);
                         })
                         .then(() =>
                         {
-                            return resolve(true);
+                            resolve(true);
                         });
                 }
             });
