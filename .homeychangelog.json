@@ -316,5 +316,8 @@
   },
   "2.0.18": {
     "en": "Added detection of RuleEngine/MyRuleDetector/Visitor:State to activate the alarm_generic."
+  },
+  "2.0.19": {
+    "en": "Try to reduce strange unhandled reject reports for handled rejection."
   }
 }
