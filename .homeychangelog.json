@@ -319,5 +319,8 @@
   },
   "2.0.19": {
     "en": "Try to reduce strange unhandled reject reports for handled rejection."
+  },
+  "2.0.20": {
+    "en": "Updated all libraries to improve robustness of the app."
   }
 }

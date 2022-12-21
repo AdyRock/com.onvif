@@ -677,7 +677,7 @@ class CameraDevice extends Homey.Device
                 if (!this.repairing)
                 {
                     this.homey.app.updateLog("Connect to camera error (" + this.name + "): " + err.message, 0);
-                    this.setUnavailable().catch(this.err);
+                    this.setUnavailable(err).catch(this.err);
                 }
                 this.checkTimerId = this.homey.setTimeout(this.connectCamera.bind(this, addingCamera), 15000);
                 this.setCapabilityValue('alarm_tamper', false).catch(this.error);
@@ -736,7 +736,7 @@ class CameraDevice extends Homey.Device
 
                 if (errStr.indexOf("EHOSTUNREACH") >= 0)
                 {
-                    this.setUnavailable().catch(this.err);
+                    this.setUnavailable(err).catch(this.err);
                     try
                     {
                         await this.homey.app.unsubscribe(this);

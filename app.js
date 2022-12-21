@@ -16,6 +16,13 @@ const nodemailer = require("nodemailer");
 
 const http = require('http');
 
+
+process.on('unhandledRejection', (reason, p) =>
+{
+    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+//    this.updateLog(`Unhandled Rejection at: Promise, ${this.varToString(p)}, reason: ${this.varToString(reason)}`, 0);
+});
+
 class MyApp extends Homey.App
 {
 
@@ -56,12 +63,6 @@ class MyApp extends Homey.App
         this.homey.on('unload', async () =>
         {
             await this.unregisterCameras();
-        });
-
-        process.on('unhandledRejection', (reason, p) =>
-        {
-            console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
-            this.updateLog(`Unhandled Rejection at: Promise, ${this.varToString(p)}, reason: ${this.varToString(reason)}`, 0);
         });
     }
 
