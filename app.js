@@ -780,45 +780,48 @@ class MyApp extends Homey.App
                 resolve(null);
             }
 
-            // Remove this device reference
-            this.updateLog("App.unsubscribe: Unregister entry for " + Device.cam.hostname);
-            pushEvent.devices.splice(deviceIdx, 1);
-
-            if ((pushEvent.devices.length == 0) && pushEvent.unsubscribeRef)
+            if (pushEvent)
             {
-                // No devices left so unregister the event
-                this.homey.clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
-                this.updateLog('Unsubscribe push event (' + Device.cam.hostname + '): ' + pushEvent.unsubscribeRef, 1);
-                Device.cam.UnsubscribePushEventSubscription(pushEvent.unsubscribeRef, (err, info, xml) =>
-                {
-                    if (err)
-                    {
-                        this.updateLog("Push unsubscribe error (" + Device.cam.hostname + "): " + this.varToString(err), 0);
-                        reject(err);
-                    }
-                    else
-                    {
-                        this.updateLog("Push unsubscribe response (" + Device.cam.hostname + "): " + this.varToString(info), 2);
-                    }
-                    resolve(null);
-                });
+                // Remove this device reference
+                this.updateLog("App.unsubscribe: Unregister entry for " + Device.cam.hostname);
+                pushEvent.devices.splice(deviceIdx, 1);
 
-                Device.cam.removeAllListeners('event');
-
-                // remove the push event from the list
-                this.pushEvents.splice(pushEventIdx, 1);
-            }
-            else
-            {
-                if (pushEvent.devices.length == 0)
+                if ((pushEvent.devices.length == 0) && pushEvent.unsubscribeRef)
                 {
+                    // No devices left so unregister the event
+                    this.homey.clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
+                    this.updateLog('Unsubscribe push event (' + Device.cam.hostname + '): ' + pushEvent.unsubscribeRef, 1);
+                    Device.cam.UnsubscribePushEventSubscription(pushEvent.unsubscribeRef, (err, info, xml) =>
+                    {
+                        if (err)
+                        {
+                            this.updateLog("Push unsubscribe error (" + Device.cam.hostname + "): " + this.varToString(err.message), 0);
+                            reject(err);
+                        }
+                        else
+                        {
+                            this.updateLog("Push unsubscribe response (" + Device.cam.hostname + "): " + this.varToString(info), 2);
+                        }
+                        resolve(null);
+                    });
+
+                    Device.cam.removeAllListeners('event');
+
                     // remove the push event from the list
                     this.pushEvents.splice(pushEventIdx, 1);
                 }
-                this.updateLog('App.unsubscribe: Keep subscription as devices are still registered');
+                else
+                {
+                    if (pushEvent.devices.length == 0)
+                    {
+                        // remove the push event from the list
+                        this.pushEvents.splice(pushEventIdx, 1);
+                    }
+                    this.updateLog('App.unsubscribe: Keep subscription as devices are still registered');
 
-                Device.cam.removeAllListeners('event');
-                resolve(null);
+                    Device.cam.removeAllListeners('event');
+                    resolve(null);
+                }
             }
         });
     }
@@ -923,7 +926,7 @@ class MyApp extends Homey.App
         }
         catch (err)
         {
-            this.homey.app.updateLog(`VarToString Error: ${err}`, 0);
+            this.homey.app.updateLog(`VarToString Error: ${err.message}`, 0);
         }
 
         return source.toString();

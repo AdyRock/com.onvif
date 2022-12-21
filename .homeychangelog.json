@@ -322,5 +322,8 @@
   },
   "2.0.20": {
     "en": "Updated all libraries to improve robustness of the app."
+  },
+  "2.0.21": {
+    "en": "Fix a crash if the camera goes offline while renewing the push notifications."
   }
 }

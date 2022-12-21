@@ -34,6 +34,8 @@ class CameraDevice extends Homey.Device
         this.snapshotSupported = true;
         this.eventMinTimeId = null;
 
+        this.connectCamera.bind(this);
+
         // Upgrade old device settings where the ip and port where part of the data
         const settings = this.getSettings();
         const devData = this.getData();
@@ -101,7 +103,7 @@ class CameraDevice extends Homey.Device
         this.connectCamera(false)
             .catch(err =>
             {
-                this.homey.app.updateLog("Check Camera Error (" + this.name + "): " + this.homey.app.varToString(err), 0);
+                this.homey.app.updateLog("Check Camera Error (" + this.name + "): " + this.homey.app.varToString(err.message), 0);
             });
 
         this.registerCapabilityListener('motion_enabled', this.onCapabilityMotionEnable.bind(this));
@@ -464,7 +466,10 @@ class CameraDevice extends Homey.Device
         if (this.repairing)
         {
             // Wait while repairing and try again later
-            this.checkTimerId = this.homey.setTimeout(this.connectCamera.bind(this, addingCamera), 2000);
+            this.checkTimerId = this.homey.setTimeout(() =>
+            {
+                this.connectCamera(this, addingCamera).catch(this.error);
+            }, 2000);
         }
         else
         {
@@ -679,7 +684,11 @@ class CameraDevice extends Homey.Device
                     this.homey.app.updateLog("Connect to camera error (" + this.name + "): " + err.message, 0);
                     this.setUnavailable(err).catch(this.err);
                 }
-                this.checkTimerId = this.homey.setTimeout(this.connectCamera.bind(this, addingCamera), 15000);
+                this.checkTimerId = this.homey.setTimeout(() =>
+                {
+                    this.connectCamera(this, addingCamera).catch(this.error);
+                }, 15000);
+
                 this.setCapabilityValue('alarm_tamper', false).catch(this.error);
             }
         }
@@ -1059,11 +1068,14 @@ class CameraDevice extends Homey.Device
                     {
                         await this.homey.app.subscribeToCamPushEvents(this);
                         this.homey.app.updateLog('\r\n## Waiting for Push events (' + this.name + ') ##');
+                        return;
                     }
                     catch (error)
                     {
-                        this.homey.app.updateLog('\r\n## FAILED to register Push events (' + this.name + ') ##', 0);
+                        this.homey.app.updateLog(`\r\n## FAILED to register Push events (${this.name}) ${error.message} ##`, 0);
                     }
+                    
+                    this.checkCamera();
                     return;
                 }
 
