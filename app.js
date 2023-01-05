@@ -179,7 +179,7 @@ class MyApp extends Homey.App
                         for (let i = 0; i < devices.length; i++)
                         {
                             let device = devices[i];
-                            if (device.ip == eventIP)
+                            if ((device.ip + device.channel) == eventIP)
                             {
                                 // Correct IP so check the token for multiple cameras on this IP
                                 if (!device.token || !messageToken || (messageToken == device.token))
@@ -611,10 +611,10 @@ class MyApp extends Homey.App
             this.updateLog("App.subscribeToCamPushEvents: " + Device.name);
 
             let unsubscribeRef = null;
-            let pushEvent = this.pushEvents.find(element => element.devices.length > 0 && element.devices[0].cam.hostname === Device.cam.hostname);
+            let pushEvent = this.pushEvents.find(element => element.devices.length > 0 && (element.devices[0].cam.hostname + element.devices[0].channel) === (Device.cam.hostname + Device.channel));
             if (pushEvent)
             {
-                this.updateLog("App.subscribeToCamPushEvents: Found entry for " + Device.cam.hostname);
+                this.updateLog("App.subscribeToCamPushEvents: Found entry for " + Device.cam.hostname + Device.channel);
                 // An event is already registered for this IP address
                 this.homey.clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
                 unsubscribeRef = pushEvent.unsubscribeRef;
@@ -629,7 +629,7 @@ class MyApp extends Homey.App
             }
             else
             {
-                this.updateLog("App.subscribeToCamPushEvents: Registering " + Device.cam.hostname);
+                this.updateLog("App.subscribeToCamPushEvents: Registering " + Device.cam.hostname  + Device.channel);
                 pushEvent = {
                     "devices": [],
                     "refreshTime": 0,
@@ -660,7 +660,7 @@ class MyApp extends Homey.App
                     }
                     else
                     {
-                        this.updateLog("Renew subscription response (" + Device.name + "): " + Device.cam.hostname + "\r\ninfo: " + this.varToString(info));
+                        this.updateLog("Renew subscription response (" + Device.name + "): " + Device.cam.hostname + Device.channel + "\r\ninfo: " + this.varToString(info));
                         let startTime = info[0].renewResponse[0].currentTime[0];
                         let endTime = info[0].renewResponse[0].terminationTime[0];
                         let d1 = new Date(startTime);
@@ -692,8 +692,8 @@ class MyApp extends Homey.App
             }
             else
             {
-                // const url = "http://" + this.homeyIP + ":" + this.pushServerPort + "/onvif/events?deviceId=" + Device.cam.hostname;
-                const hostPath = Device.cam.hostname;
+                // const url = "http://" + this.homeyIP + ":" + this.pushServerPort + "/onvif/events?deviceId=" + Device.cam.hostname + Device.channel;
+                const hostPath = Device.cam.hostname + Device.channel;
 
                 const url = "http://" + this.homeyIP + ":" + this.pushServerPort + "/onvif/events/" + hostPath;
                 this.updateLog("Setting up Push events (" + Device.name + ") on: " + url);
@@ -707,7 +707,7 @@ class MyApp extends Homey.App
                     else
                     {
 
-                        this.updateLog("Subscribe response (" + Device.name + "): " + Device.cam.hostname + " - Info: " + this.varToString(info));
+                        this.updateLog("Subscribe response (" + Device.name + "): " + Device.cam.hostname + Device.channel + " - Info: " + this.varToString(info));
                         unsubscribeRef = info[0].subscribeResponse[0].subscriptionReference[0].address[0];
 
                         let startTime = info[0].subscribeResponse[0].currentTime[0];
@@ -753,11 +753,11 @@ class MyApp extends Homey.App
             this.updateLog("App.unsubscribe: " + Device.name);
             let deviceIdx = -1;
             let pushEvent = null;
-            let pushEventIdx = this.pushEvents.findIndex(element => (element.devices[0] && Device.cam && (element.devices[0].cam.hostname == Device.cam.hostname)));
+            let pushEventIdx = this.pushEvents.findIndex(element => (element.devices[0] && Device.cam && ((element.devices[0].cam.hostname + Device.channel) === (Device.cam.hostname + Device.channel))));
             console.log("pushEvent Idx = ", pushEventIdx);
             if (pushEventIdx >= 0)
             {
-                this.updateLog("App.unsubscribe: Found entry for " + Device.cam.hostname);
+                this.updateLog("App.unsubscribe: Found entry for " + Device.cam.hostname + Device.channel);
                 pushEvent = this.pushEvents[pushEventIdx];
                 if (!pushEvent || !pushEvent.devices)
                 {
@@ -769,13 +769,13 @@ class MyApp extends Homey.App
                 if (deviceIdx < 0)
                 {
                     // Not registered so do nothing
-                    this.updateLog("App.unsubscribe: No Push entry for device: " + Device.cam.hostname, 0);
+                    this.updateLog("App.unsubscribe: No Push entry for device: " + Device.cam.hostname + Device.channel, 0);
                     resolve(null);
                 }
             }
             else
             {
-                this.updateLog("App.unsubscribe: No Push entry for host: " + Device.cam.hostname, 0);
+                this.updateLog("App.unsubscribe: No Push entry for host: " + Device.cam.hostname + Device.channel, 0);
                 Device.cam.removeAllListeners('event');
                 resolve(null);
             }
@@ -783,24 +783,24 @@ class MyApp extends Homey.App
             if (pushEvent)
             {
                 // Remove this device reference
-                this.updateLog("App.unsubscribe: Unregister entry for " + Device.cam.hostname);
+                this.updateLog("App.unsubscribe: Unregister entry for " + Device.cam.hostname + Device.channel);
                 pushEvent.devices.splice(deviceIdx, 1);
 
                 if ((pushEvent.devices.length == 0) && pushEvent.unsubscribeRef)
                 {
                     // No devices left so unregister the event
                     this.homey.clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
-                    this.updateLog('Unsubscribe push event (' + Device.cam.hostname + '): ' + pushEvent.unsubscribeRef, 1);
+                    this.updateLog('Unsubscribe push event (' + Device.cam.hostname + Device.channel + '): ' + pushEvent.unsubscribeRef, 1);
                     Device.cam.UnsubscribePushEventSubscription(pushEvent.unsubscribeRef, (err, info, xml) =>
                     {
                         if (err)
                         {
-                            this.updateLog("Push unsubscribe error (" + Device.cam.hostname + "): " + this.varToString(err.message), 0);
+                            this.updateLog("Push unsubscribe error (" + Device.cam.hostname + Device.channel + "): " + this.varToString(err.message), 0);
                             reject(err);
                         }
                         else
                         {
-                            this.updateLog("Push unsubscribe response (" + Device.cam.hostname + "): " + this.varToString(info), 2);
+                            this.updateLog("Push unsubscribe response (" + Device.cam.hostname + Device.channel + "): " + this.varToString(info), 2);
                         }
                         resolve(null);
                     });
