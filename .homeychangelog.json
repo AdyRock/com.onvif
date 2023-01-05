@@ -325,5 +325,8 @@
   },
   "2.0.21": {
     "en": "Fix a crash if the camera goes offline while renewing the push notifications."
+  },
+  "2.0.22": {
+    "en": "Fix for NVR multi-channel events."
   }
 }
