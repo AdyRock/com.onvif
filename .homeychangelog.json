@@ -328,5 +328,11 @@
   },
   "2.0.22": {
     "en": "Fix for NVR multi-channel events."
+  },
+  "2.0.23": {
+    "en": "Update ONVIF library."
+  },
+  "2.0.24": {
+    "en": "Log requests to track down SOAP error."
   }
 }

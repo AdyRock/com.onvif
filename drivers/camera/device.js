@@ -675,6 +675,7 @@ class CameraDevice extends Homey.Device
                 this.setAvailable().catch(this.error);
                 this.isReady = true;
                 this.setCapabilityValue('alarm_tamper', false).catch(this.error);
+                this.homey.app.updateLog("Camera (" + this.name + ") " + this.homey.app.varToString(this.cam), 0 );
                 this.homey.app.updateLog("Camera (" + this.name + ") is ready");
             }
             catch (err)
