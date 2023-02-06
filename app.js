@@ -7,20 +7,19 @@ if (process.env.DEBUG === '1')
 }
 
 const Homey = require('homey');
-let onvif = require('/lib/onvif');
-let Cam = require('/lib/onvif').Cam;
-const parseSOAPString = require('/lib/onvif/lib/utils').parseSOAPString;
-const linerase = require('/lib/onvif/lib/utils').linerase;
+let onvif = require('./lib/onvif');
+let Cam = require('./lib/onvif').Cam;
+const parseSOAPString = require('./lib/onvif/lib/utils').parseSOAPString;
+const linerase = require('./lib/onvif/lib/utils').linerase;
 const path = require('path');
 const nodemailer = require("nodemailer");
 
 const http = require('http');
 
-
 process.on('unhandledRejection', (reason, p) =>
 {
     console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
-//    this.updateLog(`Unhandled Rejection at: Promise, ${this.varToString(p)}, reason: ${this.varToString(reason)}`, 0);
+    //    this.updateLog(`Unhandled Rejection at: Promise, ${this.varToString(p)}, reason: ${this.varToString(reason)}`, 0);
 });
 
 class MyApp extends Homey.App
@@ -55,13 +54,26 @@ class MyApp extends Homey.App
 
         this.registerFlowCard().catch(this.error);
 
-        this.runsListener().catch(this.err);
+        this.server = null;
+        try
+        {
+            await this.runsListener();
+        }
+        catch (err)
+        {
+            console.log("runsListener: ", err);
+        }
 
         this.checkCameras = this.checkCameras.bind(this);
         this.checkTimerId = this.homey.setTimeout(this.checkCameras, 30000);
 
         this.homey.on('unload', async () =>
         {
+            if (this.server)
+            {
+                this.server.close();
+                console.log("Server closed");
+            }
             await this.unregisterCameras();
         });
     }
@@ -182,7 +194,7 @@ class MyApp extends Homey.App
                             if ((device.ip + '_' + device.channel) == eventIP)
                             {
                                 // Correct IP so check the token for multiple cameras on this IP
-                                if (!device.token || !messageToken || (messageToken == device.token))
+                                if (!device.token || !messageToken || (messageToken == device.token) || messageToken === 'VideoSourceToken')
                                 {
                                     theDevice = device;
                                     if (this.logLevel >= 2)
@@ -278,8 +290,28 @@ class MyApp extends Homey.App
             }
         };
 
-        const server = http.createServer(requestListener);
-        server.listen(this.pushServerPort);
+        this.server = http.createServer(requestListener);
+        this.server.on('error', (e) =>
+        {
+            if (e.code === 'EADDRINUSE')
+            {
+                console.log('Address in use, retrying...');
+                setTimeout(() =>
+                {
+                    this.server.close();
+                    this.server.listen(this.pushServerPort);
+                }, 10000);
+            }
+        });
+
+        try
+        {
+            this.server.listen(this.pushServerPort);
+        }
+        catch (err)
+        {
+            this.log(err);
+        }
     }
 
     async discoverCameras()
@@ -348,7 +380,7 @@ class MyApp extends Homey.App
         });
 
         // Allow time for the process to finish
-        await new Promise(resolve => this.homey.setTimeout(resolve, 5000));
+        await new Promise(resolve => this.homey.setTimeout(resolve, 9000));
 
         // Add in a manual option
 
@@ -629,7 +661,7 @@ class MyApp extends Homey.App
             }
             else
             {
-                this.updateLog("App.subscribeToCamPushEvents: Registering " + Device.cam.hostname  + Device.channel);
+                this.updateLog("App.subscribeToCamPushEvents: Registering " + Device.cam.hostname + Device.channel);
                 pushEvent = {
                     "devices": [],
                     "refreshTime": 0,
@@ -878,7 +910,7 @@ class MyApp extends Homey.App
 
     getUserDataPath(filename)
     {
-        return path.join(__dirname, 'userdata', filename);
+        return path.join('/userdata', filename);
     }
 
     varToString(source)

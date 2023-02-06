@@ -4,6 +4,7 @@
 const Homey = require('homey');
 const DigestFetch = require('digest-fetch');
 const fetch = require('node-fetch');
+const https = require('https');
 const fs = require('fs');
 const
 {
@@ -399,7 +400,7 @@ class CameraDevice extends Homey.Device
                 {
                     await this.homey.app.unsubscribe(this);
                 }
-                catch(err)
+                catch (err)
                 {
                     this.homey.app.updateLog("unsubscribe error (" + this.name + "): " + this.homey.app.varToString(err.mesage), 0);
                 }
@@ -450,9 +451,9 @@ class CameraDevice extends Homey.Device
                     {
                         await this.homey.app.unsubscribe(this);
                     }
-                    catch(err)
+                    catch (err)
                     {
-                        this.homey.app.updateLog("unsubscribe error (" + this.name + "): " + this.homey.app.varToString(err.mesage), 0);                        
+                        this.homey.app.updateLog("unsubscribe error (" + this.name + "): " + this.homey.app.varToString(err.mesage), 0);
                     }
                 }
                 this.cam = null;
@@ -494,6 +495,11 @@ class CameraDevice extends Homey.Device
                 this.supportPushEvent = false;
                 try
                 {
+                    if (this.channel > 0)
+                    {
+                        this.cam.setActiveSource(this.channel - 1);
+                    }
+
                     let capabilities = await this.homey.app.getServiceCapabilities(this.cam);
                     this.homey.app.updateLog("** service capabilities " + this.name + " = " + this.homey.app.varToString(capabilities));
 
@@ -675,7 +681,7 @@ class CameraDevice extends Homey.Device
                 this.setAvailable().catch(this.error);
                 this.isReady = true;
                 this.setCapabilityValue('alarm_tamper', false).catch(this.error);
-                this.homey.app.updateLog("Camera (" + this.name + ") " + this.homey.app.varToString(this.cam), 0 );
+                this.homey.app.updateLog("Camera (" + this.name + ") " + this.homey.app.varToString(this.cam), 0);
                 this.homey.app.updateLog("Camera (" + this.name + ") is ready");
             }
             catch (err)
@@ -751,7 +757,7 @@ class CameraDevice extends Homey.Device
                     {
                         await this.homey.app.unsubscribe(this);
                     }
-                    catch(err)
+                    catch (err)
                     {
                         this.log(err);
                     }
@@ -801,7 +807,7 @@ class CameraDevice extends Homey.Device
                     this.snapUri = null;
                 }
             }
-            catch(err)
+            catch (err)
             {
                 this.homey.app.updateLog("Failed to fetch Snapshot URL: " + err.message, 0);
                 this.snapUri = null;
@@ -1075,7 +1081,7 @@ class CameraDevice extends Homey.Device
                     {
                         this.homey.app.updateLog(`\r\n## FAILED to register Push events (${this.name}) ${error.message} ##`, 0);
                     }
-                    
+
                     this.checkCamera();
                     return;
                 }
@@ -1281,6 +1287,10 @@ class CameraDevice extends Homey.Device
             const devData = this.getData();
 
             this.invalidAfterConnect = false;
+            if (this.channel > 0)
+            {
+                this.cam.setActiveSource(this.channel - 1);
+            }
 
             if (!this.userSnapUri)
             {
@@ -1302,16 +1312,16 @@ class CameraDevice extends Homey.Device
                 this.snapUri = this.userSnapUri;
             }
 
-            if (this.channel >= 0)
-            {
-                // Check if the uri has a channel number and replace it with the settings
-                let chanelPos = this.snapUri.indexOf("channel=");
-                if (chanelPos > 0)
-                {
-                    let tempStr = this.snapUri.substr(0, chanelPos + 8) + this.channel + this.snapUri.substr(chanelPos + 9);
-                    this.snapUri = tempStr;
-                }
-            }
+            // if (this.channel >= 0)
+            // {
+            //     // Check if the uri has a channel number and replace it with the settings
+            //     let chanelPos = this.snapUri.indexOf("channel=");
+            //     if (chanelPos > 0)
+            //     {
+            //         let tempStr = this.snapUri.substr(0, chanelPos + 8) + this.channel + this.snapUri.substr(chanelPos + 9);
+            //         this.snapUri = tempStr;
+            //     }
+            // }
 
             const publicSnapURL = this.snapUri.replace(this.password, "YOUR_PASSWORD");
             await this.setSettings(
@@ -1437,9 +1447,13 @@ class CameraDevice extends Homey.Device
     async doFetch(name)
     {
         let res = {};
-        const startAuthType = this.authType;
-        do
+        const httpsAgent = new https.Agent(
         {
+            rejectUnauthorized: false,
+        });
+
+        const startAuthType = this.authType;
+        do {
             try
             {
                 if (this.authType == 0)
@@ -1484,9 +1498,10 @@ class CameraDevice extends Homey.Device
 
                     const client = new DigestFetch(this.username, this.password,
                     {
-                        basic: true
+                        basic: true,
+                        agent: httpsAgent
                     });
-                    res = await client.fetch(this.snapUri);
+                    res = await client.fetch(this.snapUri, {agent: httpsAgent});
                     this.homey.app.updateLog(`SnapShot fetch result (${this.name}): Status: ${res.ok}, Message: ${res.statusText}, Code: ${res.status}\r\n`, 1);
                     if (!res.ok)
                     {
@@ -1525,7 +1540,8 @@ class CameraDevice extends Homey.Device
 
                     const client = new DigestFetch(this.username, this.password,
                     {
-                        algorithm: 'MD5'
+                        algorithm: 'MD5',
+                        agent: httpsAgent
                     });
                     res = await client.fetch(this.snapUri);
                     this.homey.app.updateLog(`SnapShot fetch result (${this.name}): Status: ${res.ok}, Message: ${res.statusText}, Code: ${res.status}\r\n`, 1);
@@ -1559,11 +1575,11 @@ class CameraDevice extends Homey.Device
                 }
             }
         }
-        while(this.authType !== startAuthType);
+        while (this.authType !== startAuthType);
 
         if (!res.ok)
         {
-            this.setWarning(res.statusText);            
+            this.setWarning(res.statusText);
         }
 
         return res;
