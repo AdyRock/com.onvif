@@ -334,5 +334,11 @@
   },
   "2.0.24": {
     "en": "Log requests to track down SOAP error."
+  },
+  "2.0.25": {
+    "en": "Updated for compatability with Homey 2023."
+  },
+  "2.0.26": {
+    "en": "Set option to ignore certificate errors to allow for self-signed https connection for snapshot."
   }
 }

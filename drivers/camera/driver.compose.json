@@ -22,6 +22,7 @@
         "date_time",
         "button.syncTime",
         "alarm_line_crossed",
+        "alarm_person",
         "alarm_dark_image",
         "measure_cpu",
         "alarm_storage"

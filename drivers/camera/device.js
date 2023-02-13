@@ -5,6 +5,7 @@ const Homey = require('homey');
 const DigestFetch = require('digest-fetch');
 const fetch = require('node-fetch');
 const https = require('https');
+const http = require('http');
 const fs = require('fs');
 const
 {
@@ -176,6 +177,26 @@ class CameraDevice extends Homey.Device
             if (this.hasCapability('alarm_line_crossed'))
             {
                 this.removeCapability('alarm_line_crossed').catch(this.error);
+            }
+        }
+
+        if (notificationTypes.indexOf('PERSON') >= 0)
+        {
+            if (!this.hasCapability('alarm_person'))
+            {
+                this.addCapability('alarm_person')
+                    .then(() =>
+                    {
+                        this.setCapabilityValue('alarm_person', false).catch(this.error);
+                    })
+                    .catch(this.error);
+            }
+        }
+        else
+        {
+            if (this.hasCapability('alarm_person'))
+            {
+                this.removeCapability('alarm_person').catch(this.error);
             }
         }
 
@@ -515,7 +536,7 @@ class CameraDevice extends Homey.Device
                                 if ((namespaceSplitted[1] == 'events') && service.capabilities && service.capabilities.capabilities)
                                 {
                                     let serviceCapabilities = service.capabilities.capabilities.$;
-                                    if (serviceCapabilities.MaxNotificationProducers > 0)
+                                    if ((serviceCapabilities.MaxNotificationProducers > 0) || (serviceCapabilities.WSSubscriptionPolicySupport === true))
                                     {
                                         this.supportPushEvent = true;
                                         this.homey.app.updateLog("** PushEvent supported on " + this.name);
@@ -681,7 +702,7 @@ class CameraDevice extends Homey.Device
                 this.setAvailable().catch(this.error);
                 this.isReady = true;
                 this.setCapabilityValue('alarm_tamper', false).catch(this.error);
-                this.homey.app.updateLog("Camera (" + this.name + ") " + this.homey.app.varToString(this.cam), 0);
+                this.homey.app.updateLog("Camera (" + this.name + ") " + this.homey.app.varToString(this.cam), 3);
                 this.homey.app.updateLog("Camera (" + this.name + ") is ready");
             }
             catch (err)
@@ -946,7 +967,7 @@ class CameraDevice extends Homey.Device
                 this.eventTimeoutId = this.homey.setTimeout(() =>
                 {
                     this.setCapabilityValue('alarm_motion', false).catch(this.error);
-                    console.log("Event off timeout");
+                    console.log("Event off timeout", this.name, this.channel);
                 }, 180000);
 
                 if (!settings.single || !this.getCapabilityValue('alarm_motion'))
@@ -957,13 +978,13 @@ class CameraDevice extends Homey.Device
                         //start the minimum on time
                         this.eventMinTimeId = this.homey.setTimeout(() =>
                         {
-                            console.log("Minimum event time elapsed");
+                            console.log("Minimum event time elapsed", this.name, this.channel);
                             this.eventMinTimeId = null;
                             if (!this.lastState)
                             {
                                 // The event has been turned off already
                                 this.setCapabilityValue('alarm_motion', false).catch(this.error);
-                                console.log("Turned off event alarm");
+                                console.log("Turned off event alarm", this.name, this.channel);
                             }
                         }, settings.on_time * 1000);
 
@@ -984,15 +1005,19 @@ class CameraDevice extends Homey.Device
             {
                 if (this.eventMinTimeId == null)
                 {
-                    // Minimum time has elapsed so switch the alarm of now
-                    this.setCapabilityValue('alarm_motion', false).catch(this.error);
-                    console.log("Turned off event alarm", 1);
+                    if (this.getCapabilityValue('alarm_motion'))
+                    {
+                        // Minimum time has elapsed so switch the alarm of now
+                        this.setCapabilityValue('alarm_motion', false).catch(this.error);
+                        console.log("Turned off event alarm", this.name, this.channel);
+                    }
                 }
                 else
                 {
-                    console.log("Event alarm switch off delayed for minimum time", 1);
+                    console.log("Event alarm switch off delayed for minimum time", this.name, this.channel);
                 }
                 this.homey.clearTimeout(this.eventTimeoutId);
+                this.eventTimeoutId = null;
             }
         }
     }
@@ -1036,6 +1061,39 @@ class CameraDevice extends Homey.Device
             this.setCapabilityValue('alarm_line_crossed', false).catch(this.error);
             this.triggerMotionEvent('Line Crossed', false).catch(this.err);
             console.log("Line crossed off");
+        }, 5000);
+
+    }
+
+    async triggerPersonEvent(ObjectId)
+    {
+        const settings = this.getSettings();
+        this.setAvailable().catch(this.error);
+
+        this.homey.app.updateLog("Event Processing (" + this.name + "):" + ObjectId);
+        if (!this.hasCapability('alarm_person'))
+        {
+            this.addCapability('alarm_person')
+                .then(() =>
+                {
+                    this.setCapabilityValue('alarm_person', true).catch(this.error);
+                })
+                .catch(this.error);
+        }
+        else
+        {
+            this.setCapabilityValue('alarm_person', true).catch(this.error);
+        }
+
+        this.triggerMotionEvent('Person Detected', true).catch(this.err);
+
+        // This event doesn't clear so set a timer to clear it
+        this.homey.clearTimeout(this.personTimeoutId);
+        this.personTimeoutId = this.homey.setTimeout(() =>
+        {
+            this.setCapabilityValue('alarm_person', false).catch(this.error);
+            this.triggerMotionEvent('Person Detected', false).catch(this.err);
+            console.log("Person Detected off");
         }, 5000);
 
     }
@@ -1101,7 +1159,7 @@ class CameraDevice extends Homey.Device
         {
             try
             {
-                this.homey.app.updateLog('\r\n--  Event detected (' + this.name + ')  --');
+                this.homey.app.updateLog('\r\n--  Event detected (' + this.name + ')  --', 1);
                 this.homey.app.updateLog(this.homey.app.varToString(camMessage));
 
                 this.setAvailable().catch(this.error);
@@ -1197,6 +1255,11 @@ class CameraDevice extends Homey.Device
                             await this.addCapability('alarm_generic');
                         }
                         this.setCapabilityValue('alarm_generic', dataValue).catch(this.error);
+                    }
+                    else if (compareSetting === "RuleEngine/MyRuleDetector/PeopleDetect:State")
+                    {
+                        // Person
+                        this.triggerPersonEvent(dataValue).catch(this.err);
                     }
                     else if (dataName === "IsTamper")
                     {
@@ -1447,10 +1510,16 @@ class CameraDevice extends Homey.Device
     async doFetch(name)
     {
         let res = {};
-        const httpsAgent = new https.Agent(
+        var agent = null;
+
+        if (this.snapUri.indexOf('https:') == 0)
         {
-            rejectUnauthorized: false,
-        });
+            agent = new https.Agent({ rejectUnauthorized: false });
+        }
+        else
+        {
+            agent = new http.Agent({ rejectUnauthorized: false });
+        }
 
         const startAuthType = this.authType;
         do {
@@ -1459,7 +1528,7 @@ class CameraDevice extends Homey.Device
                 if (this.authType == 0)
                 {
                     this.homey.app.updateLog("Fetching (" + this.name + ") " + name + " image with no Auth from: " + this.homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"), 1);
-                    res = await fetch(this.snapUri);
+                    res = await fetch(this.snapUri, { agent: agent });
                     this.homey.app.updateLog(`SnapShot fetch result (${this.name}): Status: ${res.ok}, Message: ${res.statusText}, Code: ${res.status}\r\n`, 1);
                     if (!res.ok)
                     {
@@ -1496,12 +1565,8 @@ class CameraDevice extends Homey.Device
                 {
                     this.homey.app.updateLog("Fetching (" + this.name + ") " + name + " image with Basic Auth. From: " + this.homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"), 1);
 
-                    const client = new DigestFetch(this.username, this.password,
-                    {
-                        basic: true,
-                        agent: httpsAgent
-                    });
-                    res = await client.fetch(this.snapUri, {agent: httpsAgent});
+                    const client = new DigestFetch(this.username, this.password, { basic: true, });
+                    res = await client.fetch(this.snapUri, { agent: agent });
                     this.homey.app.updateLog(`SnapShot fetch result (${this.name}): Status: ${res.ok}, Message: ${res.statusText}, Code: ${res.status}\r\n`, 1);
                     if (!res.ok)
                     {
@@ -1538,12 +1603,8 @@ class CameraDevice extends Homey.Device
                 {
                     this.homey.app.updateLog("Fetching (" + this.name + ") " + name + " image with Digest Auth. From: " + this.homey.app.varToString(this.snapUri).replace(this.password, "YOUR_PASSWORD"), 1);
 
-                    const client = new DigestFetch(this.username, this.password,
-                    {
-                        algorithm: 'MD5',
-                        agent: httpsAgent
-                    });
-                    res = await client.fetch(this.snapUri);
+                    const client = new DigestFetch(this.username, this.password, { algorithm: 'MD5' });
+                    res = await client.fetch(this.snapUri, { agent: agent });
                     this.homey.app.updateLog(`SnapShot fetch result (${this.name}): Status: ${res.ok}, Message: ${res.statusText}, Code: ${res.status}\r\n`, 1);
                     if (!res.ok)
                     {

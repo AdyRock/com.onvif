@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.onvif",
-  "version": "2.0.24",
+  "version": "2.0.26",
   "compatibility": ">=5.0.0",
   "platforms": [
     "local"
@@ -88,6 +88,19 @@
           }
         ],
         "id": "alarm_line_crossed_true"
+      },
+      {
+        "title": {
+          "en": "The person detected alarm turned on"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera&capabilities=alarm_person"
+          }
+        ],
+        "id": "alarm_person_true"
       },
       {
         "title": {
@@ -415,6 +428,7 @@
         "date_time",
         "button.syncTime",
         "alarm_line_crossed",
+        "alarm_person",
         "alarm_dark_image",
         "measure_cpu",
         "alarm_storage"
@@ -1009,6 +1023,19 @@
       "getable": true,
       "setable": false,
       "icon": "/assets/cross-line.svg"
+    },
+    "alarm_person": {
+      "type": "boolean",
+      "title": {
+        "en": "Person Detected"
+      },
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "Person detected alarm turned on"
+      },
+      "getable": true,
+      "setable": false,
+      "icon": "/assets/motion.svg"
     },
     "alarm_sound": {
       "type": "boolean",

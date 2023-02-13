@@ -12,7 +12,7 @@
         "address": "0.0.0.0",
         "port": 9229,
         "localRoot": "${workspaceFolder}",
-        "remoteRoot": "/"
+        "remoteRoot": "/app/"
     },
     {
         "type": "node",
@@ -49,7 +49,7 @@
         "request": "attach",
         "restart": true,
         "name": "Attach to Homey 2023",
-        "address": "192.168.1.27",
+        "address": "192.168.1.69",
         "port": 9225,
         "localRoot": "${workspaceFolder}",
         "remoteRoot": "/app/"
