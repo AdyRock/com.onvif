@@ -1,5 +1,9 @@
 {
     "settings": {
+        "settings": "Settings",
+        "title": "Push Server Settings",
+        "port": "Listening Port",
+        "save": "Save",
         "diagnosticsLog": "Diagnostics Log",
         "logLevel": "Log Level",
         "ClearLog": "Clear Log",

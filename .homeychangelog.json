@@ -340,5 +340,8 @@
   },
   "2.0.26": {
     "en": "Set option to ignore certificate errors to allow for self-signed https connection for snapshot."
+  },
+  "2.0.27": {
+    "en": "Fix possible crash when logging."
   }
 }

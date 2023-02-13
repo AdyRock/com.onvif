@@ -724,6 +724,11 @@ class CameraDevice extends Homey.Device
 
     async checkCamera()
     {
+        if (!this.cam)
+        {
+            return this.connectCamera(false);
+        }
+
         if (this.enabled && !this.repairing && this.isReady && (parseInt(this.homey.settings.get('logLevel')) < 2))
         {
             try

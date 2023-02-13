@@ -35,7 +35,22 @@
 
     <!-- Tab links -->
     <div class="tab">
-        <button class="tablinks" onclick="setPage(event, 'log')" id="defaultOpen"><span data-i18n="settings.diagnosticsLog"></span></button>
+        <button class="tablinks" onclick="setPage(event, 'settings')" id="defaultOpen"><span data-i18n="settings.settings"></span></button>
+        <button class="tablinks" onclick="setPage(event, 'log')"><span data-i18n="settings.diagnosticsLog"></span></button>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div id="settings" class="tabcontent">
+        <fieldset>
+            <h1 data-i18n="settings.title"></h1>
+            <div class="field row">
+                <label for="port" data-i18n="settings.port"></label>
+                <input id="port" type="text" value="" />
+            </div>
+            <div class="field row">
+                <button id="saveButton" class="left" style="display:block;background-color:#0f9e16;color:white;margin:15px 20px 5px 5px;" data-i18n="settings.save"></button>
+            </div>
+        </fieldset>
     </div>
 
     <!-- LOG PAGE -->
@@ -61,6 +76,9 @@
         var busyi;
         busyi = new busy_indicator(document.getElementById("busybox"), document.querySelector("#busybox div"));
 
+        var saveButtonElement = document.getElementById('saveButton');
+        var portElement = document.getElementById('port');
+
         var diagLogElement = document.getElementById('diagLog');
         var logLevelElement = document.getElementById('logLevel');
         var clearLogElement = document.getElementById('clearLog');
@@ -76,6 +94,12 @@
 
             Homey.on('settings.set', function()
             {
+                Homey.get('port', function(err, port)
+                {
+                    if (err) return Homey.alert(err);
+                    portElement.value = port;
+                });
+
                 Homey.get('logLevel', function(err, logLevel)
                 {
                     if (err) return Homey.alert(err);
@@ -86,6 +110,24 @@
                 {
                     if (err) return Homey.alert(err);
                     diagLogElement.value = diagLog;
+                });
+            });
+
+            saveButtonElement.addEventListener('click', function()
+            {
+                Homey.set('port', portElement.value, function(err)
+                {
+                    if (err) return Homey.alert(err);
+                    {
+                        if (err)
+                            {
+                                Homey.alert(err);
+                            }
+                            else
+                            {
+                                Homey.alert("Saved successfully");
+                            }
+                    }
                 });
             });
 
@@ -173,6 +215,15 @@
                 // Make the log text area fill the page
                 diagLogElement.setAttribute('cols', diagLogElement.parentElement.clientWidth / 8);
                 diagLogElement.style.height = (window.innerHeight - diagLogElement.offsetTop - 40) + 'px';
+            }
+            else if (tabPage == 'settings')
+            {
+                // Refresh the port number
+                Homey.get('port', function(err, port)
+                {
+                    if (err) return Homey.alert(err);
+                    portElement.value = port;
+                });
             }
         }
 

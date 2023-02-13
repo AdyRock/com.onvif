@@ -3,7 +3,7 @@
 
 if (process.env.DEBUG === '1')
 {
-    require('inspector').open(9225, '0.0.0.0', false);
+//    require('inspector').open(9225, '0.0.0.0', false);
 }
 
 const Homey = require('homey');
@@ -29,7 +29,13 @@ class MyApp extends Homey.App
     {
         this.log('MyApp is running...');
 
-        this.pushServerPort = 9998;
+        this.pushServerPort = this.homey.settings.get('port');
+        if (!this.pushServerPort)
+        {
+            this.pushServerPort = 9998;
+            this.homey.settings.set('port', 9998);
+        }
+
         this.discoveredDevices = [];
         this.discoveryInitialised = false;
         this.homey.settings.set('diagLog', "");
@@ -49,6 +55,13 @@ class MyApp extends Homey.App
             if (setting === 'logLevel')
             {
                 this.logLevel = this.homey.settings.get('logLevel');
+            }
+            if (setting == 'port')
+            {
+                this.pushServerPort = this.homey.settings.get('port');
+                this.unregisterCameras();
+                this.server.close();
+                this.server.listen(this.pushServerPort);
             }
         });
 
@@ -72,35 +85,49 @@ class MyApp extends Homey.App
             if (this.server)
             {
                 this.server.close();
-                console.log("Server closed");
+                this.updateLog("Server closed", 0);                
             }
             this.unregisterCameras();
         });
 
         this.homey.on('memwarn', (data) =>
         {
-            console.log(`memwarn! ${data.count} of ${data.limit}`);
-            if (data.count > data.limit - 5)
+            if (data)
             {
-                this.homey.settings.unset('diagLog');
+                if (data.count > data.limit - 5)
+                {
+                    this.homey.settings.unset('diagLog');
+                }
+                this.updateLog(`memwarn! ${data.count} of ${data.limit}`, 0);                
+            }
+            else
+            {
+                this.updateLog("memwarn", 0);                
             }
         });
 
         this.homey.on('cpuwarn', (data) =>
         {
-            console.log(`cpuwarn! ${data.count} of ${data.limit}`);
-            if (data.count > data.limit - 5)
+            if (data)
             {
-                if (this.server && this.server.listening)
+                if (data.count > data.limit - 5)
                 {
-                    this.server.close();
-                    console.log("Server closed");
-                    setTimeout(() =>
+                    if (this.server && this.server.listening)
                     {
                         this.server.close();
-                        this.server.listen(this.pushServerPort);
-                    }, 300000);
+                        console.log("Server closed");
+                        setTimeout(() =>
+                        {
+                            this.server.close();
+                            this.server.listen(this.pushServerPort);
+                        }, 300000);
+                    }
                 }
+                this.updateLog(`cpuwarn! ${data.count} of ${data.limit}`, 0);                
+            }
+            else
+            {
+                this.updateLog("cpuwarn", 0);                
             }
         });
     }
@@ -336,7 +363,7 @@ class MyApp extends Homey.App
         {
             if (e.code === 'EADDRINUSE')
             {
-                console.log('Address in use, retrying...');
+                this.updateLog(`Server port ${this.pushServerPort} in use, retrying in 10 seconds`, 0);                
                 setTimeout(() =>
                 {
                     this.server.close();
@@ -1015,7 +1042,7 @@ class MyApp extends Homey.App
         this.log(newMessage);
 
         let oldText = this.homey.settings.get('diagLog');
-        if (oldText.length > 200000)
+        if (oldText && oldText.length > 200000)
         {
             // Remove the first 1000 characters.
             oldText = oldText.substring(1000);
@@ -1029,7 +1056,7 @@ class MyApp extends Homey.App
 
         const nowTime = new Date(Date.now());
 
-        if ((oldText.length == 0) || (this.logDay !== nowTime.getDate()))
+        if (!oldText || (oldText.length == 0) || (this.logDay !== nowTime.getDate()))
         {
             this.logDay = nowTime.getDate();
             oldText = "Log ID: ";
