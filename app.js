@@ -3,7 +3,7 @@
 
 if (process.env.DEBUG === '1')
 {
-//    require('inspector').open(9225, '0.0.0.0', false);
+    require('inspector').open(9225, '0.0.0.0', false);
 }
 
 const Homey = require('homey');
@@ -258,7 +258,7 @@ class MyApp extends Homey.App
                             if (device.ip == eventIP)
                             {
                                 // Correct IP so check the token for multiple cameras on this IP
-                                if (!device.token || !messageToken || (messageToken == device.token) || messageToken === 'VideoSourceToken')
+                                if (!device.token || !messageToken || (messageToken == device.token))
                                 {
                                     theDevice = device;
                                     if (this.logLevel >= 2)

@@ -1167,6 +1167,29 @@ class CameraDevice extends Homey.Device
                 this.homey.app.updateLog('\r\n--  Event detected (' + this.name + ')  --', 1);
                 this.homey.app.updateLog(this.homey.app.varToString(camMessage));
 
+                if (camMessage.message.message.source && camMessage.message.message.source.simpleItem && camMessage.message.message.source.simpleItem.$)
+                {
+                    if ((camMessage.message.message.source.simpleItem.$.Name == 'VideoSourceConfigurationToken') ||
+                        (camMessage.message.message.source.simpleItem.$.Name == 'Source'))
+                    {
+                        this.homey.app.updateLog(`*** Event token ${camMessage.message.message.source.simpleItem.$.Value}, channel token ${this.token} `, 1);
+                        if (camMessage.message.message.source.simpleItem.$.Value !== this.token)
+                        {
+                            // Different channel so ignore this event
+                            this.homey.app.updateLog('Event Ignored on this channel\r\n', 1);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        this.homey.app.updateLog(this.homey.app.varToString(camMessage), 1);
+                    }
+                    }
+                else
+                {
+                    this.homey.app.updateLog(this.homey.app.varToString(camMessage), 1);
+                }
+
                 this.setAvailable().catch(this.error);
 
                 let eventTopic = camMessage.topic._;
