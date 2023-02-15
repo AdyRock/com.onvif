@@ -38,7 +38,7 @@ class MyApp extends Homey.App
 
         this.discoveredDevices = [];
         this.discoveryInitialised = false;
-        this.homey.settings.set('diagLog', "");
+        //this.homey.settings.set('diagLog', "");
 
         this.homeyId = await this.homey.cloud.getHomeyId();
         this.homeyHash = this.hashCode(this.homeyId).toString();
@@ -96,7 +96,7 @@ class MyApp extends Homey.App
             {
                 if (data.count > data.limit - 5)
                 {
-                    this.homey.settings.unset('diagLog');
+                    this.homey.settings.set('diagLog', "");
                 }
                 this.updateLog(`memwarn! ${data.count} of ${data.limit}`, 0);                
             }

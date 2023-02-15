@@ -1070,37 +1070,189 @@ class CameraDevice extends Homey.Device
 
     }
 
-    async triggerPersonEvent(ObjectId)
+    async triggerPersonEvent(dataValue)
     {
         const settings = this.getSettings();
         this.setAvailable().catch(this.error);
 
-        this.homey.app.updateLog("Event Processing (" + this.name + "):" + ObjectId);
+        this.homey.app.updateLog("Event Processing (" + this.name + "):" + dataValue);
         if (!this.hasCapability('alarm_person'))
         {
             this.addCapability('alarm_person')
                 .then(() =>
                 {
-                    this.setCapabilityValue('alarm_person', true).catch(this.error);
+                    this.triggerPersonEvent(dataValue);
                 })
                 .catch(this.error);
+
+                return;
         }
         else
         {
-            this.setCapabilityValue('alarm_person', true).catch(this.error);
+            this.setCapabilityValue('alarm_person', dataValue).catch(this.error);
         }
 
-        this.triggerMotionEvent('Person Detected', true).catch(this.err);
+        this.triggerMotionEvent('Person Detected', dataValue).catch(this.err);
+
+        this.homey.clearTimeout(this.personTimeoutId);
+        if (dataValue)
+        {
+            // This event doesn't clear so set a timer to clear it
+            this.personTimeoutId = this.homey.setTimeout(() =>
+            {
+                this.setCapabilityValue('alarm_person', false).catch(this.error);
+                this.triggerMotionEvent('Person Detected', false).catch(this.err);
+                console.log("Person Detected off");
+            }, 15000);
+        }
+    }
+
+    async triggerDogCatEvent(dataValue)
+    {
+        const settings = this.getSettings();
+        this.setAvailable().catch(this.error);
+
+        this.homey.app.updateLog("Event Processing (" + this.name + "):" + dataValue);
+        if (!this.hasCapability('alarm_dog_cat'))
+        {
+            this.addCapability('alarm_dog_cat')
+                .then(() =>
+                {
+                    this.triggerDogCatEvent(dataValue);
+                })
+                .catch(this.error);
+
+                return;
+        }
+        else
+        {
+            this.setCapabilityValue('alarm_dog_cat', dataValue).catch(this.error);
+        }
+
+        this.triggerMotionEvent('Dog / Cat Detected', dataValue).catch(this.err);
 
         // This event doesn't clear so set a timer to clear it
-        this.homey.clearTimeout(this.personTimeoutId);
-        this.personTimeoutId = this.homey.setTimeout(() =>
+        this.homey.clearTimeout(this.dogCatTimeoutId);
+        if (dataValue)
         {
-            this.setCapabilityValue('alarm_person', false).catch(this.error);
-            this.triggerMotionEvent('Person Detected', false).catch(this.err);
-            console.log("Person Detected off");
-        }, 5000);
+            this.dogCatTimeoutId = this.homey.setTimeout(() =>
+            {
+                this.setCapabilityValue('alarm_dog_cat', false).catch(this.error);
+                this.triggerMotionEvent('Dog / Cat Detected', false).catch(this.err);
+                console.log("Dog / Cat Detected off");
+            }, 15000);
+        }
+    }
 
+    async triggerVistorEvent(dataValue)
+    {
+        const settings = this.getSettings();
+        this.setAvailable().catch(this.error);
+
+        this.homey.app.updateLog("Event Processing (" + this.name + "):" + dataValue);
+        if (!this.hasCapability('alarm_visitor'))
+        {
+            this.addCapability('alarm_visitor')
+                .then(() =>
+                {
+                    this.triggerVistorEvent(dataValue);
+                })
+                .catch(this.error);
+
+                return;
+        }
+        else
+        {
+            this.setCapabilityValue('alarm_visitor', dataValue).catch(this.error);
+        }
+
+        this.triggerMotionEvent('Vistor Detected', dataValue).catch(this.err);
+
+        // This event doesn't clear so set a timer to clear it
+        this.homey.clearTimeout(this.vistorTimeoutId);
+        if (dataValue)
+        {
+            this.vistorTimeoutId = this.homey.setTimeout(() =>
+            {
+                this.setCapabilityValue('alarm_visitor', false).catch(this.error);
+                this.triggerMotionEvent('Vistor Detected', false).catch(this.err);
+                console.log("Vistor Detected off");
+            }, 15000);
+        }
+    }
+
+    async triggerFaceEvent(dataValue)
+    {
+        const settings = this.getSettings();
+        this.setAvailable().catch(this.error);
+
+        this.homey.app.updateLog("Event Processing (" + this.name + "):" + dataValue);
+        if (!this.hasCapability('alarm_face'))
+        {
+            this.addCapability('alarm_face')
+                .then(() =>
+                {
+                    this.triggerFaceEvent(dataValue);
+                })
+                .catch(this.error);
+
+                return;
+        }
+        else
+        {
+            this.setCapabilityValue('alarm_face', dataValue).catch(this.error);
+        }
+
+        this.triggerMotionEvent('Face Detected', dataValue).catch(this.err);
+
+        // This event doesn't clear so set a timer to clear it
+        this.homey.clearTimeout(this.faceTimeoutId);
+        if (dataValue)
+        {
+            this.faceTimeoutId = this.homey.setTimeout(() =>
+            {
+                this.setCapabilityValue('alarm_face', false).catch(this.error);
+                this.triggerMotionEvent('Face Detected', false).catch(this.err);
+                console.log("Face Detected off");
+            }, 15000);
+        }
+    }
+
+    async triggerVehicleEvent(dataValue)
+    {
+        const settings = this.getSettings();
+        this.setAvailable().catch(this.error);
+
+        this.homey.app.updateLog("Event Processing (" + this.name + "):" + dataValue);
+        if (!this.hasCapability('alarm_vehicle'))
+        {
+            this.addCapability('alarm_vehicle')
+                .then(() =>
+                {
+                    this.triggerVehicleEvent(dataValue);
+                })
+                .catch(this.error);
+
+                return;
+        }
+        else
+        {
+            this.setCapabilityValue('alarm_vehicle', dataValue).catch(this.error);
+        }
+
+        this.triggerMotionEvent('Vehicle Detected', dataValue).catch(this.err);
+
+        // This event doesn't clear so set a timer to clear it
+        this.homey.clearTimeout(this.vehicleTimeoutId);
+        if (dataValue)
+        {
+            this.vehicleTimeoutId = this.homey.setTimeout(() =>
+            {
+                this.setCapabilityValue('alarm_vehicle', false).catch(this.error);
+                this.triggerMotionEvent('Vehicle Detected', false).catch(this.err);
+                console.log("Vehicle Detected off");
+            }, 5000);
+        }
     }
 
     async triggerDarkImageEvent(value)
@@ -1277,17 +1429,28 @@ class CameraDevice extends Homey.Device
                     }
                     else if (compareSetting === "RuleEngine/MyRuleDetector/Visitor:State")
                     {
-                        // 'dataValue' = true/false
-                        if (!this.hasCapability('alarm_generic'))
-                        {
-                            await this.addCapability('alarm_generic');
-                        }
-                        this.setCapabilityValue('alarm_generic', dataValue).catch(this.error);
+                        // Vistor
+                        this.triggerVistorEvent(dataValue).catch(this.err);
                     }
                     else if (compareSetting === "RuleEngine/MyRuleDetector/PeopleDetect:State")
                     {
                         // Person
                         this.triggerPersonEvent(dataValue).catch(this.err);
+                    }
+                    else if (compareSetting === "RuleEngine/MyRuleDetector/FaceDetect:State")
+                    {
+                        // Face
+                        this.triggerFaceEvent(dataValue).catch(this.err);
+                    }
+                    else if (compareSetting === "RuleEngine/MyRuleDetector/VehicleDetect:State")
+                    {
+                        // Vehicle
+                        this.triggerVehicleEvent(dataValue).catch(this.err);
+                    }
+                    else if (compareSetting === "RuleEngine/MyRuleDetector/DogCatDetect:State")
+                    {
+                        // Dog or Cat
+                        this.triggerDogCatEvent(dataValue).catch(this.err);
                     }
                     else if (dataName === "IsTamper")
                     {

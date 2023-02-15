@@ -23,6 +23,10 @@
         "button.syncTime",
         "alarm_line_crossed",
         "alarm_person",
+        "alarm_visitor",
+        "alarm_face",
+        "alarm_dog_cat",
+        "alarm_vehicle",
         "alarm_dark_image",
         "measure_cpu",
         "alarm_storage"

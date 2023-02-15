@@ -1,0 +1,13 @@
+{
+    "type": "boolean",
+    "title": {
+        "en": "Vistor Detected"
+    },
+    "insights": true,
+    "insightsTitleTrue": {
+      "en": "Visitor detected alarm turned on"
+    },
+    "getable": true,
+    "setable": false,
+    "icon": "/assets/visitor.svg"
+}
