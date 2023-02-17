@@ -1066,7 +1066,7 @@ class CameraDevice extends Homey.Device
             this.setCapabilityValue('alarm_line_crossed', false).catch(this.error);
             this.triggerMotionEvent('Line Crossed', false).catch(this.err);
             console.log("Line crossed off");
-        }, 5000);
+        }, 15000);
 
     }
 
@@ -1097,7 +1097,7 @@ class CameraDevice extends Homey.Device
         this.homey.clearTimeout(this.personTimeoutId);
         if (dataValue)
         {
-            // This event doesn't clear so set a timer to clear it
+            // If this event doesn't clear, set a timer to clear it
             this.personTimeoutId = this.homey.setTimeout(() =>
             {
                 this.setCapabilityValue('alarm_person', false).catch(this.error);
@@ -1131,7 +1131,7 @@ class CameraDevice extends Homey.Device
 
         this.triggerMotionEvent('Dog / Cat Detected', dataValue).catch(this.err);
 
-        // This event doesn't clear so set a timer to clear it
+        // If this event doesn't clear, set a timer to clear it
         this.homey.clearTimeout(this.dogCatTimeoutId);
         if (dataValue)
         {
@@ -1168,7 +1168,7 @@ class CameraDevice extends Homey.Device
 
         this.triggerMotionEvent('Vistor Detected', dataValue).catch(this.err);
 
-        // This event doesn't clear so set a timer to clear it
+        // If this event doesn't clear, set a timer to clear it
         this.homey.clearTimeout(this.vistorTimeoutId);
         if (dataValue)
         {
@@ -1205,7 +1205,7 @@ class CameraDevice extends Homey.Device
 
         this.triggerMotionEvent('Face Detected', dataValue).catch(this.err);
 
-        // This event doesn't clear so set a timer to clear it
+        // If this event doesn't clear, set a timer to clear it
         this.homey.clearTimeout(this.faceTimeoutId);
         if (dataValue)
         {
@@ -1242,7 +1242,7 @@ class CameraDevice extends Homey.Device
 
         this.triggerMotionEvent('Vehicle Detected', dataValue).catch(this.err);
 
-        // This event doesn't clear so set a timer to clear it
+        // If this event doesn't clear, set a timer to clear it
         this.homey.clearTimeout(this.vehicleTimeoutId);
         if (dataValue)
         {

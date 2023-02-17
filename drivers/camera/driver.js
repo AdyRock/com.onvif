@@ -65,20 +65,21 @@ class CameraDriver extends Homey.Driver
                 {
                     this.homey.app.updateLog("list_devices2: Multiple Sources = " + this.homey.app.varToString(tempCam.videoSources, null, 3), 1);
 
+                    // There is more tha 1 video source so add a device for each
+                    const mac = await this.homey.arp.getMAC(this.lastHostName);
+
                     let devices = [];
                     for (let i = 0; i < tempCam.videoSources.length; i++)
                     {
                         const source = tempCam.videoSources[i];
-                        // There is more tha 1 video source so add a device for each
-                        const mac = await this.homey.arp.getMAC(this.lastHostName);
 
-                        this.homey.app.updateLog("list_devices2: Adding source " + source + " to list", 1);
                         let token = "";
                         if (source.$)
                         {
                             token = source.$.token;
                         }
                         let channelSuf = " (Ch" + (devices.length + 1) + ")";
+                        this.homey.app.updateLog("list_devices2: Adding source " + this.lastURN + channelSuf + " to list", 1);
                         let data = {
                             "id": this.lastURN + channelSuf,
                             "port": this.lastPort

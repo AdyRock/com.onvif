@@ -343,5 +343,8 @@
   },
   "2.0.27": {
     "en": "Fix possible crash when logging."
+  },
+  "2.0.28": {
+    "en": "Added alarms for People, Visitor, Face, Cat / Dog and Vehicle (note: support is camera dependent)."
   }
 }
