@@ -346,5 +346,8 @@
   },
   "2.0.28": {
     "en": "Added alarms for People, Visitor, Face, Cat / Dog and Vehicle (note: support is camera dependent)."
+  },
+  "2.0.29": {
+    "en": "Returned General alarm trigger for visitor (doorbell pressed) for backward compatability."
   }
 }

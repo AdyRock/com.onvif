@@ -1165,6 +1165,11 @@ class CameraDevice extends Homey.Device
         {
             this.setCapabilityValue('alarm_visitor', dataValue).catch(this.error);
         }
+        
+        if (this.hasCapability('alarm_generic'))
+        {
+            this.setCapabilityValue('alarm_generic', dataValue).catch(this.error);
+        }
 
         this.triggerMotionEvent('Vistor Detected', dataValue).catch(this.err);
 
@@ -1174,6 +1179,11 @@ class CameraDevice extends Homey.Device
         {
             this.vistorTimeoutId = this.homey.setTimeout(() =>
             {
+                if (this.hasCapability('alarm_generic'))
+                {
+                    this.setCapabilityValue('alarm_generic', dataValue).catch(this.error);
+                }
+                
                 this.setCapabilityValue('alarm_visitor', false).catch(this.error);
                 this.triggerMotionEvent('Vistor Detected', false).catch(this.err);
                 console.log("Vistor Detected off");
