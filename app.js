@@ -1,6 +1,8 @@
+/* eslint-disable no-unused-vars */
 /*jslint node: true */
 'use strict';
 
+// eslint-disable-next-line no-undef
 if (process.env.DEBUG === '1')
 {
     require('inspector').open(9225, '0.0.0.0', false);
@@ -12,10 +14,11 @@ let Cam = require('./lib/onvif').Cam;
 const parseSOAPString = require('./lib/onvif/lib/utils').parseSOAPString;
 const linerase = require('./lib/onvif/lib/utils').linerase;
 const path = require('path');
-const nodemailer = require("nodemailer");
+const nodemailer = require('nodemailer');
 
 const http = require('http');
 
+// eslint-disable-next-line no-undef
 process.on('unhandledRejection', (reason, p) =>
 {
     console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
@@ -44,7 +47,7 @@ class MyApp extends Homey.App
         this.homeyHash = this.hashCode(this.homeyId).toString();
 
         this.homeyIP = await this.homey.cloud.getLocalAddress();
-        this.homeyIP = (this.homeyIP.split(":"))[0];
+        this.homeyIP = (this.homeyIP.split(':'))[0];
 
         this.pushEvents = [];
 
@@ -74,7 +77,7 @@ class MyApp extends Homey.App
         }
         catch (err)
         {
-            console.log("runsListener: ", err);
+            console.log('runsListener: ', err);
         }
 
         this.checkCameras = this.checkCameras.bind(this);
@@ -85,7 +88,7 @@ class MyApp extends Homey.App
             if (this.server)
             {
                 this.server.close();
-                this.updateLog("Server closed", 0);                
+                this.updateLog('Server closed', 0);                
             }
             this.unregisterCameras();
         });
@@ -96,13 +99,13 @@ class MyApp extends Homey.App
             {
                 if (data.count > data.limit - 5)
                 {
-                    this.homey.settings.set('diagLog', "");
+                    this.homey.settings.set('diagLog', '');
                 }
                 this.updateLog(`memwarn! ${data.count} of ${data.limit}`, 0);                
             }
             else
             {
-                this.updateLog("memwarn", 0);                
+                this.updateLog('memwarn', 0);                
             }
         });
 
@@ -115,7 +118,7 @@ class MyApp extends Homey.App
                     if (this.server && this.server.listening)
                     {
                         this.server.close();
-                        console.log("Server closed");
+                        console.log('Server closed');
                         setTimeout(() =>
                         {
                             this.server.close();
@@ -127,7 +130,7 @@ class MyApp extends Homey.App
             }
             else
             {
-                this.updateLog("cpuwarn", 0);                
+                this.updateLog('cpuwarn', 0);                
             }
         });
     }
@@ -137,14 +140,12 @@ class MyApp extends Homey.App
         this.motionCondition = this.homey.flow.getConditionCard('motionEnabledCondition');
         this.motionCondition.registerRunListener(async (args, state) =>
         {
-
             return await args.device.getCapabilityValue('motion_enabled'); // Promise<boolean>
         });
 
         this.motionReadyCondition = this.homey.flow.getConditionCard('motionReadyCondition');
         this.motionReadyCondition.registerRunListener(async (args, state) =>
         {
-
             let remainingTime = args.waitTime * 10;
             while ((remainingTime > 0) && args.device.updatingEventImage)
             {
@@ -158,7 +159,7 @@ class MyApp extends Homey.App
         this.motionEnabledAction = this.homey.flow.getActionCard('motionEnableAction');
         this.motionEnabledAction.registerRunListener(async (args, state) =>
         {
-            console.log("motionEnabledAction");
+            console.log('motionEnabledAction');
             args.device.onCapabilityMotionEnable(true, null);
             return await args.device.setCapabilityValue('motion_enabled', true); // Promise<void>
         });
@@ -167,7 +168,7 @@ class MyApp extends Homey.App
         this.motionDisabledAction.registerRunListener(async (args, state) =>
         {
 
-            console.log("motionDisabledAction");
+            console.log('motionDisabledAction');
             args.device.onCapabilityMotionEnable(false, null);
             return await args.device.setCapabilityValue('motion_enabled', false); // Promise<void>
         });
@@ -186,7 +187,7 @@ class MyApp extends Homey.App
                 args.device.snapshotReadyTrigger
                     .trigger(args.device, tokens)
                     .catch(args.device.error)
-                    .then(args.device.log("Now Snapshot ready (" + args.device.id + ")"));
+                    .then(args.device.log('Now Snapshot ready (' + args.device.id + ')'));
             }
             return err;
         });
@@ -263,7 +264,7 @@ class MyApp extends Homey.App
                                     theDevice = device;
                                     if (this.logLevel >= 2)
                                     {
-                                        this.updateLog("Push Event found correct Device: " + device.token);
+                                        this.updateLog('Push Event found correct Device: ' + device.token);
                                     }
                                     break;
                                 }
@@ -271,7 +272,7 @@ class MyApp extends Homey.App
                                 {
                                     if (this.logLevel >= 2)
                                     {
-                                        this.updateLog("Wrong channel token");
+                                        this.updateLog('Wrong channel token');
                                     }
                                 }
                             }
@@ -284,20 +285,20 @@ class MyApp extends Homey.App
                         {
                             if (this.logLevel >= 2)
                             {
-                                this.updateLog("Push Event process: " + this.varToString(message));
+                                this.updateLog('Push Event process: ' + this.varToString(message));
                             }
                             theDevice.processCamEventMessage(message);
                         });
                     }
                     else
                     {
-                        this.updateLog("Push Event unknown Device: " + eventIP, 0);
+                        this.updateLog('Push Event unknown Device: ' + eventIP, 0);
                     }
                 }
             }
             else
             {
-                this.updateLog("Push data error: " + err, 0);
+                this.updateLog('Push data error: ' + err, 0);
             }
         });
     }
@@ -319,7 +320,7 @@ class MyApp extends Homey.App
                         body += chunk.toString(); // convert Buffer to string
                         if (body.length > 50000)
                         {
-                            this.updateLog("Push data error: Payload too large", 0);
+                            this.updateLog('Push data error: Payload too large', 0);
                             response.writeHead(413);
                             response.end('Payload Too Large');
                             body = '';
@@ -334,7 +335,7 @@ class MyApp extends Homey.App
                         response.end('ok');
                         if (this.logLevel >= 3)
                         {
-                            this.updateLog("Push event: " + soapMsg, 3);
+                            this.updateLog('Push event: ' + soapMsg, 3);
                         }
                         else
                         {
@@ -345,14 +346,14 @@ class MyApp extends Homey.App
                 }
                 else
                 {
-                    this.updateLog("Push data invalid content type: " + request.headers['content-type'], 0);
+                    this.updateLog('Push data invalid content type: ' + request.headers['content-type'], 0);
                     response.writeHead(415);
                     response.end('Unsupported Media Type');
                 }
             }
             else
             {
-                this.updateLog("Push data error: " + request.url + ": METHOD = " + request.method, 0);
+                this.updateLog('Push data error: ' + request.url + ': METHOD = ' + request.method, 0);
                 response.writeHead(405);
                 response.end('Method not allowed');
             }
@@ -396,56 +397,56 @@ class MyApp extends Homey.App
                     // function will be called as soon as NVT responds
                     this.updateLog('Reply from ' + this.varToString(cam), 1);
 
-                    if (cam.href && cam.href.indexOf("onvif") >= 0)
+                    if (cam.href && cam.href.indexOf('onvif') >= 0)
                     {
                         let mac = await this.homey.arp.getMAC(cam.hostname);
 
                         this.discoveredDevices.push(
-                        {
-                            "name": cam.hostname,
-                            data:
                             {
-                                "id": mac
+                                'name': cam.hostname,
+                                data:
+                            {
+                                'id': mac
                             },
-                            settings:
+                                settings:
                             {
                                 // Store username & password in settings
                                 // so the user can change them later
-                                "username": "",
-                                "password": "",
-                                "ip": cam.hostname,
-                                "port": cam.port ? cam.port.toString() : "",
-                                "urn": cam.urn ? cam.urn : mac,
-                                "channel": -1,
+                                'username': '',
+                                'password': '',
+                                'ip': cam.hostname,
+                                'port': cam.port ? cam.port.toString() : '',
+                                'urn': cam.urn ? cam.urn : mac,
+                                'channel': -1,
                             }
-                        });
+                            });
                     }
                     else
                     {
-                        this.updateLog("Discovery (" + cam.hostname + "): Invalid service URI", 0);
+                        this.updateLog('Discovery (' + cam.hostname + '): Invalid service URI', 0);
                     }
                 }
                 catch (err)
                 {
-                    this.updateLog("Discovery catch error: " + err.message + "\n" + err.message, 0);
+                    this.updateLog('Discovery catch error: ' + err.message + '\n' + err.message, 0);
                 }
             });
 
             onvif.Discovery.on('error', (msg, xml) =>
             {
-                this.updateLog("Discovery on error: " + this.varToString(msg), 0);
+                this.updateLog('Discovery on error: ' + this.varToString(msg), 0);
                 if (xml)
                 {
-                    this.updateLog("xml: " + this.varToString(xml), 3);
+                    this.updateLog('xml: ' + this.varToString(xml), 3);
                 }
             });
         }
 
         // Start the discovery process running
         onvif.Discovery.probe(
-        {
-            'resolve': false
-        });
+            {
+                'resolve': false
+            });
 
         // Allow time for the process to finish
         await new Promise(resolve => this.homey.setTimeout(resolve, 9000));
@@ -463,30 +464,30 @@ class MyApp extends Homey.App
     {
         return new Promise((resolve, reject) =>
         {
-            this.updateLog("--------------------------");
-            this.updateLog('Connect to Camera ' + hostname + ':' + port + " - " + username);
+            this.updateLog('--------------------------');
+            this.updateLog('Connect to Camera ' + hostname + ':' + port + ' - ' + username);
 
             let cam = new Cam(
-            {
-                homeyApp: this.homey,
-                hostname: hostname,
-                username: username,
-                password: password,
-                port: parseInt(port),
-                timeout: 15000,
-            }, (err) =>
-            {
-                if (err)
                 {
-                    this.updateLog('Connection Failed for ' + hostname + ' Port: ' + port + ' Username: ' + username, 0);
-                    reject(err);
-                }
-                else
+                    homeyApp: this.homey,
+                    hostname: hostname,
+                    username: username,
+                    password: password,
+                    port: parseInt(port),
+                    timeout: 15000,
+                }, (err) =>
                 {
-                    this.updateLog('CONNECTED to ' + hostname);
-                    resolve(cam);
-                }
-            });
+                    if (err)
+                    {
+                        this.updateLog('Connection Failed for ' + hostname + ' Port: ' + port + ' Username: ' + username, 0);
+                        reject(err);
+                    }
+                    else
+                    {
+                        this.updateLog('CONNECTED to ' + hostname);
+                        resolve(cam);
+                    }
+                });
         });
     }
 
@@ -679,11 +680,11 @@ class MyApp extends Homey.App
                         // loop over all the child nodes in this node
                         for (const child in node)
                         {
-                            if (child == "$")
+                            if (child == '$')
                             {
                                 continue;
                             }
-                            else if (child == "messageDescription")
+                            else if (child == 'messageDescription')
                             {
                                 // we have found the details that go with an event
                                 supportedEvents.push(nodeName.toUpperCase());
@@ -708,13 +709,13 @@ class MyApp extends Homey.App
         return new Promise((resolve, reject) =>
         {
 
-            this.updateLog("App.subscribeToCamPushEvents: " + Device.name);
+            this.updateLog('App.subscribeToCamPushEvents: ' + Device.name);
 
             let unsubscribeRef = null;
             let pushEvent = this.pushEvents.find(element => element.devices.length > 0 && (element.devices[0].cam.hostname) === (Device.cam.hostname));
             if (pushEvent)
             {
-                this.updateLog("App.subscribeToCamPushEvents: Found entry for " + Device.cam.hostname);
+                this.updateLog('App.subscribeToCamPushEvents: Found entry for ' + Device.cam.hostname);
                 // An event is already registered for this IP address
                 this.homey.clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
                 unsubscribeRef = pushEvent.unsubscribeRef;
@@ -723,18 +724,18 @@ class MyApp extends Homey.App
                 // see if this device is registered
                 if (!pushEvent.devices.find(element => element.id == Device.id))
                 {
-                    this.updateLog("App.subscribeToCamPushEvents: Adding device " + Device.name + " to the queue");
+                    this.updateLog('App.subscribeToCamPushEvents: Adding device ' + Device.name + ' to the queue');
                     pushEvent.devices.push(Device);
                 }
             }
             else
             {
-                this.updateLog("App.subscribeToCamPushEvents: Registering " + Device.cam.hostname);
+                this.updateLog('App.subscribeToCamPushEvents: Registering ' + Device.cam.hostname);
                 pushEvent = {
-                    "devices": [],
-                    "refreshTime": 0,
-                    "unsubscribeRef": unsubscribeRef,
-                    "eventSubscriptionRenewTimerId": null
+                    'devices': [],
+                    'refreshTime': 0,
+                    'unsubscribeRef': unsubscribeRef,
+                    'eventSubscriptionRenewTimerId': null
                 };
                 pushEvent.devices.push(Device);
                 this.pushEvents.push(pushEvent);
@@ -742,32 +743,32 @@ class MyApp extends Homey.App
 
             if (unsubscribeRef)
             {
-                this.updateLog("Renew previous events: " + unsubscribeRef);
+                this.updateLog('Renew previous events: ' + unsubscribeRef);
                 Device.cam.RenewPushEventSubscription(unsubscribeRef, (err, info, xml) =>
                 {
                     if (err)
                     {
-                        this.updateLog("Renew subscription err (" + Device.name + "): " + err, 0);
+                        this.updateLog('Renew subscription err (' + Device.name + '): ' + err, 0);
                         console.log(err);
                         // Refresh was probably too late so subscribe again
                         pushEvent.unsubscribeRef = null;
                         setImmediate(() =>
                         {
-                            this.updateLog("Resubscribing");
+                            this.updateLog('Resubscribing');
                             this.subscribeToCamPushEvents(Device).catch(this.err);
                         });
                         resolve(true);
                     }
                     else
                     {
-                        this.updateLog("Renew subscription response (" + Device.name + "): " + Device.cam.hostname + "\r\ninfo: " + this.varToString(info));
+                        this.updateLog('Renew subscription response (' + Device.name + '): ' + Device.cam.hostname + '\r\ninfo: ' + this.varToString(info));
                         let startTime = info[0].renewResponse[0].currentTime[0];
                         let endTime = info[0].renewResponse[0].terminationTime[0];
                         let d1 = new Date(startTime);
                         let d2 = new Date(endTime);
                         let refreshTime = ((d2.valueOf() - d1.valueOf()));
 
-                        this.updateLog("Push renew every (" + Device.name + "): " + (refreshTime / 1000), 1);
+                        this.updateLog('Push renew every (' + Device.name + '): ' + (refreshTime / 1000), 1);
                         refreshTime -= 5000;
                         if (refreshTime < 0)
                         {
@@ -783,7 +784,7 @@ class MyApp extends Homey.App
                         pushEvent.unsubscribeRef = unsubscribeRef;
                         pushEvent.eventSubscriptionRenewTimerId = this.homey.setTimeout(() =>
                         {
-                            this.updateLog("Renewing subscription");
+                            this.updateLog('Renewing subscription');
                             this.subscribeToCamPushEvents(Device).catch(this.err);
                         }, refreshTime);
                         resolve(true);
@@ -795,19 +796,19 @@ class MyApp extends Homey.App
                 // const url = "http://" + this.homeyIP + ":" + this.pushServerPort + "/onvif/events?deviceId=" + Device.cam.hostname;
                 const hostPath = Device.cam.hostname;
 
-                const url = "http://" + this.homeyIP + ":" + this.pushServerPort + "/onvif/events/" + hostPath;
-                this.updateLog("Setting up Push events (" + Device.name + ") on: " + url);
+                const url = 'http://' + this.homeyIP + ':' + this.pushServerPort + '/onvif/events/' + hostPath;
+                this.updateLog('Setting up Push events (' + Device.name + ') on: ' + url);
                 Device.cam.SubscribeToPushEvents(url, (err, info, xml) =>
                 {
                     if (err)
                     {
-                        this.updateLog("Subscribe err (" + Device.name + "): " + err, 0);
+                        this.updateLog('Subscribe err (' + Device.name + '): ' + err, 0);
                         reject(err);
                     }
                     else
                     {
 
-                        this.updateLog("Subscribe response (" + Device.name + "): " + Device.cam.hostname  + " - Info: " + this.varToString(info));
+                        this.updateLog('Subscribe response (' + Device.name + '): ' + Device.cam.hostname  + ' - Info: ' + this.varToString(info));
                         unsubscribeRef = info[0].subscribeResponse[0].subscriptionReference[0].address[0];
 
                         let startTime = info[0].subscribeResponse[0].currentTime[0];
@@ -816,7 +817,7 @@ class MyApp extends Homey.App
                         let d2 = new Date(endTime);
                         let refreshTime = ((d2.valueOf() - d1.valueOf()));
 
-                        this.updateLog("Push renew every (" + Device.name + "): " + (refreshTime / 1000) + "s  @ " + unsubscribeRef, 1);
+                        this.updateLog('Push renew every (' + Device.name + '): ' + (refreshTime / 1000) + 's  @ ' + unsubscribeRef, 1);
                         refreshTime -= 5000;
                         if (refreshTime < 0)
                         {
@@ -832,7 +833,7 @@ class MyApp extends Homey.App
                         pushEvent.unsubscribeRef = unsubscribeRef;
                         pushEvent.eventSubscriptionRenewTimerId = this.homey.setTimeout(() =>
                         {
-                            this.updateLog("Renewing subscription");
+                            this.updateLog('Renewing subscription');
                             this.subscribeToCamPushEvents(Device).catch(this.err);
                         }, refreshTime);
                         resolve(true);
@@ -850,14 +851,14 @@ class MyApp extends Homey.App
             {
                 resolve(null);
             }
-            this.updateLog("App.unsubscribe: " + Device.name);
+            this.updateLog('App.unsubscribe: ' + Device.name);
             let deviceIdx = -1;
             let pushEvent = null;
             let pushEventIdx = this.pushEvents.findIndex(element => (element.devices[0] && Device.cam && ((element.devices[0].cam.hostname) === (Device.cam.hostname))));
-            console.log("pushEvent Idx = ", pushEventIdx);
+            console.log('pushEvent Idx = ', pushEventIdx);
             if (pushEventIdx >= 0)
             {
-                this.updateLog("App.unsubscribe: Found entry for " + Device.cam.hostname);
+                this.updateLog('App.unsubscribe: Found entry for ' + Device.cam.hostname);
                 pushEvent = this.pushEvents[pushEventIdx];
                 if (!pushEvent || !pushEvent.devices)
                 {
@@ -869,13 +870,13 @@ class MyApp extends Homey.App
                 if (deviceIdx < 0)
                 {
                     // Not registered so do nothing
-                    this.updateLog("App.unsubscribe: No Push entry for device: " + Device.cam.hostname, 0);
+                    this.updateLog('App.unsubscribe: No Push entry for device: ' + Device.cam.hostname, 0);
                     resolve(null);
                 }
             }
             else
             {
-                this.updateLog("App.unsubscribe: No Push entry for host: " + Device.cam.hostname, 0);
+                this.updateLog('App.unsubscribe: No Push entry for host: ' + Device.cam.hostname, 0);
                 Device.cam.removeAllListeners('event');
                 resolve(null);
             }
@@ -883,7 +884,7 @@ class MyApp extends Homey.App
             if (pushEvent)
             {
                 // Remove this device reference
-                this.updateLog("App.unsubscribe: Unregister entry for " + Device.cam.hostname );
+                this.updateLog('App.unsubscribe: Unregister entry for ' + Device.cam.hostname );
                 pushEvent.devices.splice(deviceIdx, 1);
 
                 if ((pushEvent.devices.length == 0) && pushEvent.unsubscribeRef)
@@ -895,12 +896,12 @@ class MyApp extends Homey.App
                     {
                         if (err)
                         {
-                            this.updateLog("Push unsubscribe error (" + Device.cam.hostname + "): " + this.varToString(err.message), 0);
+                            this.updateLog('Push unsubscribe error (' + Device.cam.hostname + '): ' + this.varToString(err.message), 0);
                             reject(err);
                         }
                         else
                         {
-                            this.updateLog("Push unsubscribe response (" + Device.cam.hostname + "): " + this.varToString(info), 2);
+                            this.updateLog('Push unsubscribe response (' + Device.cam.hostname + '): ' + this.varToString(info), 2);
                         }
                         resolve(null);
                     });
@@ -1046,7 +1047,7 @@ class MyApp extends Homey.App
         {
             // Remove the first 1000 characters.
             oldText = oldText.substring(1000);
-            let n = oldText.indexOf("\n");
+            let n = oldText.indexOf('\n');
             if (n >= 0)
             {
                 // Remove up to and including the first \n so the log starts on a whole line
@@ -1059,12 +1060,12 @@ class MyApp extends Homey.App
         if (!oldText || (oldText.length == 0) || (this.logDay !== nowTime.getDate()))
         {
             this.logDay = nowTime.getDate();
-            oldText = "Log ID: ";
+            oldText = 'Log ID: ';
             oldText += nowTime.toJSON();
-            oldText += "\r\n";
-            oldText += "App version ";
+            oldText += '\r\n';
+            oldText += 'App version ';
             oldText += this.homey.manifest.version;
-            oldText += "\r\n\r\n";
+            oldText += '\r\n\r\n';
             this.logLastTime = nowTime;
         }
 
@@ -1072,15 +1073,15 @@ class MyApp extends Homey.App
 
         if (insertBlankLine)
         {
-            oldText += "\r\n";
+            oldText += '\r\n';
         }
 
         oldText += (nowTime.getHours());
-        oldText += ":";
+        oldText += ':';
         oldText += nowTime.getMinutes();
-        oldText += ":";
+        oldText += ':';
         oldText += nowTime.getSeconds();
-        oldText += ".";
+        oldText += '.';
         let milliSeconds = nowTime.getMilliseconds().toString();
         if (milliSeconds.length == 2)
         {
@@ -1091,9 +1092,9 @@ class MyApp extends Homey.App
             oldText += '00';
         }
         oldText += milliSeconds;
-        oldText += ": ";
+        oldText += ': ';
         oldText += newMessage;
-        oldText += "\r\n";
+        oldText += '\r\n';
         this.homey.settings.set('diagLog', oldText);
     }
 
@@ -1105,49 +1106,49 @@ class MyApp extends Homey.App
         {
             try
             {
-                this.updateLog("Sending log", 0);
+                this.updateLog('Sending log', 0);
                 // create reusable transporter object using the default SMTP transport
                 let transporter = nodemailer.createTransport(
-                {
-                    host: Homey.env.MAIL_HOST, //Homey.env.MAIL_HOST,
-                    port: 465,
-                    ignoreTLS: false,
-                    secure: true, // true for 465, false for other ports
-                    auth:
+                    {
+                        host: Homey.env.MAIL_HOST, //Homey.env.MAIL_HOST,
+                        port: 465,
+                        ignoreTLS: false,
+                        secure: true, // true for 465, false for other ports
+                        auth:
                     {
                         user: Homey.env.MAIL_USER, // generated ethereal user
                         pass: Homey.env.MAIL_SECRET // generated ethereal password
                     },
-                    tls:
+                        tls:
                     {
                         // do not fail on invalid certs
                         rejectUnauthorized: false
                     }
-                });
+                    });
 
                 // send mail with defined transport object
                 let info = await transporter.sendMail(
-                {
-                    from: '"Homey User" <' + Homey.env.MAIL_USER + '>', // sender address
-                    to: Homey.env.MAIL_RECIPIENT, // list of receivers
-                    subject: "ONVIF log (" + this.homeyHash + " : " + this.homey.manifest.version + ")", // Subject line
-                    text: this.homey.settings.get('diagLog') // plain text body
-                });
+                    {
+                        from: '"Homey User" <' + Homey.env.MAIL_USER + '>', // sender address
+                        to: Homey.env.MAIL_RECIPIENT, // list of receivers
+                        subject: 'ONVIF log (' + this.homeyHash + ' : ' + this.homey.manifest.version + ')', // Subject line
+                        text: this.homey.settings.get('diagLog') // plain text body
+                    });
 
-                this.updateLog("Message sent: " + info.messageId);
+                this.updateLog('Message sent: ' + info.messageId);
                 // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
 
                 // Preview only available when sending through an Ethereal account
-                console.log("Preview URL: ", nodemailer.getTestMessageUrl(info));
-                return "";
+                console.log('Preview URL: ', nodemailer.getTestMessageUrl(info));
+                return '';
             }
             catch (err)
             {
-                this.updateLog("Send log error: " + err.message, 0);
+                this.updateLog('Send log error: ' + err.message, 0);
             }
         }
-        this.updateLog("Send log FAILED", 0);
-        throw (new Error("Send log FAILED"));
+        this.updateLog('Send log FAILED', 0);
+        throw (new Error('Send log FAILED'));
     }
 }
 

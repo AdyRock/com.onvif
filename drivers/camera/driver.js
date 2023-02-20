@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /*jslint node: true */
 'use strict';
 
@@ -13,7 +14,7 @@ class CameraDriver extends Homey.Driver
         this.lastPassword = '';
         this.lastHostName = '';
         this.lastPort = 0;
-        this.lastURN = "";
+        this.lastURN = '';
 
         this.motionEnabledTrigger = this.homey.flow.getDeviceTriggerCard('motionEnabledTrigger');
         this.motionDisabledTrigger = this.homey.flow.getDeviceTriggerCard('motionDisabledTrigger');
@@ -33,29 +34,29 @@ class CameraDriver extends Homey.Driver
             {
                 listDevices = 2;
                 let devices = await this.homey.app.discoverCameras();
-                this.homey.app.updateLog("Discovered: " + this.homey.app.varToString(devices, null, 3), 1);
+                this.homey.app.updateLog('Discovered: ' + this.homey.app.varToString(devices, null, 3), 1);
 
                 // Add the manual entry
                 devices.push(
-                {
-                    "name": "Add Manually",
-                    data:
                     {
-                        "id": "manual"
+                        'name': 'Add Manually',
+                        data:
+                    {
+                        'id': 'manual'
                     },
-                    settings:
+                        settings:
                     {
                         // Store username & password in settings
                         // so the user can change them later
-                        "username": "",
-                        "password": "",
-                        "ip": "",
-                        "port": "",
-                        "urn": "",
-                        "mac": "",
-                        "channel": -1
+                        'username': '',
+                        'password': '',
+                        'ip': '',
+                        'port': '',
+                        'urn': '',
+                        'mac': '',
+                        'channel': -1
                     }
-                });
+                    });
 
                 return devices;
             }
@@ -63,7 +64,7 @@ class CameraDriver extends Homey.Driver
             {
                 if (tempCam)
                 {
-                    this.homey.app.updateLog("list_devices2: Multiple Sources = " + this.homey.app.varToString(tempCam.videoSources, null, 3), 1);
+                    this.homey.app.updateLog('list_devices2: Multiple Sources = ' + this.homey.app.varToString(tempCam.videoSources, null, 3), 1);
 
                     // There is more tha 1 video source so add a device for each
                     const mac = await this.homey.arp.getMAC(this.lastHostName);
@@ -73,42 +74,42 @@ class CameraDriver extends Homey.Driver
                     {
                         const source = tempCam.videoSources[i];
 
-                        let token = "";
+                        let token = '';
                         if (source.$)
                         {
                             token = source.$.token;
                         }
-                        let channelSuf = " (Ch" + (devices.length + 1) + ")";
-                        this.homey.app.updateLog("list_devices2: Adding source " + this.lastURN + channelSuf + " to list", 1);
+                        let channelSuf = ' (Ch' + (devices.length + 1) + ')';
+                        this.homey.app.updateLog('list_devices2: Adding source ' + this.lastURN + channelSuf + ' to list', 1);
                         let data = {
-                            "id": this.lastURN + channelSuf,
-                            "port": this.lastPort
+                            'id': this.lastURN + channelSuf,
+                            'port': this.lastPort
                         };
                         devices.push(
-                        {
-                            "name": this.lastHostName + channelSuf,
-                            data,
-                            settings:
+                            {
+                                'name': this.lastHostName + channelSuf,
+                                data,
+                                settings:
                             {
                                 // Store username & password in settings
                                 // so the user can change them later
-                                "username": this.lastUsername,
-                                "password": this.lastPassword,
-                                "ip": this.lastHostName,
-                                "port": this.lastPort,
-                                "urn": this.lastURN,
-                                "mac": mac,
-                                "channel": devices.length + 1,
-                                "token": token
+                                'username': this.lastUsername,
+                                'password': this.lastPassword,
+                                'ip': this.lastHostName,
+                                'port': this.lastPort,
+                                'urn': this.lastURN,
+                                'mac': mac,
+                                'channel': devices.length + 1,
+                                'token': token
                             }
-                        });
+                            });
                     }
-                    this.homey.app.updateLog("list_devices2: Listing " + this.homey.app.varToString(devices, null, 3), 1);
+                    this.homey.app.updateLog('list_devices2: Listing ' + this.homey.app.varToString(devices, null, 3), 1);
                     return devices;
                 }
                 else
                 {
-                    this.homey.app.updateLog("list_devices2: Single Sources");
+                    this.homey.app.updateLog('list_devices2: Single Sources');
                     session.nextView();
                 }
             }
@@ -117,7 +118,7 @@ class CameraDriver extends Homey.Driver
         session.setHandler('list_devices_selection', async (data) =>
         {
             // User selected a device so cache the information required to validate it when the credentials are set
-            console.log("list_devices_selection: ", data);
+            console.log('list_devices_selection: ', data);
             this.lastHostName = data[0].settings.ip;
             this.lastPort = data[0].settings.port;
             this.lastURN = data[0].settings.urn;
@@ -153,7 +154,7 @@ class CameraDriver extends Homey.Driver
                 }
             }
 
-            this.homey.app.updateLog("Login-----");
+            this.homey.app.updateLog('Login-----');
 
             let cam = await this.homey.app.connectCamera(
                 this.lastHostName,
@@ -162,12 +163,12 @@ class CameraDriver extends Homey.Driver
                 this.lastPassword
             );
 
-            this.homey.app.updateLog("Credentials OK. Adding " + this.homey.app.varToString(cam.videoSources), 1);
+            this.homey.app.updateLog('Credentials OK. Adding ' + this.homey.app.varToString(cam.videoSources), 1);
 
             if (Array.isArray(cam.videoSources) && (cam.videoSources.length > 1))
             {
                 // There is more tha 1 video source so show the list for the user to select
-                this.homey.app.updateLog("Multiple source found. Adding " + cam.videoSources.length + " more devices", 1);
+                this.homey.app.updateLog('Multiple source found. Adding ' + cam.videoSources.length + ' more devices', 1);
                 tempCam = cam;
                 listDevices = 2;
 
@@ -175,35 +176,35 @@ class CameraDriver extends Homey.Driver
             }
             else
             {
-                if (cam.path && cam.path.indexOf("onvif") >= 0)
+                if (cam.path && cam.path.indexOf('onvif') >= 0)
                 {
                     let device = (
-                    {
-                        "name": cam.hostname,
-                        data:
                         {
-                            "id": mac ? mac : this.lastURN
+                            'name': cam.hostname,
+                            data:
+                        {
+                            'id': mac ? mac : this.lastURN
                         },
-                        settings:
+                            settings:
                         {
                             // Store username & password in settings
                             // so the user can change them later
-                            "username": this.lastUsername,
-                            "password": this.lastPassword,
-                            "ip": cam.hostname,
-                            "port": cam.port ? cam.port.toString() : "",
-                            "urn": this.lastURN,
-                            "mac": mac ? mac : 'Unknown',
-                            "channel": -1
+                            'username': this.lastUsername,
+                            'password': this.lastPassword,
+                            'ip': cam.hostname,
+                            'port': cam.port ? cam.port.toString() : '',
+                            'urn': this.lastURN,
+                            'mac': mac ? mac : 'Unknown',
+                            'channel': -1
                         }
-                    });
-                    this.homey.app.updateLog("Adding " + this.homey.app.varToString(device), 1);
+                        });
+                    this.homey.app.updateLog('Adding ' + this.homey.app.varToString(device), 1);
 
                     return device;
                 }
                 else
                 {
-                    throw new Error("Discovery (" + cam.hostname + "): Invalid service URI", null);
+                    throw new Error('Discovery (' + cam.hostname + '): Invalid service URI', null);
                 }
             }
         });
@@ -231,18 +232,18 @@ class CameraDriver extends Homey.Driver
         session.setHandler('repair_connection', async (data) =>
         {
             await device.setSettings(
-            {
-                'username': data.username,
-                'password': data.password,
-                "ip": data.ip,
-                "port": data.port,
-                "enabled": true
-            });
+                {
+                    'username': data.username,
+                    'password': data.password,
+                    'ip': data.ip,
+                    'port': data.port,
+                    'enabled': true
+                });
 
             let settings = device.getSettings();
             let devices = await this.homey.app.discoverCameras();
 
-            console.log("Discovered devices: ", devices);
+            console.log('Discovered devices: ', devices);
 
             let matched = false;
 
@@ -261,11 +262,11 @@ class CameraDriver extends Homey.Driver
                     try
                     {
                         info = await this.homey.app.getDeviceInformation(cam);
-                        this.homey.app.updateLog("Camera Information: " + this.homey.app.varToString(info));
+                        this.homey.app.updateLog('Camera Information: ' + this.homey.app.varToString(info));
                     }
                     catch (err)
                     {
-                        this.homey.app.updateLog("Get camera info error: " + this.homey.app.varToString(err), 0);
+                        this.homey.app.updateLog('Get camera info error: ' + this.homey.app.varToString(err), 0);
                         return;
                     }
 
@@ -284,22 +285,22 @@ class CameraDriver extends Homey.Driver
                         }
 
                         await device.setSettings(
-                        {
-                            'ip': discoveredDevice.settings.ip,
-                            'port': discoveredDevice.settings.port,
-                            'mac': mac,
-                        });
+                            {
+                                'ip': discoveredDevice.settings.ip,
+                                'port': discoveredDevice.settings.port,
+                                'mac': mac,
+                            });
                         device.cam = cam;
                         device.setupImages();
 
-                        this.homey.app.updateLog("Found the camera: " + this.homey.app.varToString(info));
+                        this.homey.app.updateLog('Found the camera: ' + this.homey.app.varToString(info));
                         device.setAvailable().catch(this.error);
                         break;
                     }
                 }
                 catch (err)
                 {
-                    this.homey.app.updateLog("Get camera info error: " + this.homey.app.varToString(err));
+                    this.homey.app.updateLog('Get camera info error: ' + this.homey.app.varToString(err));
                 }
             }
 

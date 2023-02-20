@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /*jslint node: true */
 'use strict';
 
@@ -1030,7 +1031,6 @@ class CameraDevice extends Homey.Device
 
     async triggerTamperEvent(dataName, dataValue)
     {
-        const settings = this.getSettings();
         this.setAvailable().catch(this.error);
 
         if (dataValue != this.getCapabilityValue('alarm_tamper'))
@@ -1052,7 +1052,6 @@ class CameraDevice extends Homey.Device
 
     async triggerLineCrossedEvent(ObjectId)
     {
-        const settings = this.getSettings();
         this.setAvailable().catch(this.error);
 
         this.homey.app.updateLog('Event Processing (' + this.name + '):' + ObjectId);
@@ -1073,7 +1072,6 @@ class CameraDevice extends Homey.Device
 
     async triggerPersonEvent(dataValue)
     {
-        const settings = this.getSettings();
         this.setAvailable().catch(this.error);
 
         this.homey.app.updateLog('Event Processing (' + this.name + '):' + dataValue);
@@ -1110,7 +1108,6 @@ class CameraDevice extends Homey.Device
 
     async triggerDogCatEvent(dataValue)
     {
-        const settings = this.getSettings();
         this.setAvailable().catch(this.error);
 
         this.homey.app.updateLog('Event Processing (' + this.name + '):' + dataValue);
@@ -1147,7 +1144,6 @@ class CameraDevice extends Homey.Device
 
     async triggerVistorEvent(dataValue)
     {
-        const settings = this.getSettings();
         this.setAvailable().catch(this.error);
 
         this.homey.app.updateLog('Event Processing (' + this.name + '):' + dataValue);
@@ -1194,7 +1190,6 @@ class CameraDevice extends Homey.Device
 
     async triggerFaceEvent(dataValue)
     {
-        const settings = this.getSettings();
         this.setAvailable().catch(this.error);
 
         this.homey.app.updateLog('Event Processing (' + this.name + '):' + dataValue);
@@ -1231,7 +1226,6 @@ class CameraDevice extends Homey.Device
 
     async triggerVehicleEvent(dataValue)
     {
-        const settings = this.getSettings();
         this.setAvailable().catch(this.error);
 
         this.homey.app.updateLog('Event Processing (' + this.name + '):' + dataValue);
@@ -1268,7 +1262,6 @@ class CameraDevice extends Homey.Device
 
     async triggerDarkImageEvent(value)
     {
-        const settings = this.getSettings();
         this.setAvailable().catch(this.error);
 
         this.homey.app.updateLog('Event Processing (' + this.name + '):' + value);
@@ -1330,7 +1323,7 @@ class CameraDevice extends Homey.Device
                 this.homey.app.updateLog('\r\n--  Event detected (' + this.name + ')  --', 1);
                 this.homey.app.updateLog(this.homey.app.varToString(camMessage));
 
-                let dataSource = camMessage?.message.message.data.simpleItem
+                let dataSource = camMessage?.message.message.data.simpleItem;
                 if (this.token)
                 {
                     let eventSource = camMessage.message?.message.source.simpleItem;
@@ -1403,7 +1396,7 @@ class CameraDevice extends Homey.Device
                         objectId = camMessage.message.message.key.simpleItem.$.Value;
                     }
 
-                    this.homey.app.updateLog('\Event data: (' + this.name + ') ' + eventTopic + ': ' + dataName + ' = ' + dataValue + (objectId === '' ? '' : (' (' + objectId + ')')), 1, true);
+                    this.homey.app.updateLog('Event data: (' + this.name + ') ' + eventTopic + ': ' + dataName + ' = ' + dataValue + (objectId === '' ? '' : (' (' + objectId + ')')), 1, true);
                     const compareSetting = eventTopic + ':' + dataName;
                     if ((compareSetting === this.eventTN) && ((this.eventObjectID === '') || (this.eventObjectID.indexOf(objectId) >= 0)))
                     {
