@@ -349,5 +349,8 @@
   },
   "2.0.29": {
     "en": "Returned General alarm trigger for visitor (doorbell pressed) for backward compatability."
+  },
+  "2.0.30": {
+    "en": "Fix for event token on individual cameras that was introduced when adding support for a NVR."
   }
 }
