@@ -3,6 +3,7 @@
   "version": "2.0.29",
   "main": "app.js",
   "devDependencies": {
+    "eslint": "^8.34.0",
     "homey": "^2.0.6"
   },
   "repository": {
