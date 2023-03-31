@@ -32,6 +32,9 @@ class CameraDevice extends Homey.Device
         this.authType = 0;
         this.snapshotSupported = true;
         this.eventMinTimeId = null;
+        this.checkTimerId = null;
+        this.eventSubscriptionRenewTimerId = null;
+        this.eventTimerId = null;
 
         this.connectCamera.bind(this);
 
@@ -99,11 +102,17 @@ class CameraDevice extends Homey.Device
             this.setClass(requiredClass);
         }
 
-        this.connectCamera(false)
-            .catch(err =>
-            {
-                this.homey.app.updateLog('Check Camera Error (' + this.name + '): ' + this.homey.app.varToString(err.message), 0);
-            });
+        this.checkTimerId = this.homey.setTimeout(() =>
+        {
+            this.checkTimerId = null;
+            this.setUnavailable('Initialising system. Please wait...').catch(this.err);
+        }, 500);
+
+        // this.connectCamera(false)
+        //     .catch(err =>
+        //     {
+        //         this.homey.app.updateLog('Check Camera Error (' + this.name + '): ' + this.homey.app.varToString(err.message), 0);
+        //     });
 
         this.registerCapabilityListener('motion_enabled', this.onCapabilityMotionEnable.bind(this));
         this.registerCapabilityListener('button.syncTime', async () =>
@@ -362,6 +371,10 @@ class CameraDevice extends Homey.Device
 
         if (changedKeys.indexOf('ip') >= 0)
         {
+            // Switch off the current event mode
+            this.clearTimers();
+            await this.homey.app.unsubscribe(this);
+
             this.ip = newSettings.ip;
             reconnect = true;
         }
@@ -462,9 +475,7 @@ class CameraDevice extends Homey.Device
         {
             if (this.cam)
             {
-                this.homey.clearTimeout(this.checkTimerId);
-                this.homey.clearTimeout(this.eventSubscriptionRenewTimerId);
-                this.homey.clearTimeout(this.eventTimerId);
+                this.clearTimers();
                 if (this.cam)
                 {
                     //Stop listening for motion events
@@ -486,10 +497,16 @@ class CameraDevice extends Homey.Device
 
             return;
         }
+        if (this.checkTimerId)
+        {
+            // Camera connect timer is running so allow that to happen
+            return;
+        }
 
         if (this.repairing)
         {
             // Wait while repairing and try again later
+            this.clearTimers();
             this.checkTimerId = this.homey.setTimeout(() =>
             {
                 this.connectCamera(this, addingCamera).catch(this.error);
@@ -578,7 +595,6 @@ class CameraDevice extends Homey.Device
                     this.homey.app.updateLog('Get camera services error (' + this.name + '): ' + err.message, 0);
                 }
 
-                //if (addingCamera) {
                 let info = {};
                 try
                 {
@@ -689,7 +705,9 @@ class CameraDevice extends Homey.Device
                 }
 
                 addingCamera = false;
-                //}
+
+                await this.setAvailable();
+
                 await this.setupImages();
 
                 if (this.hasMotion)
@@ -700,8 +718,6 @@ class CameraDevice extends Homey.Device
                         this.listenForEvents(this.cam).catch(this.err);
                     }
                 }
-
-                this.setAvailable().catch(this.error);
                 this.isReady = true;
                 this.setCapabilityValue('alarm_tamper', false).catch(this.error);
                 this.homey.app.updateLog('Camera (' + this.name + ') ' + this.homey.app.varToString(this.cam), 3);
@@ -714,18 +730,26 @@ class CameraDevice extends Homey.Device
                     this.homey.app.updateLog('Connect to camera error (' + this.name + '): ' + err.message, 0);
                     this.setUnavailable(err).catch(this.err);
                 }
+                this.clearTimers();
                 this.checkTimerId = this.homey.setTimeout(() =>
                 {
+                    this.checkTimerId = null;
                     this.connectCamera(this, addingCamera).catch(this.error);
                 }, 15000);
 
-                this.setCapabilityValue('alarm_tamper', false).catch(this.error);
+                // this.setCapabilityValue('alarm_tamper', false).catch(this.error);
             }
         }
     }
 
     async checkCamera()
     {
+        if (this.checkTimerId)
+        {
+            // Camera connect timer is running so allow that to happen
+            return;
+        }
+
         if (!this.cam)
         {
             return this.connectCamera(false);
@@ -870,7 +894,7 @@ class CameraDevice extends Homey.Device
             {
                 this.homey.app.updateLog(this.homey.app.varToString(err));
                 reject(err);
-                //throw new Error(err);
+                return;
             });
             storageStream.on('finish', () =>
             {
@@ -889,10 +913,12 @@ class CameraDevice extends Homey.Device
                         {
                             this.homey.app.updateLog('Snapshot error (' + this.name + '): ' + this.homey.app.varToString(err), 0);
                             reject(err);
+                            return;
                         })
                         .then(() =>
                         {
                             resolve(true);
+                            return;
                         });
                 }
             });
@@ -1849,9 +1875,7 @@ class CameraDevice extends Homey.Device
     {
         if (this.cam)
         {
-            this.homey.clearTimeout(this.checkTimerId);
-            this.homey.clearTimeout(this.eventSubscriptionRenewTimerId);
-            this.homey.clearTimeout(this.eventTimerId);
+            this.clearTimers();
             if (this.cam)
             {
                 //Stop listening for motion events
@@ -1866,9 +1890,7 @@ class CameraDevice extends Homey.Device
     {
         try
         {
-            this.homey.clearTimeout(this.checkTimerId);
-            this.homey.clearTimeout(this.eventSubscriptionRenewTimerId);
-            this.homey.clearTimeout(this.eventTimerId);
+            this.clearTimers();
             if (this.cam)
             {
                 //Stop listening for motion events
@@ -1896,6 +1918,16 @@ class CameraDevice extends Homey.Device
         {
             console.log('Delete device error', err);
         }
+    }
+
+    clearTimers()
+    {
+        this.homey.clearTimeout(this.checkTimerId);
+        this.checkTimerId = null;
+        this.homey.clearTimeout(this.eventSubscriptionRenewTimerId);
+        this.eventSubscriptionRenewTimerId = null;
+        this.homey.clearTimeout(this.eventTimerId);
+        this.eventTimerId = null;
     }
 }
 

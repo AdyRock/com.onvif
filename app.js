@@ -25,6 +25,10 @@ process.on('unhandledRejection', (reason, p) =>
     //    this.updateLog(`Unhandled Rejection at: Promise, ${this.varToString(p)}, reason: ${this.varToString(reason)}`, 0);
 });
 
+process.on('uncaughtException', function (err)
+{
+    console.log('Unhandled Rejection at: Promise', err);
+});
 class MyApp extends Homey.App
 {
 
@@ -81,7 +85,7 @@ class MyApp extends Homey.App
         }
 
         this.checkCameras = this.checkCameras.bind(this);
-        this.checkTimerId = this.homey.setTimeout(this.checkCameras, 30000);
+        this.checkTimerId = this.homey.setTimeout(this.checkCameras, 15000);
 
         this.homey.on('unload', () =>
         {
@@ -460,7 +464,7 @@ class MyApp extends Homey.App
         return devices;
     }
 
-    connectCamera(hostname, port, username, password)
+    async connectCamera(hostname, port, username, password)
     {
         return new Promise((resolve, reject) =>
         {
@@ -481,11 +485,13 @@ class MyApp extends Homey.App
                     {
                         this.updateLog('Connection Failed for ' + hostname + ' Port: ' + port + ' Username: ' + username, 0);
                         reject(err);
+                        return;
                     }
                     else
                     {
                         this.updateLog('CONNECTED to ' + hostname);
                         resolve(cam);
+                        return;
                     }
                 });
         });
@@ -553,7 +559,7 @@ class MyApp extends Homey.App
         });
     }
 
-    getDateAndTime(cam_obj)
+    async getDateAndTime(cam_obj)
     {
         return new Promise((resolve, reject) =>
         {
@@ -671,6 +677,7 @@ class MyApp extends Homey.App
                 if (err)
                 {
                     reject(err);
+                    return;
                 }
                 else
                 {
@@ -758,6 +765,7 @@ class MyApp extends Homey.App
                             this.subscribeToCamPushEvents(Device).catch(this.err);
                         });
                         resolve(true);
+                        return;
                     }
                     else
                     {
@@ -788,6 +796,7 @@ class MyApp extends Homey.App
                             this.subscribeToCamPushEvents(Device).catch(this.err);
                         }, refreshTime);
                         resolve(true);
+                        return;
                     }
                 });
             }
@@ -804,6 +813,7 @@ class MyApp extends Homey.App
                     {
                         this.updateLog('Subscribe err (' + Device.name + '): ' + err, 0);
                         reject(err);
+                        return;
                     }
                     else
                     {
@@ -837,6 +847,7 @@ class MyApp extends Homey.App
                             this.subscribeToCamPushEvents(Device).catch(this.err);
                         }, refreshTime);
                         resolve(true);
+                        return;
                     }
                 });
             }
@@ -850,6 +861,7 @@ class MyApp extends Homey.App
             if (!Device.cam || !this.pushEvents)
             {
                 resolve(null);
+                return;
             }
             this.updateLog('App.unsubscribe: ' + Device.name);
             let deviceIdx = -1;
@@ -863,6 +875,7 @@ class MyApp extends Homey.App
                 if (!pushEvent || !pushEvent.devices)
                 {
                     resolve(null);
+                    return;
                 }
 
                 // see if this device is registered
@@ -872,6 +885,7 @@ class MyApp extends Homey.App
                     // Not registered so do nothing
                     this.updateLog('App.unsubscribe: No Push entry for device: ' + Device.cam.hostname, 0);
                     resolve(null);
+                    return;
                 }
             }
             else
@@ -879,6 +893,7 @@ class MyApp extends Homey.App
                 this.updateLog('App.unsubscribe: No Push entry for host: ' + Device.cam.hostname, 0);
                 Device.cam.removeAllListeners('event');
                 resolve(null);
+                return;
             }
 
             if (pushEvent)
@@ -898,12 +913,14 @@ class MyApp extends Homey.App
                         {
                             this.updateLog('Push unsubscribe error (' + Device.cam.hostname + '): ' + this.varToString(err.message), 0);
                             reject(err);
+                            return;
                         }
                         else
                         {
                             this.updateLog('Push unsubscribe response (' + Device.cam.hostname + '): ' + this.varToString(info), 2);
                         }
                         resolve(null);
+                        return;
                     });
 
                     Device.cam.removeAllListeners('event');
@@ -922,6 +939,7 @@ class MyApp extends Homey.App
 
                     Device.cam.removeAllListeners('event');
                     resolve(null);
+                    return;
                 }
             }
         });
@@ -935,7 +953,7 @@ class MyApp extends Homey.App
             return true;
         }
 
-        this.updateLog('Camera (' + id + ') does NOT support PullPoint Events', 0);
+        this.updateLog('Camera (' + id + ') does NOT support PullPoint Events', 3);
         return false;
     }
 
