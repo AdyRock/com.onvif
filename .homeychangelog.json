@@ -355,5 +355,8 @@
   },
   "2.0.31": {
     "en": "Improved some error handling"
+  },
+  "2.0.32": {
+    "en": "Improved more error handling"
   }
 }
