@@ -361,5 +361,8 @@
   },
   "2.0.33": {
     "en": "Improved more error handling"
+  },
+  "2.0.34": {
+    "en": "Improved error handling"
   }
 }
