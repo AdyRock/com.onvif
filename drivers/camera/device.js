@@ -469,7 +469,7 @@ class CameraDevice extends Homey.Device
         }
     }
 
-    async connectCamera(addingCamera)
+    async connectCamera()
     {
         if (!this.enabled)
         {
@@ -507,10 +507,6 @@ class CameraDevice extends Homey.Device
         {
             // Wait while repairing and try again later
             this.clearTimers();
-            this.checkTimerId = this.homey.setTimeout(() =>
-            {
-                this.connectCamera(this, addingCamera).catch(this.error);
-            }, 2000);
         }
         else
         {
@@ -704,8 +700,6 @@ class CameraDevice extends Homey.Device
                     }
                 }
 
-                addingCamera = false;
-
                 await this.setAvailable();
 
                 await this.setupImages();
@@ -715,7 +709,7 @@ class CameraDevice extends Homey.Device
                     if (this.getCapabilityValue('motion_enabled'))
                     {
                         // Motion detection is enabled so listen for events
-                        this.listenForEvents(this.cam).catch(this.err);
+                        this.listenForEvents(this.cam).catch(this.error);
                     }
                 }
                 this.isReady = true;
@@ -731,11 +725,6 @@ class CameraDevice extends Homey.Device
                     this.setUnavailable(err).catch(this.err);
                 }
                 this.clearTimers();
-                this.checkTimerId = this.homey.setTimeout(() =>
-                {
-                    this.checkTimerId = null;
-                    this.connectCamera(this, addingCamera).catch(this.error);
-                }, 15000);
 
                 // this.setCapabilityValue('alarm_tamper', false).catch(this.error);
             }
@@ -752,7 +741,7 @@ class CameraDevice extends Homey.Device
 
         if (!this.cam)
         {
-            return this.connectCamera(false);
+            return this.connectCamera(false).catch(this.error);
         }
 
         if (this.enabled && !this.repairing && this.isReady && (parseInt(this.homey.settings.get('logLevel')) < 2))
@@ -772,7 +761,7 @@ class CameraDevice extends Homey.Device
                         await this.homey.app.unsubscribe(this);
                         setImmediate(() =>
                         {
-                            this.listenForEvents(this.cam);
+                            this.listenForEvents(this.cam).catch(this.error);
                             return;
                         });
                     }
@@ -1327,7 +1316,7 @@ class CameraDevice extends Homey.Device
                         this.homey.app.updateLog(`\r\n## FAILED to register Push events (${this.name}) ${error.message} ##`, 0);
                     }
 
-                    this.checkCamera();
+                    // this.checkCamera();
                     return;
                 }
 
@@ -1522,7 +1511,7 @@ class CameraDevice extends Homey.Device
                     // Start listening for motion events
                     setImmediate(() =>
                     {
-                        this.listenForEvents(this.cam);
+                        this.listenForEvents(this.cam).catch(this.error);
                         return;
                     });
 

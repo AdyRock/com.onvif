@@ -84,8 +84,7 @@ class MyApp extends Homey.App
             console.log('runsListener: ', err);
         }
 
-        this.checkCameras = this.checkCameras.bind(this);
-        this.checkTimerId = this.homey.setTimeout(this.checkCameras, 15000);
+        this.checkCameras();
 
         this.homey.on('unload', () =>
         {
@@ -499,25 +498,30 @@ class MyApp extends Homey.App
 
     async checkCameras()
     {
-        const driver = this.homey.drivers.getDriver('camera');
-        if (driver)
+        do
         {
-            let devices = driver.getDevices();
-            for (let i = 0; i < devices.length; i++)
+            await new Promise(resolve => this.homey.setTimeout(resolve, 10000));
+            
+            const driver = this.homey.drivers.getDriver('camera');
+            if (driver)
             {
-                let device = devices[i];
-                try
+                let devices = driver.getDevices();
+                for (let i = 0; i < devices.length; i++)
                 {
-                    await device.checkCamera();
-                }
-                catch (err)
-                {
-                    this.updateLog('checkCameras' + err.message, 0);
+                    let device = devices[i];
+                    try
+                    {
+                        await device.checkCamera();
+                    }
+                    catch (err)
+                    {
+                        this.updateLog('checkCameras' + err.message, 0);
+                    }
                 }
             }
         }
-
-        this.checkTimerId = this.homey.setTimeout(this.checkCameras, 10000);
+        // eslint-disable-next-line no-constant-condition
+        while(true);
     }
 
     async unregisterCameras()
