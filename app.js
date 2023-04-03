@@ -541,7 +541,7 @@ class MyApp extends Homey.App
         }
     }
 
-    getHostName(cam_obj)
+    async getHostName(cam_obj)
     {
         return new Promise((resolve, reject) =>
         {
@@ -577,7 +577,7 @@ class MyApp extends Homey.App
         });
     }
 
-    getDeviceInformation(cam_obj)
+    async getDeviceInformation(cam_obj)
     {
         return new Promise((resolve, reject) =>
         {
@@ -595,7 +595,7 @@ class MyApp extends Homey.App
         });
     }
 
-    getCapabilities(cam_obj)
+    async getCapabilities(cam_obj)
     {
         return new Promise((resolve, reject) =>
         {
@@ -613,7 +613,7 @@ class MyApp extends Homey.App
         });
     }
 
-    getServices(cam_obj)
+    async getServices(cam_obj)
     {
         return new Promise((resolve, reject) =>
         {
@@ -631,7 +631,7 @@ class MyApp extends Homey.App
         });
     }
 
-    getServiceCapabilities(cam_obj)
+    async getServiceCapabilities(cam_obj)
     {
         return new Promise((resolve, reject) =>
         {
@@ -649,7 +649,7 @@ class MyApp extends Homey.App
         });
     }
 
-    getSnapshotURL(cam_obj)
+    async getSnapshotURL(cam_obj)
     {
         return new Promise((resolve, reject) =>
         {
@@ -667,7 +667,7 @@ class MyApp extends Homey.App
         });
     }
 
-    hasEventTopics(cam_obj)
+    async hasEventTopics(cam_obj)
     {
         return new Promise((resolve, reject) =>
         {
@@ -711,7 +711,7 @@ class MyApp extends Homey.App
         });
     }
 
-    subscribeToCamPushEvents(Device)
+    async subscribeToCamPushEvents(Device)
     {
         return new Promise((resolve, reject) =>
         {
@@ -854,7 +854,7 @@ class MyApp extends Homey.App
         });
     }
 
-    unsubscribe(Device)
+    async unsubscribe(Device)
     {
         return new Promise((resolve, reject) =>
         {
