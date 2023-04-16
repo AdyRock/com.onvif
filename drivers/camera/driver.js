@@ -20,6 +20,14 @@ class CameraDriver extends Homey.Driver
         this.motionDisabledTrigger = this.homey.flow.getDeviceTriggerCard('motionDisabledTrigger');
         this.snapshotReadyTrigger = this.homey.flow.getDeviceTriggerCard('snapshotReadyTrigger');
         this.eventShotReadyTrigger = this.homey.flow.getDeviceTriggerCard('eventShotReadyTrigger');
+        this.eventDogCatTrigger = this.homey.flow.getDeviceTriggerCard('alarm_dog_cat_true');
+        this.eventFaceTrigger = this.homey.flow.getDeviceTriggerCard('alarm_face_true');
+        this.eventLineCrossedTrigger = this.homey.flow.getDeviceTriggerCard('alarm_line_crossed_true');
+        this.eventPersonTrigger = this.homey.flow.getDeviceTriggerCard('alarm_person_true');
+        this.eventSoundTrigger = this.homey.flow.getDeviceTriggerCard('alarm_sound_true');
+        this.eventStorageTrigger = this.homey.flow.getDeviceTriggerCard('alarm_storage_true');
+        this.eventVehicleTrigger = this.homey.flow.getDeviceTriggerCard('alarm_vehicle_true');
+        this.eventVistorTrigger = this.homey.flow.getDeviceTriggerCard('alarm_vistor_true');
     }
 
     async onPair(session)

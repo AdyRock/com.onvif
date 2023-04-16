@@ -1073,6 +1073,10 @@ class CameraDevice extends Homey.Device
         this.setCapabilityValue('alarm_line_crossed', true).catch(this.error);
 
         this.triggerMotionEvent('Line Crossed', true).catch(this.err);
+        this.driver.eventLineCrossedTrigger
+            .trigger(this)
+            .catch(this.error)
+            .then(this.log('Triggered enable on'));
 
         // This event doesn't clear so set a timer to clear it
         this.homey.clearTimeout(this.lineCrossedTimeoutId);
@@ -1111,6 +1115,11 @@ class CameraDevice extends Homey.Device
         this.homey.clearTimeout(this.personTimeoutId);
         if (dataValue)
         {
+            this.driver.eventPersonTrigger
+                .trigger(this)
+                .catch(this.error)
+                .then(this.log('Triggered enable on'));
+
             // If this event doesn't clear, set a timer to clear it
             this.personTimeoutId = this.homey.setTimeout(() =>
             {
@@ -1148,6 +1157,11 @@ class CameraDevice extends Homey.Device
         this.homey.clearTimeout(this.dogCatTimeoutId);
         if (dataValue)
         {
+            this.driver.eventDogCatTrigger
+                .trigger(this)
+                .catch(this.error)
+                .then(this.log('Triggered enable on'));
+
             this.dogCatTimeoutId = this.homey.setTimeout(() =>
             {
                 this.setCapabilityValue('alarm_dog_cat', false).catch(this.error);
@@ -1189,6 +1203,11 @@ class CameraDevice extends Homey.Device
         this.homey.clearTimeout(this.vistorTimeoutId);
         if (dataValue)
         {
+            this.driver.eventVistorTrigger
+                .trigger(this)
+                .catch(this.error)
+                .then(this.log('Triggered enable on'));
+
             this.vistorTimeoutId = this.homey.setTimeout(() =>
             {
                 if (this.hasCapability('alarm_generic'))
@@ -1230,6 +1249,11 @@ class CameraDevice extends Homey.Device
         this.homey.clearTimeout(this.faceTimeoutId);
         if (dataValue)
         {
+            this.driver.eventFaceTrigger
+                .trigger(this)
+                .catch(this.error)
+                .then(this.log('Triggered enable on'));
+
             this.faceTimeoutId = this.homey.setTimeout(() =>
             {
                 this.setCapabilityValue('alarm_face', false).catch(this.error);
@@ -1266,6 +1290,11 @@ class CameraDevice extends Homey.Device
         this.homey.clearTimeout(this.vehicleTimeoutId);
         if (dataValue)
         {
+            this.driver.eventVehicleTrigger
+                .trigger(this)
+                .catch(this.error)
+                .then(this.log('Triggered enable on'));
+
             this.vehicleTimeoutId = this.homey.setTimeout(() =>
             {
                 this.setCapabilityValue('alarm_vehicle', false).catch(this.error);
