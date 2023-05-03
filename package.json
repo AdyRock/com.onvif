@@ -1,10 +1,9 @@
 {
   "name": "com.onvif",
-  "version": "2.0.35",
+  "version": "2.0.36",
   "main": "app.js",
   "devDependencies": {
-    "eslint": "^8.34.0",
-    "homey": "^2.0.6"
+    "eslint": "^8.34.0"
   },
   "repository": {
     "type": "git",
