@@ -482,7 +482,7 @@ class MyApp extends Homey.App
                 {
                     if (err)
                     {
-                        this.updateLog('Connection Failed for ' + hostname + ' Port: ' + port + ' Username: ' + username, 0);
+                        this.updateLog('Connection Failed for ' + hostname + ' Port: ' + port + ' Username: ' + username, 0, true);
                         reject(err);
                         return;
                     }
@@ -1018,8 +1018,9 @@ class MyApp extends Homey.App
             }
             if (source instanceof Error)
             {
-                const stack = source.stack.replace('/\\n/g', '\n');
-                return `${source.message}\n${stack}`;
+                var stack = source.stack.replace(/\\n/g, '\n');
+                stack = stack.replace(/\n/g, '\n         ');
+                return `${source.message}\n      ${stack}`;
             }
             if (typeof(source) === 'object')
             {
