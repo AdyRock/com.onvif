@@ -807,12 +807,19 @@ class CameraDevice extends Homey.Device
         }
     }
 
+    convertTZ(date, tzString)
+    {
+        return new Date((typeof date === 'string' ? new Date(date) : date).toLocaleString('en-US', {timeZone: tzString}));   
+    }
+
     convertDate(date, settings)
     {
         let strDate = '';
         if (date)
         {
-            let d = new Date(date);
+            const tz = this.homey.clock.getTimezone();
+
+            let d = this.convertTZ(date, tz);
 
             if (settings.timeFormat == 'mm_dd')
             {
