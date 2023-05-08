@@ -68,6 +68,14 @@ class CameraDevice extends Homey.Device
                 });
         }
 
+        if (typeof settings.utc_time === 'undefined')
+        {
+            await this.setSettings(
+                {
+                    'utc_time': false
+                });
+        }
+
         this.enabled = settings.enabled;
         this.password = settings.password;
         this.username = settings.username;
@@ -385,11 +393,11 @@ class CameraDevice extends Homey.Device
             reconnect = true;
         }
 
-        if (changedKeys.indexOf('timeFormat') >= 0)
+        if ((changedKeys.indexOf('timeFormat') >= 0) || (changedKeys.indexOf('offset_time') >= 0) || (changedKeys.indexOf('utc_time') >= 0))
         {
-            this.setCapabilityValue('event_time', this.convertDate(this.eventTime, newSettings)).catch(this.error);
-            this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, newSettings)).catch(this.error);
-            this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, newSettings)).catch(this.error);
+            this.setCapabilityValue('event_time', this.convertDate(this.eventTime, newSettings, false)).catch(this.error);
+            this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, newSettings, false)).catch(this.error);
+            this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, newSettings, true)).catch(this.error);
         }
 
         if (changedKeys.indexOf('channel') >= 0)
@@ -770,7 +778,7 @@ class CameraDevice extends Homey.Device
                 {
                     this.setAvailable().catch(this.error);
                     this.cameraTime = date;
-                    this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, this.getSettings())).catch(this.error);
+                    this.setCapabilityValue('date_time', this.convertDate(this.cameraTime, this.getSettings(), true)).catch(this.error);
 
                     if (!this.snapUri)
                     {
@@ -788,7 +796,7 @@ class CameraDevice extends Homey.Device
                     this.setCapabilityValue('alarm_tamper', true).catch(this.error);
                     this.alarmTime = new Date(Date.now());
                     this.setStoreValue('alarmTime', this.alarmTime);
-                    this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, this.getSettings())).catch(this.error);
+                    this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, this.getSettings(), false)).catch(this.error);
                 }
 
                 if (errStr.indexOf('EHOSTUNREACH') >= 0)
@@ -812,14 +820,19 @@ class CameraDevice extends Homey.Device
         return new Date((typeof date === 'string' ? new Date(date) : date).toLocaleString('en-US', {timeZone: tzString}));   
     }
 
-    convertDate(date, settings)
+    convertDate(date, settings, cameraTime)
     {
         let strDate = '';
         if (date)
         {
             const tz = this.homey.clock.getTimezone();
 
-            let d = this.convertTZ(date, tz);
+            let d = (!cameraTime || settings.utc_time) ? this.convertTZ(date, tz) : new Date(date);
+
+            if (cameraTime && settings.offset_time !== 0)
+            {
+                d.setHours( d.getHours() + settings.offset_time);
+            }
 
             if (settings.timeFormat == 'mm_dd')
             {
@@ -938,7 +951,7 @@ class CameraDevice extends Homey.Device
 
             this.eventTime = new Date(Date.now());
             this.setStoreValue('eventTime', this.eventTime);
-            this.setCapabilityValue('event_time', this.convertDate(this.eventTime, settings)).catch(this.error);
+            this.setCapabilityValue('event_time', this.convertDate(this.eventTime, settings, false)).catch(this.error);
             if (this.snapshotSupported)
             {
                 if (delay > 0)
@@ -1063,7 +1076,7 @@ class CameraDevice extends Homey.Device
             {
                 this.alarmTime = new Date(Date.now());
                 this.setStoreValue('alarmTime', this.alarmTime).catch(this.err);
-                this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, this.getSettings())).catch(this.error);
+                this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, this.getSettings(), false)).catch(this.error);
             }
         }
         else

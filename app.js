@@ -759,7 +759,7 @@ class MyApp extends Homey.App
                 {
                     if (err)
                     {
-                        this.updateLog('Renew subscription err (' + Device.name + '): ' + err, 0);
+                        this.updateLog('Renew subscription err (' + Device.name + '): ' + this.varToString(err), 0);
                         console.log(err);
                         // Refresh was probably too late so subscribe again
                         pushEvent.unsubscribeRef = null;

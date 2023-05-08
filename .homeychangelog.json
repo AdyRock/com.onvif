@@ -379,5 +379,8 @@
   },
   "2.0.39": {
     "en": "Fix camera timezone / DST."
+  },
+  "2.0.39": {
+    "en": "Added options to enable / dissable time zone for camera times and add an offset to correct for DST."
   }
 }

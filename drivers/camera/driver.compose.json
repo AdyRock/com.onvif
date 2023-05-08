@@ -323,6 +323,40 @@
                             }
                         }
                     ]
+                },
+                {
+                    "id": "utc_time",
+                    "type": "checkbox",
+                    "label": {
+                        "en": "Adjust camera timezone",
+                        "de": "Passen Sie die Zeitzone der Kamera an",
+                        "nl": "Pas de tijdzone van de camera aan",
+                        "it": "Regola il fuso orario della fotocamera"
+                    },
+                    "value": false,
+                    "hint": {
+                        "en": "If the camera time is showing in UTC then turn this on to convert to your local time.",
+                        "de": "Wenn die Kamerazeit in UTC angezeigt wird, schalten Sie diese Option ein, um sie in Ihre Ortszeit umzuwandeln.",
+                        "nl": "Als de cameratijd in UTC wordt weergegeven, schakelt u dit in om naar uw lokale tijd te converteren.",
+                        "it": "Se l'ora della fotocamera viene visualizzata in UTC, attiva questa opzione per convertirla nell'ora locale."
+                    }
+                },
+                {
+                    "id": "offset_time",
+                    "type": "number",
+                    "label": {
+                        "en": "Adjust camera time by",
+                        "de": "Passen Sie die Kamerazeit um an",
+                        "nl": "Pas de cameratijd aan met",
+                        "it": "Regola l'ora della fotocamera di"
+                    },
+                    "value": 0,
+                    "hint": {
+                        "en": "Adjust the displayed time by the specified number of hours to correct it.",
+                        "de": "Korrigieren Sie die angezeigte Uhrzeit um die angegebene Stundenzahl.",
+                        "nl": "Pas de weergegeven tijd aan met het opgegeven aantal uren om dit te corrigeren.",
+                        "it": "Regolare l'ora visualizzata del numero di ore specificato per correggerla."
+                    }
                 }
             ]
         },
