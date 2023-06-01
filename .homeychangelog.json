@@ -382,5 +382,8 @@
   },
   "2.0.40": {
     "en": "Added options to enable / dissable time zone for camera times and add an offset to correct for DST."
+  },
+  "2.0.41": {
+    "en": "Trap for errors getting MAC address."
   }
 }

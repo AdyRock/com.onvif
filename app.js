@@ -402,8 +402,17 @@ class MyApp extends Homey.App
 
                     if (cam.href && cam.href.indexOf('onvif') >= 0)
                     {
-                        let mac = await this.homey.arp.getMAC(cam.hostname);
-
+                        let mac = null;
+                        try
+                        {
+                            mac = await this.homey.arp.getMAC(cam.hostname);
+                        }
+                        catch( err)
+                        {
+                            this.log('Failed to get mac address', err);
+                            mac = cam.urn;
+                        }
+    
                         this.discoveredDevices.push(
                             {
                                 'name': cam.hostname,

@@ -75,7 +75,15 @@ class CameraDriver extends Homey.Driver
                     this.homey.app.updateLog('list_devices2: Multiple Sources = ' + this.homey.app.varToString(tempCam.videoSources, null, 3), 1);
 
                     // There is more tha 1 video source so add a device for each
-                    const mac = await this.homey.arp.getMAC(this.lastHostName);
+                    let mac = null;
+                    try
+                    {
+                        mac = await this.homey.arp.getMAC(this.lastHostName);
+                    }
+                    catch (err)
+                    {
+                        this.log('Failed to get mac address', err);
+                    }
 
                     let devices = [];
                     for (let i = 0; i < tempCam.videoSources.length; i++)
@@ -151,7 +159,16 @@ class CameraDriver extends Homey.Driver
             this.lastPassword = data.password;
             this.lastHostName = data.ip;
             this.lastPort = data.port;
-            const mac = await this.homey.arp.getMAC(this.lastHostName);
+
+            let mac = null;
+            try
+            {
+                mac = await this.homey.arp.getMAC(this.lastHostName);
+            }
+            catch (err)
+            {
+                this.log('Failed to get mac address', err);
+            }
 
             if (!this.lastURN)
             {
@@ -289,7 +306,14 @@ class CameraDriver extends Homey.Driver
                         let mac = await discoveredDevice.settings.mac;
                         if (!mac)
                         {
-                            mac = await this.homey.arp.getMAC(discoveredDevice.settings.ip);
+                            try
+                            {
+                                mac = await this.homey.arp.getMAC(discoveredDevice.settings.ip);
+                            }
+                            catch (err)
+                            {
+                                this.log('Failed to get mac address', err);
+                            }
                         }
 
                         await device.setSettings(
