@@ -1040,7 +1040,7 @@ class CameraDevice extends Homey.Device
                 }
                 else
                 {
-                    this.homey.app.updateLog('Ignoring unchanged event (' + this.name + ') ' + dataName + ' = ' + dataValue, 1);
+                    this.homey.app.updateLog('Ignoring unchanged Motion event (' + this.name + ') ' + dataName + ' = ' + dataValue, 1);
                 }
             }
             else
@@ -1223,6 +1223,7 @@ class CameraDevice extends Homey.Device
         this.homey.clearTimeout(this.vistorTimeoutId);
         if (dataValue)
         {
+            this.homey.app.updateLog('Triggering event (' + this.name + ') Vistor Detected  = ' + dataValue, 1);
             this.driver.eventVistorTrigger
                 .trigger(this)
                 .catch(this.error)

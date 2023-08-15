@@ -920,17 +920,18 @@ class MyApp extends Homey.App
                     // No devices left so unregister the event
                     this.homey.clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
                     this.updateLog('Unsubscribe push event (' + Device.cam.hostname + '): ' + pushEvent.unsubscribeRef, 1);
+                    const hostPath = Device.cam.hostname;
                     Device.cam.UnsubscribePushEventSubscription(pushEvent.unsubscribeRef, (err, info, xml) =>
                     {
                         if (err)
                         {
-                            this.updateLog('Push unsubscribe error (' + Device.cam.hostname + '): ' + this.varToString(err.message), 0);
+                            this.updateLog('Push unsubscribe error (' + hostPath + '): ' + this.varToString(err.message), 0);
                             reject(err);
                             return;
                         }
                         else
                         {
-                            this.updateLog('Push unsubscribe response (' + Device.cam.hostname + '): ' + this.varToString(info), 2);
+                            this.updateLog('Push unsubscribe response (' + hostPath + '): ' + this.varToString(info), 2);
                         }
                         resolve(null);
                         return;

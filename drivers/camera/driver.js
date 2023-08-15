@@ -180,14 +180,22 @@ class CameraDriver extends Homey.Driver
             }
 
             this.homey.app.updateLog('Login-----');
-
-            let cam = await this.homey.app.connectCamera(
-                this.lastHostName,
-                this.lastPort,
-                this.lastUsername,
-                this.lastPassword
-            );
-
+            let cam = null;
+            try
+            {
+                cam = await this.homey.app.connectCamera(
+                    this.lastHostName,
+                    this.lastPort,
+                    this.lastUsername,
+                    this.lastPassword
+                );
+            }
+            catch (err)
+            {
+                this.homey.app.updateLog(`Failed to connect to camera, errpr: ${err.message}`, 0);
+                throw new Error(`Discovery error: ${err.message}`, { cause: err });
+            }
+        
             this.homey.app.updateLog('Credentials OK. Adding ' + this.homey.app.varToString(cam.videoSources), 1);
 
             if (Array.isArray(cam.videoSources) && (cam.videoSources.length > 1))
@@ -229,7 +237,7 @@ class CameraDriver extends Homey.Driver
                 }
                 else
                 {
-                    throw new Error('Discovery (' + cam.hostname + '): Invalid service URI', null);
+                    throw new Error('Discovery (' + cam.hostname + '): Invalid service URI');
                 }
             }
         });

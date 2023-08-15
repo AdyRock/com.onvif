@@ -385,5 +385,8 @@
   },
   "2.0.41": {
     "en": "Trap for errors getting MAC address."
+  },
+  "2.0.42": {
+    "en": "Add more diagnostics for camera discover."
   }
 }
