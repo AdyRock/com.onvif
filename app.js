@@ -14,9 +14,10 @@ let Cam = require('./lib/onvif').Cam;
 const parseSOAPString = require('./lib/onvif/lib/utils').parseSOAPString;
 const linerase = require('./lib/onvif/lib/utils').linerase;
 const path = require('path');
-const nodemailer = require('nodemailer');
+const nodemailer = require('./lib/nodemailer');
 
 const http = require('http');
+const { promisify } = require('util');
 
 // eslint-disable-next-line no-undef
 process.on('unhandledRejection', (reason, p) =>
@@ -25,7 +26,7 @@ process.on('unhandledRejection', (reason, p) =>
     //    this.updateLog(`Unhandled Rejection at: Promise, ${this.varToString(p)}, reason: ${this.varToString(reason)}`, 0);
 });
 
-process.on('uncaughtException', function (err)
+process.on('uncaughtException', function(err)
 {
     console.log('Unhandled Rejection at: Promise', err);
 });
@@ -91,7 +92,7 @@ class MyApp extends Homey.App
             if (this.server)
             {
                 this.server.close();
-                this.updateLog('Server closed', 0);                
+                this.updateLog('Server closed', 0);
             }
             this.unregisterCameras();
         });
@@ -104,11 +105,11 @@ class MyApp extends Homey.App
                 {
                     this.homey.settings.set('diagLog', '');
                 }
-                this.updateLog(`memwarn! ${data.count} of ${data.limit}`, 0);                
+                this.updateLog(`memwarn! ${data.count} of ${data.limit}`, 0);
             }
             else
             {
-                this.updateLog('memwarn', 0);                
+                this.updateLog('memwarn', 0);
             }
         });
 
@@ -129,11 +130,11 @@ class MyApp extends Homey.App
                         }, 300000);
                     }
                 }
-                this.updateLog(`cpuwarn! ${data.count} of ${data.limit}`, 0);                
+                this.updateLog(`cpuwarn! ${data.count} of ${data.limit}`, 0);
             }
             else
             {
-                this.updateLog('cpuwarn', 0);                
+                this.updateLog('cpuwarn', 0);
             }
         });
     }
@@ -367,7 +368,7 @@ class MyApp extends Homey.App
         {
             if (e.code === 'EADDRINUSE')
             {
-                this.updateLog(`Server port ${this.pushServerPort} in use, retrying in 10 seconds`, 0);                
+                this.updateLog(`Server port ${this.pushServerPort} in use, retrying in 10 seconds`, 0);
                 setTimeout(() =>
                 {
                     this.server.close();
@@ -407,12 +408,12 @@ class MyApp extends Homey.App
                         {
                             mac = await this.homey.arp.getMAC(cam.hostname);
                         }
-                        catch( err)
+                        catch (err)
                         {
                             this.log('Failed to get mac address', err);
                             mac = cam.urn;
                         }
-    
+
                         this.discoveredDevices.push(
                             {
                                 'name': cam.hostname,
@@ -474,43 +475,73 @@ class MyApp extends Homey.App
 
     async connectCamera(hostname, port, username, password)
     {
-        return new Promise((resolve, reject) =>
-        {
-            this.updateLog('--------------------------');
-            this.updateLog('Connect to Camera ' + hostname + ':' + port + ' - ' + username);
+        this.updateLog('--------------------------');
+        this.updateLog('Connect to Camera ' + hostname + ':' + port + ' - ' + username);
 
-            let cam = new Cam(
-                {
-                    homeyApp: this.homey,
-                    hostname: hostname,
-                    username: username,
-                    password: password,
-                    port: parseInt(port),
-                    timeout: 15000,
-                }, (err) =>
-                {
-                    if (err)
-                    {
-                        this.updateLog('Connection Failed for ' + hostname + ' Port: ' + port + ' Username: ' + username, 0, true);
-                        reject(err);
-                        return;
-                    }
-                    else
-                    {
-                        this.updateLog('CONNECTED to ' + hostname);
-                        resolve(cam);
-                        return;
-                    }
-                });
-        });
+        const camObj = new Cam(
+            {
+                homeyApp: this.homey,
+                hostname: hostname,
+                username: username,
+                password: password,
+                port: parseInt(port),
+                timeout: 15000,
+                autoconnect: false,
+            });
+
+        // Use Promisify that was added to Nodev8
+
+        const promiseGetSystemDateAndTime = promisify(camObj.getSystemDateAndTime).bind(camObj);
+        const promiseGetServices = promisify(camObj.getServices).bind(camObj);
+        const promiseGetCapabilities = promisify(camObj.getCapabilities).bind(camObj);
+        const promiseGetDeviceInformation = promisify(camObj.getDeviceInformation).bind(camObj);
+        const promiseGetProfiles = promisify(camObj.getProfiles).bind(camObj);
+        const promiseGetVideoSources = promisify(camObj.getVideoSources).bind(camObj);
+
+        // Use Promisify to convert ONVIF Library calls into Promises.
+        let gotDate = await promiseGetSystemDateAndTime();
+        let gotServices = null;
+        try
+        {
+            gotServices = await promiseGetServices();
+        }
+        catch (err)
+        {
+            this.updateLog('Error getting services: ' + err.message, 0);
+        }
+
+        let gotCapabilities = await promiseGetCapabilities();
+        let gotInfo = await promiseGetDeviceInformation();
+
+        let gotProfiles = [];
+        let gotActiveSources = [];
+        try
+        {
+            gotProfiles = await promiseGetProfiles();
+        }
+        catch (err)
+        {
+            this.updateLog('Error getting profiles: ' + err.message, 0);
+        }
+
+        try
+        {
+            let gotVideoSources = await promiseGetVideoSources();
+            gotActiveSources = camObj.getActiveSources();
+        }
+        catch (err)
+        {
+            this.updateLog('Error getting video sources: ' + err.message, 0);
+        }
+
+        return (camObj);
     }
 
     async checkCameras()
     {
-        do
-        {
+        do {
             await new Promise(resolve => this.homey.setTimeout(resolve, 10000));
-            
+
             const driver = this.homey.drivers.getDriver('camera');
             if (driver)
             {
@@ -530,7 +561,7 @@ class MyApp extends Homey.App
             }
         }
         // eslint-disable-next-line no-constant-condition
-        while(true);
+        while (true);
     }
 
     async unregisterCameras()
@@ -554,174 +585,78 @@ class MyApp extends Homey.App
         }
     }
 
-    async getHostName(cam_obj)
+    async getHostName(camObj)
     {
-        return new Promise((resolve, reject) =>
-        {
-            cam_obj.getHostname((err, date, xml) =>
-            {
-                if (err)
-                {
-                    reject(err);
-                }
-                else
-                {
-                    resolve(date);
-                }
-            });
-        });
+        const promiseGetHostname = promisify(camObj.getHostname).bind(camObj);
+        return promiseGetHostname();
     }
 
-    async getDateAndTime(cam_obj)
+    async getDateAndTime(camObj)
     {
-        return new Promise((resolve, reject) =>
-        {
-            cam_obj.getSystemDateAndTime((err, date, xml) =>
-            {
-                if (err)
-                {
-                    reject(err);
-                }
-                else
-                {
-                    resolve(date);
-                }
-            });
-        });
+        const promiseGetSystemDateAndTime = promisify(camObj.getSystemDateAndTime).bind(camObj);
+        return promiseGetSystemDateAndTime();
     }
 
-    async getDeviceInformation(cam_obj)
+    async getDeviceInformation(camObj)
     {
-        return new Promise((resolve, reject) =>
-        {
-            cam_obj.getDeviceInformation((err, info, xml) =>
-            {
-                if (err)
-                {
-                    reject(err);
-                }
-                else
-                {
-                    resolve(info);
-                }
-            });
-        });
+        const promiseGetDeviceInformation = promisify(camObj.getDeviceInformation).bind(camObj);
+        return promiseGetDeviceInformation();
     }
 
-    async getCapabilities(cam_obj)
+    async getCapabilities(camObj)
     {
-        return new Promise((resolve, reject) =>
-        {
-            cam_obj.getCapabilities((err, info, xml) =>
-            {
-                if (err)
-                {
-                    reject(err);
-                }
-                else
-                {
-                    resolve(info);
-                }
-            });
-        });
+        const promiseGetCapabilities = promisify(camObj.getCapabilities).bind(camObj);
+        return promiseGetCapabilities();
     }
 
-    async getServices(cam_obj)
+    async getServices(camObj)
     {
-        return new Promise((resolve, reject) =>
-        {
-            cam_obj.getServices(true, (err, info, xml) =>
-            {
-                if (err)
-                {
-                    reject(err);
-                }
-                else
-                {
-                    resolve(info);
-                }
-            });
-        });
+        const promiseGetServices = promisify(camObj.getServices).bind(camObj);
+        return promiseGetServices();
     }
 
-    async getServiceCapabilities(cam_obj)
+    async getServiceCapabilities(camObj)
     {
-        return new Promise((resolve, reject) =>
-        {
-            cam_obj.getServiceCapabilities((err, capabilities, xml) =>
-            {
-                if (err)
-                {
-                    reject(err);
-                }
-                else
-                {
-                    resolve(capabilities);
-                }
-            });
-        });
+        const promiseGetServiceCapabilities = promisify(camObj.getServiceCapabilities).bind(camObj);
+        return promiseGetServiceCapabilities();
     }
 
-    async getSnapshotURL(cam_obj)
+    async getSnapshotURL(camObj)
     {
-        return new Promise((resolve, reject) =>
-        {
-            cam_obj.getSnapshotUri((err, info, xml) =>
-            {
-                if (err)
-                {
-                    reject(err);
-                }
-                else
-                {
-                    resolve(info);
-                }
-            });
-        });
+        const promiseGetSnapshotUri = promisify(camObj.getSnapshotUri).bind(camObj);
+        return promiseGetSnapshotUri();
     }
 
-    async hasEventTopics(cam_obj)
+    async hasEventTopics(camObj)
     {
-        return new Promise((resolve, reject) =>
+        const promiseGetSnapshotUri = promisify(camObj.getEventProperties).bind(camObj);
+        const data = await promiseGetSnapshotUri();
+        let supportedEvents = [];
+        // Display the available Topics
+        let parseNode = (node, topicPath, nodeName) =>
         {
-            let supportedEvents = [];
-            cam_obj.getEventProperties((err, data, xml) =>
+            // loop over all the child nodes in this node
+            for (const child in node)
             {
-                if (err)
+                if (child == '$')
                 {
-                    reject(err);
+                    continue;
+                }
+                else if (child == 'messageDescription')
+                {
+                    // we have found the details that go with an event
+                    supportedEvents.push(nodeName.toUpperCase());
                     return;
                 }
                 else
                 {
-                    // Display the available Topics
-                    let parseNode = (node, topicPath, nodeName) =>
-                    {
-                        // loop over all the child nodes in this node
-                        for (const child in node)
-                        {
-                            if (child == '$')
-                            {
-                                continue;
-                            }
-                            else if (child == 'messageDescription')
-                            {
-                                // we have found the details that go with an event
-                                supportedEvents.push(nodeName.toUpperCase());
-                                return;
-                            }
-                            else
-                            {
-                                // descend into the child node, looking for the messageDescription
-                                parseNode(node[child], topicPath + '/' + child, child);
-                            }
-                        }
-                    };
-                    parseNode(data.topicSet, '', '');
+                    // descend into the child node, looking for the messageDescription
+                    parseNode(node[child], topicPath + '/' + child, child);
                 }
-                resolve(supportedEvents);
-            });
-        });
+            }
+        };
+        parseNode(data.topicSet, '', '');
+        return (supportedEvents);
     }
 
     async subscribeToCamPushEvents(Device)
@@ -831,7 +766,7 @@ class MyApp extends Homey.App
                     else
                     {
 
-                        this.updateLog('Subscribe response (' + Device.name + '): ' + Device.cam.hostname  + ' - Info: ' + this.varToString(info));
+                        this.updateLog('Subscribe response (' + Device.name + '): ' + Device.cam.hostname + ' - Info: ' + this.varToString(info));
                         unsubscribeRef = info[0].subscribeResponse[0].subscriptionReference[0].address[0];
 
                         let startTime = info[0].subscribeResponse[0].currentTime[0];
@@ -912,7 +847,7 @@ class MyApp extends Homey.App
             if (pushEvent)
             {
                 // Remove this device reference
-                this.updateLog('App.unsubscribe: Unregister entry for ' + Device.cam.hostname );
+                this.updateLog('App.unsubscribe: Unregister entry for ' + Device.cam.hostname);
                 pushEvent.devices.splice(deviceIdx, 1);
 
                 if ((pushEvent.devices.length == 0) && pushEvent.unsubscribeRef)

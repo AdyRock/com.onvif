@@ -471,7 +471,7 @@ class CameraDevice extends Homey.Device
             // re-connect to camera after exiting this callback
             setImmediate(() =>
             {
-                this.connectCamera(false).catch(this.error);
+                this.connectCamera(false).catch(this.error).catch(this.error);
                 return;
             });
         }
