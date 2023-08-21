@@ -7,7 +7,8 @@
         "diagnosticsLog": "Diagnostics Log",
         "logLevel": "Log Level",
         "ClearLog": "Clear Log",
-        "SendLog": "Send Log"
+        "SendLog": "Send Log",
+        "email": "Email Address or Forum id (Required if you want me to respond)"
     },
     "Push_Pull_Supported": "Push and Pull supported: ",
     "Using_Pull": "Using Pull",

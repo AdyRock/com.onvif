@@ -388,5 +388,8 @@
   },
   "2.0.42": {
     "en": "Add more diagnostics for camera discover."
+  },
+  "2.0.43": {
+    "en": "Promisify ONVIF lib to try and catch more errors."
   }
 }

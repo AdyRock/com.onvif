@@ -6,7 +6,7 @@
 }
 
 /* Style the buttons that are used to open the tab content */
-.tab button {
+.tablinks button {
   background-color: inherit;
   float: left;
   border: none;
@@ -17,12 +17,12 @@
 }
 
 /* Change background color of buttons on hover */
-.tab button:hover {
+.tablinks button:hover {
   background-color: #ddd;
 }
 
 /* Create an active/current tablink class */
-.tab button.active {
+.active {
   background-color: #ccc;
 }
 

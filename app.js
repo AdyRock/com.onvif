@@ -1066,7 +1066,7 @@ class MyApp extends Homey.App
         this.homey.settings.set('diagLog', oldText);
     }
 
-    async sendLog()
+    async sendLog({email = ''})
     {
         let tries = 5;
 
@@ -1100,7 +1100,7 @@ class MyApp extends Homey.App
                         from: '"Homey User" <' + Homey.env.MAIL_USER + '>', // sender address
                         to: Homey.env.MAIL_RECIPIENT, // list of receivers
                         subject: 'ONVIF log (' + this.homeyHash + ' : ' + this.homey.manifest.version + ')', // Subject line
-                        text: this.homey.settings.get('diagLog') // plain text body
+                        text: email + '\n' + this.homey.settings.get('diagLog') // plain text body
                     });
 
                 this.updateLog('Message sent: ' + info.messageId);

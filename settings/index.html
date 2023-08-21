@@ -44,11 +44,11 @@
         <fieldset>
             <h1 data-i18n="settings.title"></h1>
             <div class="field row">
-                <label for="port" data-i18n="settings.port"></label>
-                <input id="port" type="text" value="" />
+                <label class="homey-form-label" for="port" data-i18n="settings.port"></label>
+                <input class="homey-form-input" id="port" type="text" value="" />
             </div>
             <div class="field row">
-                <button id="saveButton" class="left" style="display:block;background-color:#0f9e16;color:white;margin:15px 20px 5px 5px;" data-i18n="settings.save"></button>
+                <button class="homey-button-secondary-shadow" id="saveButton" class="left" style="display:block;background-color:#0f9e16;color:white;margin:15px 20px 5px 5px;" data-i18n="settings.save"></button>
             </div>
         </fieldset>
     </div>
@@ -56,16 +56,20 @@
     <!-- LOG PAGE -->
     <div id="log" class="tabcontent">
         <div class="field row">
-            <label for="logLevel"><span data-i18n="settings.logLevel"></span></label>
-            <select id="logLevel">
+            <label class="homey-form-label" for="logLevel"><span data-i18n="settings.logLevel"></span></label>
+            <select  class="homey-form-select"id="logLevel">
                 <option value=0>Errors Only</option>
                 <option value=1>Basic Information</option>
                 <option value=2>Detailed Information</option>
                 <option value=3>Full Information</option>
             </select>
+        </div>
+        <div class="field row">
+            <label class="homey-form-label"  for="email"><span data-i18n="settings.email"></span></label>
+            <input class="homey-form-input" id="email" type="text" value="" />
             <P></P>
         </div>
-        <p><button id="clearLog"><span data-i18n="settings.ClearLog"></span></button> <button id="sendLog"><span data-i18n="settings.SendLog"></span></button></p>
+        <p><button class="homey-button-secondary-shadow" id="clearLog"><span data-i18n="settings.ClearLog"></span></button> <button class="homey-button-secondary-shadow" id="sendLog"><span data-i18n="settings.SendLog"></span></button></p>
         <div class="field row">
             <textarea id="diagLog"></textarea>
         </div>
@@ -83,6 +87,7 @@
         var logLevelElement = document.getElementById('logLevel');
         var clearLogElement = document.getElementById('clearLog');
         var sendLogElement = document.getElementById('sendLog');
+        var emailElement = document.getElementById('email');
 
         // a method named 'onHomeyReady' must be present in your code
         function onHomeyReady(Homey)
@@ -157,7 +162,8 @@
                         waitCursor(true);
                         Homey.api('POST', '/SendLog/',
                         {
-                            notify: true
+                            notify: true,
+                            email: emailElement.value,
                         }, function(err, result)
                         {
                             if (err)
@@ -190,12 +196,12 @@
             tablinks = document.getElementsByClassName("tablinks");
             for (i = 0; i < tablinks.length; i++)
             {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
+                tablinks[i].style.backgroundColor = '';
             }
 
             // Show the current tab, and add an "active" class to the button that opened the tab
             document.getElementById(tabPage).style.display = "block";
-            evt.currentTarget.className += " active";
+            evt.currentTarget.style.backgroundColor = ('#ccc');
 
             if (tabPage == 'log')
             {
