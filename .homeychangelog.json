@@ -391,5 +391,8 @@
   },
   "2.0.43": {
     "en": "Promisify ONVIF lib to try and catch more errors."
+  },
+  "2.0.44": {
+    "en": "Switched back to using camera URN, when availabled, to identify cameras, as it seems some Homey gets the MAC wrong in some networks."
   }
 }

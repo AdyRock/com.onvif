@@ -49,21 +49,21 @@ class CameraDriver extends Homey.Driver
                     {
                         'name': 'Add Manually',
                         data:
-                    {
-                        'id': 'manual'
-                    },
+                        {
+                            'id': 'manual'
+                        },
                         settings:
-                    {
-                        // Store username & password in settings
-                        // so the user can change them later
-                        'username': '',
-                        'password': '',
-                        'ip': '',
-                        'port': '',
-                        'urn': '',
-                        'mac': '',
-                        'channel': -1
-                    }
+                        {
+                            // Store username & password in settings
+                            // so the user can change them later
+                            'username': '',
+                            'password': '',
+                            'ip': '',
+                            'port': '',
+                            'urn': '',
+                            'mac': '',
+                            'channel': -1
+                        }
                     });
 
                 return devices;
@@ -114,7 +114,7 @@ class CameraDriver extends Homey.Driver
                                 'ip': this.lastHostName,
                                 'port': this.lastPort,
                                 'urn': this.lastURN,
-                                'mac': mac,
+                                'mac': mac ? mac : 'Unknown',
                                 'channel': devices.length + 1,
                                 'token': token
                             }
@@ -215,21 +215,21 @@ class CameraDriver extends Homey.Driver
                         {
                             'name': cam.hostname,
                             data:
-                        {
-                            'id': mac ? mac : this.lastURN
-                        },
+                            {
+                                'id':this.lastURN
+                            },
                             settings:
-                        {
-                            // Store username & password in settings
-                            // so the user can change them later
-                            'username': this.lastUsername,
-                            'password': this.lastPassword,
-                            'ip': cam.hostname,
-                            'port': cam.port ? cam.port.toString() : '',
-                            'urn': this.lastURN,
-                            'mac': mac ? mac : 'Unknown',
-                            'channel': -1
-                        }
+                            {
+                                // Store username & password in settings
+                                // so the user can change them later
+                                'username': this.lastUsername,
+                                'password': this.lastPassword,
+                                'ip': cam.hostname,
+                                'port': cam.port ? cam.port.toString() : '',
+                                'urn': this.lastURN,
+                                'mac': mac ? mac : 'Unknown',
+                                'channel': -1
+                            }
                         });
                     this.homey.app.updateLog('Adding ' + this.homey.app.varToString(device), 1);
 

@@ -418,20 +418,20 @@ class MyApp extends Homey.App
                             {
                                 'name': cam.hostname,
                                 data:
-                            {
-                                'id': mac
-                            },
+                                {
+                                    'id': cam.urn ? cam.urn : mac
+                                },
                                 settings:
-                            {
-                                // Store username & password in settings
-                                // so the user can change them later
-                                'username': '',
-                                'password': '',
-                                'ip': cam.hostname,
-                                'port': cam.port ? cam.port.toString() : '',
-                                'urn': cam.urn ? cam.urn : mac,
-                                'channel': -1,
-                            }
+                                {
+                                    // Store username & password in settings
+                                    // so the user can change them later
+                                    'username': '',
+                                    'password': '',
+                                    'ip': cam.hostname,
+                                    'port': cam.port ? cam.port.toString() : '',
+                                    'urn': cam.urn ? cam.urn : mac,
+                                    'channel': -1,
+                                }
                             });
                     }
                     else
@@ -489,7 +489,7 @@ class MyApp extends Homey.App
                 autoconnect: false,
             });
 
-        // Use Promisify that was added to Nodev8
+        // Use Promisify that was added to Node v8
 
         const promiseGetSystemDateAndTime = promisify(camObj.getSystemDateAndTime).bind(camObj);
         const promiseGetServices = promisify(camObj.getServices).bind(camObj);
@@ -499,7 +499,10 @@ class MyApp extends Homey.App
         const promiseGetVideoSources = promisify(camObj.getVideoSources).bind(camObj);
 
         // Use Promisify to convert ONVIF Library calls into Promises.
-        let gotDate = await promiseGetSystemDateAndTime();
+        // Date & Time must work before anything else
+        await promiseGetSystemDateAndTime();
+
+        // Services can live without
         let gotServices = null;
         try
         {
@@ -510,9 +513,13 @@ class MyApp extends Homey.App
             this.updateLog('Error getting services: ' + err.message, 0);
         }
 
+        // Must have capabilities
         let gotCapabilities = await promiseGetCapabilities();
+
+        // Must have device information
         let gotInfo = await promiseGetDeviceInformation();
 
+        // Profiles are optional
         let gotProfiles = [];
         let gotActiveSources = [];
         try
@@ -524,9 +531,10 @@ class MyApp extends Homey.App
             this.updateLog('Error getting profiles: ' + err.message, 0);
         }
 
+        // Video sources are optional
         try
         {
-            let gotVideoSources = await promiseGetVideoSources();
+            await promiseGetVideoSources();
             gotActiveSources = camObj.getActiveSources();
         }
         catch (err)
