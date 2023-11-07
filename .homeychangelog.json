@@ -394,5 +394,8 @@
   },
   "2.0.44": {
     "en": "Switched back to using camera URN, when availabled, to identify cameras, as it seems some Homey gets the MAC wrong in some networks."
+  },
+  "2.0.45": {
+    "en": "Add storage failed alarm capability on the fly when required."
   }
 }

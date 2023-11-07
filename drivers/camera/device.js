@@ -1493,6 +1493,10 @@ class CameraDevice extends Homey.Device
                     else if (compareSetting === 'Device/HardwareFailure/StorageFailure:Failed')
                     {
                         // Processor usage = 'Value', 'dataValue = %usage
+                        if (!this.hasCapability('alarm_storage'))
+                        {
+                            await this.addCapability('alarm_storage');
+                        }
                         this.setCapabilityValue('alarm_storage', dataValue).catch(this.error);
                     }
                     else if (compareSetting === 'AudioAnalytics/Audio/DetectedSound:IsSoundDetected')
