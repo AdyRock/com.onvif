@@ -741,9 +741,9 @@ class CameraDevice extends Homey.Device
 
     async checkCamera()
     {
-        if (this.checkTimerId)
+        if (!this.enabled || this.checkTimerId)
         {
-            // Camera connect timer is running so allow that to happen
+            // Camera disbaled or connect timer is running so allow that to happen
             return;
         }
 
@@ -1615,6 +1615,8 @@ class CameraDevice extends Homey.Device
 
         try
         {
+            this.setWarning(null);
+
             const devData = this.getData();
 
             this.invalidAfterConnect = false;
@@ -1909,6 +1911,10 @@ class CameraDevice extends Homey.Device
         if (!res.ok)
         {
             this.setWarning(res.statusText);
+        }
+        else
+        {
+            this.setWarning(null);
         }
 
         return res;

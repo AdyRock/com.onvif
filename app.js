@@ -85,7 +85,10 @@ class MyApp extends Homey.App
             console.log('runsListener: ', err);
         }
 
-        this.checkCameras();
+        setImmediate(() => 
+        {
+            this.checkCameras();
+        });
 
         this.homey.on('unload', () =>
         {
@@ -839,14 +842,14 @@ class MyApp extends Homey.App
                 if (deviceIdx < 0)
                 {
                     // Not registered so do nothing
-                    this.updateLog('App.unsubscribe: No Push entry for device: ' + Device.cam.hostname, 0);
+                    this.updateLog('App.unsubscribe: No Push entry for device: ' + Device.cam.hostname);
                     resolve(null);
                     return;
                 }
             }
             else
             {
-                this.updateLog('App.unsubscribe: No Push entry for host: ' + Device.cam.hostname, 0);
+                this.updateLog('App.unsubscribe: No Push entry for host: ' + Device.cam.hostname);
                 Device.cam.removeAllListeners('event');
                 resolve(null);
                 return;
