@@ -741,7 +741,7 @@ class CameraDevice extends Homey.Device
 
     async checkCamera()
     {
-        if (!this.enabled || this.checkTimerId)
+        if (this.checkTimerId)
         {
             // Camera disbaled or connect timer is running so allow that to happen
             return;

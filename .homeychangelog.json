@@ -397,5 +397,8 @@
   },
   "2.0.45": {
     "en": "Add storage failed alarm capability on the fly when required."
+  },
+  "2.0.46": {
+    "en": "Clean up cam error handling."
   }
 }
