@@ -1910,11 +1910,11 @@ class CameraDevice extends Homey.Device
 
         if (!res.ok)
         {
-            this.setWarning(res.statusText);
+            this.setWarning(res.statusText).catch(this.error);
         }
         else
         {
-            this.setWarning(null);
+            this.setWarning(null).catch(this.error);
         }
 
         return res;

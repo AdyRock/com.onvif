@@ -400,5 +400,8 @@
   },
   "2.0.46": {
     "en": "Clean up cam error handling."
+  },
+  "2.0.47": {
+    "en": "More cam error handling."
   }
 }
