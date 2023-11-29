@@ -402,6 +402,6 @@
     "en": "Clean up cam error handling."
   },
   "2.0.47": {
-    "en": "More cam error handling."
+    "en": "More cam error handling. Added app motion Flow trigger that is fired by any enabled device and has tags for the camera name and event type."
   }
 }

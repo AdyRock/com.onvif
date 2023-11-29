@@ -1001,6 +1001,7 @@ class CameraDevice extends Homey.Device
             this.lastState = dataValue;
 
             this.homey.app.updateLog('Event Trigger (' + this.name + '):' + dataName + ' = ' + dataValue, 1);
+            this.homey.app.triggerMotion({ 'motion_type': dataName, 'device_name': this.name }).catch(this.err);
 
             if (dataValue)
             {

@@ -205,6 +205,8 @@ class MyApp extends Homey.App
             return args.device.updateMotionImage(0);
         });
 
+        this.motionTrigger = this.homey.flow.getTriggerCard('global_motion_detected');
+
     }
 
     hashCode(s)
@@ -1128,6 +1130,11 @@ class MyApp extends Homey.App
         }
         this.updateLog('Send log FAILED', 0);
         throw (new Error('Send log FAILED'));
+    }
+
+    async triggerMotion(tokens)
+    {
+        this.motionTrigger.trigger(tokens).catch(this.err);
     }
 }
 
