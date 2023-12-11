@@ -122,10 +122,14 @@ class MyApp extends Homey.App
             {
                 if (data.count > data.limit - 5)
                 {
+                    this.updateLog('Closing server', 0);
                     if (this.server && this.server.listening)
                     {
-                        this.server.close();
-                        console.log('Server closed');
+                        this.server.close((err) => 
+                        {
+                            this.updateLog(`Server closed: ${err}`, 0);
+                        });
+                        this.server.closeAllConnections();
                         setTimeout(() =>
                         {
                             this.server.close();
@@ -552,7 +556,8 @@ class MyApp extends Homey.App
 
     async checkCameras()
     {
-        do {
+        do
+        {
             await new Promise(resolve => this.homey.setTimeout(resolve, 10000));
 
             const driver = this.homey.drivers.getDriver('camera');
@@ -1014,9 +1019,9 @@ class MyApp extends Homey.App
         return source.toString();
     }
 
-    updateLog(newMessage, ignoreSetting = 2, insertBlankLine = false)
+    updateLog(newMessage, logLevel = 2, insertBlankLine = false)
     {
-        if (ignoreSetting > this.logLevel)
+        if (logLevel > this.logLevel)
         {
             return;
         }

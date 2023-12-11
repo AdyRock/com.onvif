@@ -76,7 +76,7 @@ class CameraDevice extends Homey.Device
                 });
         }
 
-        this.enabled = settings.enabled;
+        this.cameraEnabled = settings.enabled;
         this.password = settings.password;
         this.username = settings.username;
         this.ip = settings.ip;
@@ -361,7 +361,7 @@ class CameraDevice extends Homey.Device
 
         if (changedKeys.indexOf('enabled') >= 0)
         {
-            this.enabled = newSettings.enabled;
+            this.cameraEnabled = newSettings.enabled;
             reconnect = true;
         }
 
@@ -479,7 +479,7 @@ class CameraDevice extends Homey.Device
 
     async connectCamera()
     {
-        if (!this.enabled)
+        if (!this.cameraEnabled)
         {
             if (this.cam)
             {
@@ -749,10 +749,10 @@ class CameraDevice extends Homey.Device
 
         if (!this.cam)
         {
-            return this.connectCamera(false).catch(this.error);
+            return this.connectCamera(false);
         }
 
-        if (this.enabled && !this.repairing && this.isReady && (parseInt(this.homey.settings.get('logLevel')) < 2))
+        if (this.cameraEnabled && !this.repairing && this.isReady && (parseInt(this.homey.settings.get('logLevel')) < 2))
         {
             try
             {
@@ -1006,9 +1006,13 @@ class CameraDevice extends Homey.Device
             if (dataValue)
             {
                 // Motion detected so set a timer to clear the motion in case we miss the off event
-                this.homey.clearTimeout(this.eventTimeoutId);
+                if (this.eventTimeoutId)
+                {
+                    this.homey.clearTimeout(this.eventTimeoutId);
+                }
                 this.eventTimeoutId = this.homey.setTimeout(() =>
                 {
+                    this.eventTimeoutId = null;
                     this.setCapabilityValue('alarm_motion', false).catch(this.error);
                     console.log('Event off timeout', this.name, this.channel);
                 }, 180000);
@@ -1061,6 +1065,18 @@ class CameraDevice extends Homey.Device
                 }
                 this.homey.clearTimeout(this.eventTimeoutId);
                 this.eventTimeoutId = null;
+            }
+        }
+        else
+        {
+            // Unsubscribe from events
+            try
+            {
+                await this.homey.app.unsubscribe(this);
+            }
+            catch (err)
+            {
+                this.homey.app.updateLog('unsubscribe error (' + this.name + '): ' + this.homey.app.varToString(err.mesage), 0);
             }
         }
     }
@@ -1549,7 +1565,7 @@ class CameraDevice extends Homey.Device
 
     async onCapabilityMotionEnable(value, opts)
     {
-        if (this.enabled)
+        if (this.cameraEnabled)
         {
             try
             {
@@ -1581,7 +1597,7 @@ class CameraDevice extends Homey.Device
                     {
                         this.homey.app.updateLog('Switch motion detection Off (' + this.name + ')');
 
-                        // Switch off the current even mode
+                        // Switch off the current event mode
                         await this.homey.app.unsubscribe(this);
 
                     }
