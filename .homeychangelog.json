@@ -403,5 +403,8 @@
   },
   "2.0.47": {
     "en": "More cam error handling. Added app motion Flow trigger that is fired by any enabled device and has tags for the camera name and event type."
+  },
+  "2.0.48": {
+    "en": "Allow for response.CurrentTime as well as response.currentTime in pull renewal."
   }
 }
