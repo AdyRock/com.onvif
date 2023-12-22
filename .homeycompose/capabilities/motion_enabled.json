@@ -1,10 +1,10 @@
 {
     "type": "boolean",
     "title": {
-        "en": "Motion detection",
-        "de": "Bewegung erkannt",
-        "nl": "Beweging gedetecteerd",
-        "it": "Rilevamento Movimento"
+        "en": "Motion enable",
+        "de": "BBewegungsfreigabe",
+        "nl": "Beweging inschakelen",
+        "it": "Abilitazione al movimento"
     },
     "getable": true,
     "setable": true,
