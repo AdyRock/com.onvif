@@ -30,7 +30,8 @@
             "checking": "Checking connection",
             "try_again": "Try again",
             "correct": "Successful",
-            "adding": "Adding device(s)"
+            "adding": "Adding device(s)",
+			"add_port": "Add Port to device ID (use for NVR that maps cameras via port numbers)"
         }
     }
 }

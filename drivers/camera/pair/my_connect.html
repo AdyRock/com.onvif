@@ -3,22 +3,24 @@
 
 <form id="form" name="form" onsubmit="return getForm()" action="javascript:void(0);" method="post" style="text-align:left;">
     <div class="form-group">
-        <label for="username" data-i18n="pair.manual_add.username"></label>
-        <input type="text" name="username" id="username" />
+        <label class="homey-form-label" for="username" data-i18n="pair.manual_add.username"></label>
+        <input class="homey-form-input" type="text" name="username" id="username" />
+        <label class="homey-form-label" for="password" data-i18n="pair.manual_add.password"></label>
+        <input class="homey-form-input" type="password" name="password" id="password" />
+        <label class="homey-form-label" for="ip_address" data-i18n="pair.manual_add.ip_address"></label>
+        <input class="homey-form-input" type="text" name="ip_address" id="ip_address" />
+        <label class="homey-form-label" for="port" data-i18n="pair.manual_add.port"></label>
+        <input class="homey-form-input" type="text" name="port" id="port" />
+		<label class="homey-form-checkbox">
+			<input class="homey-form-checkbox-input" id="addPortToID" type="checkbox" value="addPort" />
+			<span class="homey-form-checkbox-checkmark"></span>
+			<span class="homey-form-checkbox-text"><span data-i18n="pair.manual_add.add_port"></span></span>
+		</label>
+
+		<input class="homey-form-input" type="submit" id="submit" value="Login" style="margin: 15px; padding: 10px; text-align:center; color: white; background-color: DodgerBlue;border-radius: 10px" />
         </br>
-        <label for="password" data-i18n="pair.manual_add.password"></label>
-        <input type="password" name="password" id="password" style="margin-top: 3px;" />
         </br>
-        <label for="ip_address" data-i18n="pair.manual_add.ip_address"></label>
-        <input type="text" name="ip_address" id="ip_address" style="margin-top: 3px;" />
-        </br>
-        <label for="port" data-i18n="pair.manual_add.port"></label>
-        <input type="text" name="port" id="port" style="margin-top: 3px;" />
-        </br>
-        <input type="submit" id="submit" value="Login" style="margin: 15px; padding: 10px; text-align:center; color: white; background-color: DodgerBlue;border-radius: 10px" />
-        </br>
-        </br>
-        <input type="text" id="status" readonly />
+        <input class="homey-form-input" type="text" id="status" readonly />
     </div>
 </form>
 
@@ -66,7 +68,8 @@
                 username: document.forms["form"]["username"].value,
                 password: document.forms["form"]["password"].value,
                 ip: document.forms["form"]["ip_address"].value,
-                port: document.forms["form"]["port"].value
+                port: document.forms["form"]["port"].value,
+				addPortToID: document["form"]["addPortToID"].checked
             },
             function(err, result)
             {

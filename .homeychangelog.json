@@ -406,5 +406,8 @@
   },
   "2.0.48": {
     "en": "Allow for response.CurrentTime as well as response.currentTime in pull renewal."
+  },
+  "2.0.49": {
+	"en": "Added option to add port number to camera ID for NVRs that map cameras via port numbers."
   }
 }

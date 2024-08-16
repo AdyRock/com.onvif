@@ -18,18 +18,6 @@ const nodemailer = require('./lib/nodemailer');
 
 const http = require('http');
 const { promisify } = require('util');
-
-// eslint-disable-next-line no-undef
-process.on('unhandledRejection', (reason, p) =>
-{
-    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
-    //    this.updateLog(`Unhandled Rejection at: Promise, ${this.varToString(p)}, reason: ${this.varToString(reason)}`, 0);
-});
-
-process.on('uncaughtException', function(err)
-{
-    console.log('Unhandled Rejection at: Promise', err);
-});
 class MyApp extends Homey.App
 {
 

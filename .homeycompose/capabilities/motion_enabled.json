@@ -1,10 +1,10 @@
 {
     "type": "boolean",
     "title": {
-        "en": "Motion enable",
-        "de": "BBewegungsfreigabe",
-        "nl": "Beweging inschakelen",
-        "it": "Abilitazione al movimento"
+        "en": "Enable Motion Detection",
+        "de": "Bewegungserkennung aktivieren",
+        "nl": "Bewegingsdetectie inschakelen",
+        "it": "Abilita rilevamento movimento"
     },
     "getable": true,
     "setable": true,
