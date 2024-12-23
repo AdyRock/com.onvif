@@ -73,7 +73,7 @@ class MyApp extends Homey.App
             console.log('runsListener: ', err);
         }
 
-        setImmediate(() => 
+        setImmediate(() =>
         {
             this.checkCameras();
         });
@@ -92,7 +92,7 @@ class MyApp extends Homey.App
         {
             if (data)
             {
-                if (data.count > data.limit - 5)
+                if (data.count >= data.limit - 2)
                 {
                     this.homey.settings.set('diagLog', '');
                 }
@@ -108,12 +108,12 @@ class MyApp extends Homey.App
         {
             if (data)
             {
-                if (data.count > data.limit - 5)
+                if (data.count >= data.limit - 2)
                 {
                     this.updateLog('Closing server', 0);
                     if (this.server && this.server.listening)
                     {
-                        this.server.close((err) => 
+                        this.server.close((err) =>
                         {
                             this.updateLog(`Server closed: ${err}`, 0);
                         });
@@ -183,7 +183,7 @@ class MyApp extends Homey.App
                     'image': args.device.nowImage
                 };
 
-                args.device.snapshotReadyTrigger
+                args.device.driver.snapshotReadyTrigger
                     .trigger(args.device, tokens)
                     .catch(args.device.error)
                     .then(args.device.log('Now Snapshot ready (' + args.device.id + ')'));
@@ -926,7 +926,7 @@ class MyApp extends Homey.App
 
     stripNamespaces(topic)
     {
-        // example input :-   tns1:MediaControl/tnsavg:ConfigurationUpdateAudioEncCfg 
+        // example input :-   tns1:MediaControl/tnsavg:ConfigurationUpdateAudioEncCfg
         // Split on '/'
         // For each part, remove any namespace
         // Recombine parts that were split with '/'

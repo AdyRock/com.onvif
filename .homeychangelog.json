@@ -409,5 +409,8 @@
   },
   "2.0.49": {
 	"en": "Added option to add port number to camera ID for NVRs that map cameras via port numbers."
+  },
+  "2.0.50": {
+	"en": "Removed deprecated setting from the Flows 'Update Snapshot' action card."
   }
 }

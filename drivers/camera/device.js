@@ -33,7 +33,6 @@ class CameraDevice extends Homey.Device
         this.snapshotSupported = true;
         this.eventMinTimeId = null;
         this.checkTimerId = null;
-        this.eventSubscriptionRenewTimerId = null;
         this.eventTimerId = null;
 
         this.connectCamera.bind(this);
@@ -1569,7 +1568,6 @@ class CameraDevice extends Homey.Device
         {
             try
             {
-                this.homey.clearTimeout(this.eventSubscriptionRenewTimerId);
                 this.homey.clearTimeout(this.eventTimerId);
 
                 console.log('onCapabilityMotionEnable: ', value);
@@ -1990,8 +1988,6 @@ class CameraDevice extends Homey.Device
     {
         this.homey.clearTimeout(this.checkTimerId);
         this.checkTimerId = null;
-        this.homey.clearTimeout(this.eventSubscriptionRenewTimerId);
-        this.eventSubscriptionRenewTimerId = null;
         this.homey.clearTimeout(this.eventTimerId);
         this.eventTimerId = null;
     }
