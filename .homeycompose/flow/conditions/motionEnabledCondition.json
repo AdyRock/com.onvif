@@ -3,13 +3,15 @@
         "en": "Motion is enabled",
         "de": "Bewegung ist eingeschaltet",
         "nl": "Beweging is actief",
-        "it": "Movimento è abilitato"
+        "it": "Movimento è abilitato",
+        "fr": "La detection de mouvement est activée"
     },
     "titleFormatted": {
         "en": "Motion is !{{enabled|disabled}}",
         "de": "Bewegung ist !{{eingeschaltet|abgeschaltet}}",
         "nl": "Beweging is !{{actief|inactief}}",
-        "it": "Movimento è !{{abilitato|disabilitato}}"
+        "it": "Movimento è !{{abilitato|disabilitato}}",
+        "fr": "La detection de mouvement est !{{activée|désativée}}"
     },
     "args": [
         {
