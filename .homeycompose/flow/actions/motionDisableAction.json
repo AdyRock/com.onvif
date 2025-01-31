@@ -4,14 +4,14 @@
         "de": "Bewegung abschalten",
         "nl": "Beweging inactief",
         "it": "Movimento Disabilitato",
-        "fr": "Désactiver la détéction de mouvement"
+        "fr": "Désactiver la détection de mouvement"
     },
     "titleFormatted": {
         "en": "Disable motion",
         "de": "Bewegung abschalten",
         "nl": "Beweging inactief",
         "it": "Movimento Disabilitato",
-        "fr": "Désactiver la détéction de mouvement"        
+        "fr": "Désactiver la détection de mouvement"        
     },
     "args": [
         {
