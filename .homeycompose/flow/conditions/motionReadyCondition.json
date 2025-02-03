@@ -5,7 +5,7 @@
         "nl": "Bewegings snapshot is klaar binnen ...",
         "it": "L'istantanea in movimento è pronta entro ...",
         "fr": "L'image du mouvement sera prête dans..."
-    },e
+    },
     "titleFormatted": {
         "en": "Motion snapshot is !{{ready|not ready}} within [[waitTime]] seconds",
         "de": "Der Bewegungsschnappschuss ist !{{innerhalb|nicht innerhalb}} von [[waitTime]] Sekunden fertig",
