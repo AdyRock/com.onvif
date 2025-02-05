@@ -12,10 +12,12 @@
     "en": "ONVIF Camera",
     "de": "ONVIF Kamera",
     "nl": "ONVIF Camera",
-    "it": "ONVIF Camera"
+    "it": "ONVIF Camera",
+    "fr": "Caméra ONVIF"
   },
   "description": {
-    "en": "Use an ONVIF compatible camera so Homey can improve your home security"
+    "en": "Use an ONVIF compatible camera so Homey can improve your home security",
+    "fr": "Utilisez une caméra compatible ONVIF pour améliorer la sécurité de votre maison avec Homey"
   },
   "category": [
     "video"
@@ -334,13 +336,15 @@
           "en": "Motion is enabled",
           "de": "Bewegung ist eingeschaltet",
           "nl": "Beweging is actief",
-          "it": "Movimento è abilitato"
+          "it": "Movimento è abilitato",
+          "fr": "La detection de mouvement est activée"
         },
         "titleFormatted": {
           "en": "Motion is !{{enabled|disabled}}",
           "de": "Bewegung ist !{{eingeschaltet|abgeschaltet}}",
           "nl": "Beweging is !{{actief|inactief}}",
-          "it": "Movimento è !{{abilitato|disabilitato}}"
+          "it": "Movimento è !{{abilitato|disabilitato}}",
+          "fr": "La detection de mouvement est !{{activée|désativée}}"
         },
         "args": [
           {
@@ -356,13 +360,15 @@
           "en": "Motion snapshot is ready within...",
           "de": "Bewegungsschnappschuss ist innerhalb von ...",
           "nl": "Bewegings snapshot is klaar binnen ...",
-          "it": "L'istantanea in movimento è pronta entro ..."
+          "it": "L'istantanea in movimento è pronta entro ...",
+          "fr": "L'image du mouvement sera prête dans..."
         },
         "titleFormatted": {
           "en": "Motion snapshot is !{{ready|not ready}} within [[waitTime]] seconds",
           "de": "Der Bewegungsschnappschuss ist !{{innerhalb|nicht innerhalb}} von [[waitTime]] Sekunden fertig",
           "nl": "Bewegingssnapshot is !{{binnen|niet binnen}} [[waitTime]] seconden !((klaar|gereed}}",
-          "it": "L'istantanea in movimento !{{è pronta|non è pronta}} entro [[waitTime]] secondi"
+          "it": "L'istantanea in movimento !{{è pronta|non è pronta}} entro [[waitTime]] secondi",
+          "fr": "L'image du mouvement sera !{{prête|pas prête}} dans [[waitTime]] secondes..."
         },
         "args": [
           {
@@ -387,17 +393,56 @@
     ],
     "actions": [
       {
+        "id": "goto_preset",
+        "title": {
+          "en": "Go to preset position",
+          "fr": "Aller à la position préréglée"
+        },
+        "titleFormatted": {
+          "en": "Go to preset [[preset]]",
+          "fr": "Aller à la position préréglée [[preset]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera",
+            "title": {
+              "en": "Camera",
+              "fr": "Caméra"
+            }
+          },
+          {
+            "name": "preset",
+            "type": "number",
+            "title": {
+              "en": "Preset number",
+              "fr": "Numéro de position"
+            },
+            "placeholder": {
+              "en": "Enter preset number",
+              "fr": "Entrer le numéro de position"
+            },
+            "min": 0,
+            "max": 255,
+            "step": 1
+          }
+        ]
+      },
+      {
         "title": {
           "en": "Disable motion",
           "de": "Bewegung abschalten",
           "nl": "Beweging inactief",
-          "it": "Movimento Disabilitato"
+          "it": "Movimento Disabilitato",
+          "fr": "Désactiver la détection de mouvement"
         },
         "titleFormatted": {
           "en": "Disable motion",
           "de": "Bewegung abschalten",
           "nl": "Beweging inactief",
-          "it": "Movimento Disabilitato"
+          "it": "Movimento Disabilitato",
+          "fr": "Désactiver la détection de mouvement"
         },
         "args": [
           {
@@ -413,13 +458,15 @@
           "en": "Enable motion",
           "de": "Bewegung einschalten",
           "nl": "Beweging actief",
-          "it": "Movimento Abilitato"
+          "it": "Movimento Abilitato",
+          "fr": "Activer la détection de mouvement"
         },
         "titleFormatted": {
           "en": "Enable motion",
           "de": "Bewegung einschalten",
           "nl": "Beweging actief",
-          "it": "Movimento Abilitato"
+          "it": "Movimento Abilitato",
+          "fr": "Activer la détection de mouvement"
         },
         "args": [
           {
@@ -435,13 +482,15 @@
           "en": "Update snapshot",
           "de": "Standbild jetzt erneuern",
           "nl": "Ververs snapshot",
-          "it": "Aggiorna Immagine Istantanea"
+          "it": "Aggiorna Immagine Istantanea",
+          "fr": "Mettre à jour l'image"
         },
         "titleFormatted": {
           "en": "Update snapshot",
           "de": "Standbild jetzt erneuern",
           "nl": "Ververs snapshot",
-          "it": "Aggiorna Immagine Istantanea"
+          "it": "Aggiorna Immagine Istantanea",
+          "fr": "Mettre à jour l'image"
         },
         "args": [
           {
@@ -457,13 +506,15 @@
           "en": "Update Motion snapshot",
           "de": "Motion-Snapshot aktualisieren",
           "nl": "Bewegingssnapshot bijwerken",
-          "it": "Aggiorna istantanea in movimento"
+          "it": "Aggiorna istantanea in movimento",
+          "fr": "Mettre à jour l'image de mouvement"
         },
         "titleFormatted": {
           "en": "Update Motion snapshot",
           "de": "Motion-Snapshot aktualisieren",
           "nl": "Bewegingssnapshot bijwerken",
-          "it": "Aggiorna istantanea in movimento"
+          "it": "Aggiorna istantanea in movimento",
+          "fr": "Mettre à jour l'image de mouvement"
         },
         "args": [
           {
@@ -1278,6 +1329,21 @@
       "setable": true,
       "uiComponent": "toggle",
       "icon": "/assets/motion.svg"
+    },
+    "ptz_preset": {
+      "type": "enum",
+      "title": {
+        "en": "PTZ Preset",
+        "fr": "Position préréglée PTZ"
+      },
+      "desc": {
+        "en": "Move camera to saved preset position",
+        "fr": "Déplacer la caméra vers une position préréglée"
+      },
+      "values": [],
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker"
     },
     "tamper_time": {
       "type": "string",

@@ -1,0 +1,15 @@
+{
+  "type": "enum",
+  "title": {
+    "en": "PTZ Preset",
+    "fr": "Position préréglée PTZ"
+  },
+  "desc": {
+    "en": "Move camera to saved preset position",
+    "fr": "Déplacer la caméra vers une position préréglée"
+  },
+  "values": [],
+  "getable": true,
+  "setable": true,
+  "uiComponent": "picker"
+} 

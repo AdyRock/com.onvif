@@ -3,13 +3,15 @@
         "en": "Enable motion",
         "de": "Bewegung einschalten",
         "nl": "Beweging actief",
-        "it": "Movimento Abilitato"
+        "it": "Movimento Abilitato",
+        "fr": "Activer la détection de mouvement"
     },
     "titleFormatted": {
         "en": "Enable motion",
         "de": "Bewegung einschalten",
         "nl": "Beweging actief",
-        "it": "Movimento Abilitato"
+        "it": "Movimento Abilitato",
+        "fr": "Activer la détection de mouvement"
     },
     "args": [
         {

@@ -3,13 +3,15 @@
         "en": "Motion snapshot is ready within...",
         "de": "Bewegungsschnappschuss ist innerhalb von ...",
         "nl": "Bewegings snapshot is klaar binnen ...",
-        "it": "L'istantanea in movimento è pronta entro ..."
+        "it": "L'istantanea in movimento è pronta entro ...",
+        "fr": "L'image du mouvement sera prête dans..."
     },
     "titleFormatted": {
         "en": "Motion snapshot is !{{ready|not ready}} within [[waitTime]] seconds",
         "de": "Der Bewegungsschnappschuss ist !{{innerhalb|nicht innerhalb}} von [[waitTime]] Sekunden fertig",
         "nl": "Bewegingssnapshot is !{{binnen|niet binnen}} [[waitTime]] seconden !((klaar|gereed}}",
-        "it": "L'istantanea in movimento !{{è pronta|non è pronta}} entro [[waitTime]] secondi"
+        "it": "L'istantanea in movimento !{{è pronta|non è pronta}} entro [[waitTime]] secondi",
+        "fr": "L'image du mouvement sera !{{prête|pas prête}} dans [[waitTime]] secondes..."
     },
     "args": [
         {

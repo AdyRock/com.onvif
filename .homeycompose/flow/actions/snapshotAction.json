@@ -3,13 +3,15 @@
         "en": "Update snapshot",
         "de": "Standbild jetzt erneuern",
         "nl": "Ververs snapshot",
-        "it": "Aggiorna Immagine Istantanea"
+        "it": "Aggiorna Immagine Istantanea",
+        "fr": "Mettre à jour l'image"
     },
     "titleFormatted": {
         "en": "Update snapshot",
         "de": "Standbild jetzt erneuern",
         "nl": "Ververs snapshot",
-        "it": "Aggiorna Immagine Istantanea"
+        "it": "Aggiorna Immagine Istantanea",
+        "fr": "Mettre à jour l'image"
     },
     "args": [
         {

@@ -3,13 +3,15 @@
         "en": "Update Motion snapshot",
         "de": "Motion-Snapshot aktualisieren",
         "nl": "Bewegingssnapshot bijwerken",
-        "it": "Aggiorna istantanea in movimento"
+        "it": "Aggiorna istantanea in movimento",
+        "fr": "Mettre à jour l'image de mouvement"
     },
     "titleFormatted": {
         "en": "Update Motion snapshot",
         "de": "Motion-Snapshot aktualisieren",
         "nl": "Bewegingssnapshot bijwerken",
-        "it": "Aggiorna istantanea in movimento"
+        "it": "Aggiorna istantanea in movimento",
+        "fr": "Mettre à jour l'image de mouvement"
     },
     "args": [
         {

@@ -11,10 +11,12 @@
     "en": "ONVIF Camera",
     "de": "ONVIF Kamera",
     "nl": "ONVIF Camera",
-    "it": "ONVIF Camera"
+    "it": "ONVIF Camera",
+    "fr": "Caméra ONVIF"
   },
   "description": {
-    "en": "Use an ONVIF compatible camera so Homey can improve your home security"
+    "en": "Use an ONVIF compatible camera so Homey can improve your home security",
+    "fr": "Utilisez une caméra compatible ONVIF pour améliorer la sécurité de votre maison avec Homey"
   },
   "category": [
     "video"

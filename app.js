@@ -3,9 +3,13 @@
 'use strict';
 
 // eslint-disable-next-line no-undef
-if (process.env.DEBUG === '1')
-{
-    require('inspector').open(9225, '0.0.0.0', false);
+if (process.env.DEBUG === '1') {
+    try {
+        require('inspector').close(); // Fermer l'inspecteur s'il est déjà ouvert
+        require('inspector').open(9225, '0.0.0.0', false);
+    } catch (err) {
+        console.log('Inspector error:', err);
+    }
 }
 
 const Homey = require('homey');
@@ -808,96 +812,25 @@ class MyApp extends Homey.App
         });
     }
 
-    async unsubscribe(Device)
-    {
-        return new Promise((resolve, reject) =>
-        {
-            if (!Device.cam || !this.pushEvents)
-            {
-                resolve(null);
-                return;
-            }
-            this.updateLog('App.unsubscribe: ' + Device.name);
-            let deviceIdx = -1;
-            let pushEvent = null;
-            let pushEventIdx = this.pushEvents.findIndex(element => (element.devices[0] && Device.cam && ((element.devices[0].cam.hostname) === (Device.cam.hostname))));
-            console.log('pushEvent Idx = ', pushEventIdx);
-            if (pushEventIdx >= 0)
-            {
-                this.updateLog('App.unsubscribe: Found entry for ' + Device.cam.hostname);
-                pushEvent = this.pushEvents[pushEventIdx];
-                if (!pushEvent || !pushEvent.devices)
-                {
-                    resolve(null);
-                    return;
-                }
-
-                // see if this device is registered
-                deviceIdx = pushEvent.devices.findIndex(element => element.id == Device.id);
-                if (deviceIdx < 0)
-                {
-                    // Not registered so do nothing
-                    this.updateLog('App.unsubscribe: No Push entry for device: ' + Device.cam.hostname);
-                    resolve(null);
-                    return;
-                }
-            }
-            else
-            {
-                this.updateLog('App.unsubscribe: No Push entry for host: ' + Device.cam.hostname);
-                Device.cam.removeAllListeners('event');
-                resolve(null);
-                return;
-            }
-
-            if (pushEvent)
-            {
-                // Remove this device reference
-                this.updateLog('App.unsubscribe: Unregister entry for ' + Device.cam.hostname);
-                pushEvent.devices.splice(deviceIdx, 1);
-
-                if ((pushEvent.devices.length == 0) && pushEvent.unsubscribeRef)
-                {
-                    // No devices left so unregister the event
-                    this.homey.clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
-                    this.updateLog('Unsubscribe push event (' + Device.cam.hostname + '): ' + pushEvent.unsubscribeRef, 1);
-                    const hostPath = Device.cam.hostname;
-                    Device.cam.UnsubscribePushEventSubscription(pushEvent.unsubscribeRef, (err, info, xml) =>
-                    {
-                        if (err)
-                        {
-                            this.updateLog('Push unsubscribe error (' + hostPath + '): ' + this.varToString(err.message), 0);
-                            reject(err);
-                            return;
+    async unsubscribe(device) {
+        try {
+            if (device.cam && device.cam.events && device.cam.events.terminateSubscription) {
+                await new Promise((resolve) => {
+                    device.cam.events.terminateSubscription((err) => {
+                        if (err) {
+                            // Ignorer l'erreur "Resource Unknown" car cela signifie que la souscription n'existe plus
+                            if (!err.message.includes('Resource Unknown')) {
+                                this.updateLog(`Erreur lors de la désinscription (${device.name}): ${err.message}`, 0);
+                            }
                         }
-                        else
-                        {
-                            this.updateLog('Push unsubscribe response (' + hostPath + '): ' + this.varToString(info), 2);
-                        }
-                        resolve(null);
-                        return;
+                        resolve();
                     });
-
-                    Device.cam.removeAllListeners('event');
-
-                    // remove the push event from the list
-                    this.pushEvents.splice(pushEventIdx, 1);
-                }
-                else
-                {
-                    if (pushEvent.devices.length == 0)
-                    {
-                        // remove the push event from the list
-                        this.pushEvents.splice(pushEventIdx, 1);
-                    }
-                    this.updateLog('App.unsubscribe: Keep subscription as devices are still registered');
-
-                    Device.cam.removeAllListeners('event');
-                    resolve(null);
-                    return;
-                }
+                });
             }
-        });
+        } catch (err) {
+            // Ignorer les erreurs de désinscription car la session peut déjà être expirée
+            this.updateLog(`Note: Désinscription (${device.name}): ${err.message}`, 1);
+        }
     }
 
     hasPullSupport(capabilities, id)
@@ -1125,9 +1058,39 @@ class MyApp extends Homey.App
         throw (new Error('Send log FAILED'));
     }
 
-    async triggerMotion(tokens)
-    {
-        this.motionTrigger.trigger(tokens).catch(this.err);
+    async triggerMotion(tokens) {
+        try {
+            // Vérifier que tous les tokens requis sont présents
+            const requiredTokens = {
+                motion: true,
+                datetime: tokens.datetime || new Date().toISOString(),
+                motion_type: tokens.motion_type || 'motion',
+                device_name: tokens.device_name || 'Unknown Device',
+                snapshot_token: tokens.snapshot_token || '',
+                snapshot_url: tokens.snapshot_url || ''
+            };
+
+            await this.motionTrigger.trigger(requiredTokens);
+        } catch (err) {
+            this.updateLog('Erreur lors du déclenchement du mouvement: ' + err.message, 0);
+        }
+    }
+
+    async getPTZStatus(camObj) {
+        try {
+            // Vérifier les capacités PTZ de la caméra
+            const capabilities = await this.getCapabilities(camObj);
+            if (!capabilities || !capabilities.PTZ) {
+                this.updateLog('Cette caméra ne supporte pas le PTZ', 0);
+                return false;
+            }
+
+            // Les préréglages sont gérés directement par la librairie ONVIF
+            return true;
+        } catch (err) {
+            this.updateLog('Erreur lors de la vérification PTZ: ' + err.message, 0);
+            return false;
+        }
     }
 }
 

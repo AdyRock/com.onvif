@@ -1,0 +1,37 @@
+{
+  "id": "goto_preset",
+  "title": {
+    "en": "Go to preset position",
+    "fr": "Aller à la position préréglée"
+  },
+  "titleFormatted": {
+    "en": "Go to preset [[preset]]",
+    "fr": "Aller à la position préréglée [[preset]]"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=camera",
+      "title": {
+        "en": "Camera",
+        "fr": "Caméra"
+      }
+    },
+    {
+      "name": "preset",
+      "type": "number",
+      "title": {
+        "en": "Preset number",
+        "fr": "Numéro de position"
+      },
+      "placeholder": {
+        "en": "Enter preset number",
+        "fr": "Entrer le numéro de position"
+      },
+      "min": 0,
+      "max": 255,
+      "step": 1
+    }
+  ]
+} 

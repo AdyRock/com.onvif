@@ -28,6 +28,14 @@ class CameraDriver extends Homey.Driver
 		this.eventStorageTrigger = this.homey.flow.getDeviceTriggerCard('alarm_storage_true');
 		this.eventVehicleTrigger = this.homey.flow.getDeviceTriggerCard('alarm_vehicle_true');
 		this.eventVistorTrigger = this.homey.flow.getDeviceTriggerCard('alarm_vistor_true');
+
+		// Ajouter le déclencheur d'action pour les préréglages
+		this.gotoPresetAction = this.homey.flow.getActionCard('goto_preset')
+			.registerRunListener(async (args, state) => {
+				const device = args.device;
+				const presetNumber = args.preset;
+				return device.gotoPreset(presetNumber);
+			});
 	}
 
 	async onPair(session)
