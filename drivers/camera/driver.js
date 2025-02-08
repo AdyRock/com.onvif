@@ -28,14 +28,6 @@ class CameraDriver extends Homey.Driver
 		this.eventStorageTrigger = this.homey.flow.getDeviceTriggerCard('alarm_storage_true');
 		this.eventVehicleTrigger = this.homey.flow.getDeviceTriggerCard('alarm_vehicle_true');
 		this.eventVistorTrigger = this.homey.flow.getDeviceTriggerCard('alarm_vistor_true');
-
-		// Ajouter le déclencheur d'action pour les préréglages
-		this.gotoPresetAction = this.homey.flow.getActionCard('goto_preset')
-			.registerRunListener(async (args, state) => {
-				const device = args.device;
-				const presetNumber = args.preset;
-				return device.gotoPreset(presetNumber);
-			});
 	}
 
 	async onPair(session)
@@ -208,7 +200,7 @@ class CameraDriver extends Homey.Driver
 				this.homey.app.updateLog(`Failed to connect to camera, error: ${err.message}`, 0);
 				throw new Error(`Discovery error: ${err.message}`, { cause: err });
 			}
-		
+
 			this.homey.app.updateLog('Credentials OK. Adding ' + this.homey.app.varToString(cam.videoSources), 1);
 
 			if (Array.isArray(cam.videoSources) && (cam.videoSources.length > 1))

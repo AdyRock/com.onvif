@@ -2,14 +2,28 @@
   "type": "enum",
   "title": {
     "en": "PTZ Preset",
-    "fr": "Position préréglée PTZ"
+	"nl": "PTZ Voorkeuze",
+	"de": "PTZ Voreinstellung",
+	"it": "Posizione preimpostata PTZ",
+    "fr": "Position préréglée PTZ",
+    "es": "Posición preestablecida PTZ",
+    "pt": "Posição predefinida PTZ",
+    "pl": "Ustawienie wstępne PTZ",
+    "ko": "PTZ 프리셋"
   },
   "desc": {
     "en": "Move camera to saved preset position",
-    "fr": "Déplacer la caméra vers une position préréglée"
+	"nl": "Verplaats de camera naar een opgeslagen voorkeuzepositie",
+	"de": "Bewegen Sie die Kamera an eine gespeicherte Voreinstellposition",
+	"it": "Sposta la telecamera nella posizione preimpostata salvata",
+    "fr": "Déplacer la caméra vers une position préréglée",
+	"es": "Mover la cámara a una posición preestablecida guardada",
+	"pt": "Mover a câmera para a posição predefinida salva",
+	"pl": "Przesuń kamerę do zapisanej pozycji wstępnej",
+	"ko": "저장된 프리셋 위치로 카메라 이동"
   },
   "values": [],
   "getable": true,
   "setable": true,
   "uiComponent": "picker"
-} 
+}

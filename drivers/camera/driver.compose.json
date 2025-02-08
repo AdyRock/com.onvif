@@ -1,630 +1,631 @@
 {
-    "id": "camera",
-    "name": {
-        "en": "ONVIF Camera",
-        "de": "ONVIF Kamera",
-        "nl": "ONVIF Camera"
-    },
-    "platforms": [
-        "local"
-    ],
-    "connectivity": [
-        "lan"
-    ],
-    "class": "sensor",
-    "capabilities": [
-        "motion_enabled",
-        "alarm_motion",
-        "alarm_sound",
-        "alarm_tamper",
-        "event_time",
-        "tamper_time",
-        "date_time",
-        "button.syncTime",
-        "alarm_line_crossed",
-        "alarm_person",
-        "alarm_visitor",
-        "alarm_face",
-        "alarm_dog_cat",
-        "alarm_vehicle",
-        "alarm_dark_image",
-        "measure_cpu",
-        "alarm_storage"
-    ],
-    "capabilitiesOptions": {
-        "button.syncTime": {
-            "maintenanceAction": true,
-            "title": {
-                "en": "Sync. Time",
-                "de": "Sync. Uhrzeit",
-                "nl": "Synchronisatie tijd",
-                "it": "Sinc. Orario"
-            },
-            "desc": {
-                "en": "Set the camera time to Homey's time.",
-                "de": "Setzte die Kamerazeit mit Homeys Zeit gleich",
-                "nl": "Synchroniseer de camera tijd met Homey",
-                "it": "Imposta l'ora camera come quella di Homey."
-            }
-        },
-        "alarm_tamper": {
-            "title": {
-                "en": "Offline / Tamper Alarm",
-                "de": "Offline / Manipulationsalarm",
-                "nl": "Offline / sabotage alarm",
-                "it": "Allarme Offline / Tamper"
-            }
-        }
-    },
-    "pair": [
-        {
-            "id": "list_devices",
-            "template": "list_devices",
-            "navigation": {
-                "next": "my_connect"
-            },
-            "options": {
-                "singular": true
-            }
-        },
-        {
-            "id": "my_connect"
-        },
-        {
-            "id": "list_devices2",
-            "template": "list_devices",
-            "navigation": {
-                "next": "add_devices"
-            },
-            "options": {
-                "singular": false
-            }
-        },
-        {
-            "id": "add_devices",
-            "template": "add_devices"
-        }
-    ],
-    "repair": [
-        {
-            "id": "my_repair"
-        }
-    ],
-    "settings": [
-        {
-            "type": "group",
-            "label": {
-                "en": "Credentials",
-                "de": "Zugangsdaten",
-                "nl": "Inloggegevens",
-                "it": "Credenziali"
-            },
-            "children": [
-                {
-                    "id": "username",
-                    "type": "text",
-                    "label": {
-                        "en": "User Name",
-                        "de": "Benutzernamen",
-                        "nl": "User Naam",
-                        "it": "Nome Utente"
-                    },
-                    "value": "",
-                    "hint": {
-                        "en": "User name required to login to the camera.",
-                        "de": "Benutzername zum Zugang zur Kamera erforderlich.",
-                        "nl": "User naam nodig om in te loggen in de camera",
-                        "it": "Nome Utente richiesto per il login con la camera."
-                    }
-                },
-                {
-                    "id": "password",
-                    "type": "password",
-                    "label": {
-                        "en": "Password",
-                        "de": "Passwort",
-                        "nl": "Password",
-                        "it": "Password"
-                    },
-                    "value": "",
-                    "hint": {
-                        "en": "Password required to login to the camera.",
-                        "de": "Passwort zum Zugang zur Kamera erforderlich.",
-                        "nl": "Password nodig om in te loggen in de camera",
-                        "it": "Password richiesta per il login con la camera."
-                    }
-                },
-                {
-                    "id": "enabled",
-                    "type": "checkbox",
-                    "label": {
-                        "en": "Camera Enabled",
-                        "de": "Kamera aktiviert",
-                        "nl": "Camera ingeschakeld",
-                        "it": "Fotocamera abilitata,"
-                    },
-                    "value": true,
-                    "hint": {
-                        "en": "When ticked the camera is enabled."
-                    }
-                }
-            ]
-        },
-        {
-            "type": "group",
-            "label": {
-                "en": "Motion Trigger",
-                "de": "Bewegungsmelder",
-                "nl": "Bewegings trigger",
-                "it": "Motion Trigger,"
-            },
-            "children": [
-                {
-                    "id": "classType",
-                    "type": "dropdown",
-                    "label": {
-                        "en": "Device Class",
-                        "de": "Geräteklasse",
-                        "nl": "Product indeling",
-                        "it": "Classe Dispositivo"
-                    },
-                    "value": "sensor",
-                    "hint": {
-                        "en": "When set to Sensor an icon appears on the device tile when motion is detected. When set to Camera, the image might be displayed in other dashboards",
-                        "de": "Wenn Sensor ausgewählt wird, wird bei Bewegung ein Icon in der Gerätekachel angezeigt. When Kamera ausgewählt wird, wird ein Bild in anderen Dashboards dargestellt.",
-                        "nl": "Indien ingesteld op Sensor verschijnt er een icoon op het device tot er beweging gedetecteerd is. Indien ingesteld op Camera, wordt de afbeelding mogelijk weergegeven op andere plaatsen",
-                        "it": "Quando come Sensore, un icona compare sul tile del dispositivo quando un movimento è rilevato. Quando come Camera, l'immagine può essere mostrata in altre dashboards"
-                    },
-                    "values": [
-                        {
-                            "id": "sensor",
-                            "label": {
-                                "en": "Sensor",
-                                "de": "Sensor"
-                            }
-                        },
-                        {
-                            "id": "camera",
-                            "label": {
-                                "en": "Camera",
-                                "de": "Kamera"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "id": "single",
-                    "type": "checkbox",
-                    "label": {
-                        "en": "Single",
-                        "de": "Einzeln",
-                        "nl": "Enkel",
-                        "it": "Singolo,"
-                    },
-                    "value": true,
-                    "hint": {
-                        "en": "Motion detection waits for no motion before triggering a new motion.",
-                        "de": "Bewegungserkennung wartet bis keine Bewegung mehr auftritt, bevor eine weitere Bewegung gemeldet wird.",
-                        "nl": "Bewegings detectie wacht tot er geen beweging is voordat er een nieuwe trigger volgt",
-                        "it": "Rilevazione movimento attende nessun movimento prima di nuova rilevazione."
-                    }
-                },
-                {
-                    "id": "delay",
-                    "type": "number",
-                    "label": {
-                        "en": "Delay",
-                        "de": "Verzögerung",
-                        "nl": "Vertraging",
-                        "it": "Ritardo,"
-                    },
-                    "value": 0.5,
-                    "units": "seconds",
-                    "hint": {
-                        "en": "Delay before image capture after motion triggered.",
-                        "de": "Verzögerung bei Bewegung, bevor ein Standbild aufgenommen wird.",
-                        "nl": "Vertraging voor Snapshot na beweging",
-                        "it": "Ritardo prima che l'immgine sia catturata dopo un movimento rilevato."
-                    }
-                },
-                {
-                    "id": "on_time",
-                    "type": "number",
-                    "label": {
-                        "en": "Minimum On Time"
-                    },
-                    "value": 2,
-                    "units": "seconds",
-                    "hint": {
-                        "en": "Minimum time the motion is active and the minimum time between image updates."
-                    }
-                },
-                {
-                    "id": "channel",
-                    "type": "number",
-                    "label": {
-                        "en": "Channel"
-                    },
-                    "value": 1,
-                    "hint": {
-                        "en": "Channel selection to specify which camera to use if the parent IP is an NVR.\nSet to -1 to use the default ONVIF specified one."
-                    }
-                },
-                {
-                    "id": "token",
-                    "type": "text",
-                    "label": {
-                        "en": "Token"
-                    },
-                    "value": "",
-                    "hint": {
-                        "en": "Channel event token to identify which camera the push event came from if the parent IP is an NVR.\nLeave the field blank to use the default ONVIF specified one."
-                    }
-                },
-                {
-                    "id": "preferPullEvents",
-                    "type": "checkbox",
-                    "label": {
-                        "en": "Prefer Pull Events",
-                        "de": "Bevorzuge Empfangsmitteilungen",
-                        "nl": "Voorkeur voor Pull Events",
-                        "it": "Preferenza Pull Events"
-                    },
-                    "value": false,
-                    "hint": {
-                        "en": "If both Pull and Push events are available then choose Pull when checked. Push is more efficient but may not work on some network setups.",
-                        "de": "Wenn beide Übertragungsmöglichkeiten vorhanden sind, wird der Empfang bevorzugt. Die Anfrage ist effizienter, kann aber in manchen Netzwerken nicht funktionieren.",
-                        "nl": "Als Pull en Push allebei beschikbaar zijn, kies dan Pull (indien gecontroleerd). Push is efficiënter maar werkt bij sommige netwerk setups niet",
-                        "it": "Se sono disponivili sia gli eventi Push che Pull allora seleziona Pull, dato che Push è si più efficiente ma non funziona con alcuni setup della rete."
-                    }
-                },
-                {
-                    "id": "timeFormat",
-                    "type": "dropdown",
-                    "label": {
-                        "en": "Time Format",
-                        "de": "Zeitformat",
-                        "nl": "Tijd format",
-                        "it": "Formato del Tempo"
-                    },
-                    "value": "mm_dd",
-                    "hint": {
-                        "en": "The format to show the time capabilities.",
-                        "de": "Zeitformat das zur Anzeige genutzt werden soll.",
-                        "nl": "Tijd format notatie mogelijkheden",
-                        "it": "Il formato mosta capabilities del Tempo."
-                    },
-                    "values": [
-                        {
-                            "id": "raw",
-                            "label": {
-                                "en": "Direct From Camera",
-                                "de": "Direkt von der Kamera",
-                                "nl": "Live",
-                                "it": "Diretto dalla Camera"
-                            }
-                        },
-                        {
-                            "id": "system",
-                            "label": {
-                                "en": "Local",
-                                "de": "Lokal",
-                                "nl": "Intern",
-                                "it": "Locale"
-                            }
-                        },
-                        {
-                            "id": "mm_dd",
-                            "label": {
-                                "en": "Short HH:MM DD-MM",
-                                "de": "Kurz HH:MM DD-MM",
-                                "nl": "Kort HH:MM DD-MM",
-                                "it": "Corto HH:MM DD-MM"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "id": "utc_time",
-                    "type": "checkbox",
-                    "label": {
-                        "en": "Adjust camera timezone",
-                        "de": "Passen Sie die Zeitzone der Kamera an",
-                        "nl": "Pas de tijdzone van de camera aan",
-                        "it": "Regola il fuso orario della fotocamera"
-                    },
-                    "value": false,
-                    "hint": {
-                        "en": "If the camera time is showing in UTC then turn this on to convert to your local time.",
-                        "de": "Wenn die Kamerazeit in UTC angezeigt wird, schalten Sie diese Option ein, um sie in Ihre Ortszeit umzuwandeln.",
-                        "nl": "Als de cameratijd in UTC wordt weergegeven, schakelt u dit in om naar uw lokale tijd te converteren.",
-                        "it": "Se l'ora della fotocamera viene visualizzata in UTC, attiva questa opzione per convertirla nell'ora locale."
-                    }
-                },
-                {
-                    "id": "offset_time",
-                    "type": "number",
-                    "label": {
-                        "en": "Adjust camera time by",
-                        "de": "Passen Sie die Kamerazeit um an",
-                        "nl": "Pas de cameratijd aan met",
-                        "it": "Regola l'ora della fotocamera di"
-                    },
-                    "value": 0,
-                    "hint": {
-                        "en": "Adjust the displayed time by the specified number of hours to correct it.",
-                        "de": "Korrigieren Sie die angezeigte Uhrzeit um die angegebene Stundenzahl.",
-                        "nl": "Pas de weergegeven tijd aan met het opgegeven aantal uren om dit te corrigeren.",
-                        "it": "Regolare l'ora visualizzata del numero di ore specificato per correggerla."
-                    }
-                }
-            ]
-        },
-        {
-            "type": "group",
-            "label": {
-                "en": "Camera Information",
-                "de": "Kamera Informationen",
-                "nl": "Camera informatie",
-                "it": "Informazioni sulla Camera"
-            },
-            "children": [
-                {
-                    "id": "urn",
-                    "type": "label",
-                    "label": {
-                        "en": "URN"
-                    },
-                    "value": "",
-                    "hint": {
-                        "en": "Unique identifer for the camera."
-                    }
-                },
-                {
-                    "id": "mac",
-                    "type": "label",
-                    "label": {
-                        "en": "MAC Address"
-                    },
-                    "value": "",
-                    "hint": {
-                        "en": "Unique network identifer for the camera."
-                    }
-                },
-                {
-                    "id": "manufacturer",
-                    "type": "label",
-                    "label": {
-                        "en": "Manufacturer",
-                        "de": "Hersteller",
-                        "nl": "Fabrikant",
-                        "it": "Costruttore"
-                    },
-                    "value": "",
-                    "hint": {
-                        "en": "The manufacture name that is reported by the camera. This might be different to the name on the box"
-                    }
-                },
-                {
-                    "id": "model",
-                    "type": "label",
-                    "label": {
-                        "en": "Model",
-                        "de": "Model",
-                        "nl": "Model",
-                        "it": "Modello"
-                    },
-                    "value": "",
-                    "hint": {
-                        "en": "The model name that is reported by the camera. This might be different to the name on the box"
-                    }
-                },
-                {
-                    "id": "serialNumber",
-                    "type": "label",
-                    "label": {
-                        "en": "Serial Number",
-                        "de": "Serial Nummer",
-                        "nl": "Serienummer",
-                        "it": "Numero di Serie"
-                    },
-                    "value": "",
-                    "hint": {
-                        "en": "The serial number that is reported by the camera."
-                    }
-                },
-                {
-                    "id": "firmwareVersion",
-                    "type": "label",
-                    "label": {
-                        "en": "Firmware Version",
-                        "de": "Firmware Version",
-                        "nl": "Software versie",
-                        "it": "Versione del Firmware"
-                    },
-                    "value": "",
-                    "hint": {
-                        "en": "The firmware version that is reported by the camera."
-                    }
-                },
-                {
-                    "id": "ip",
-                    "type": "text",
-                    "label": {
-                        "en": "IP Address",
-                        "de": "IP-Addresse",
-                        "nl": "IP adres",
-                        "it": "Indirizzo IP"
-                    },
-                    "value": "",
-                    "hint": {
-                        "en": "The IP address of the camera on youe network. You can change this if required."
-                    }
-                },
-                {
-                    "id": "port",
-                    "type": "text",
-                    "label": {
-                        "en": "Port",
-                        "de": "Port",
-                        "nl": "Poort",
-                        "it": "Porta"
-                    },
-                    "value": "0",
-                    "hint": {
-                        "en": "The ONVIF service Port number of the camera. You can change this if required.",
-                        "de": "Die ONVIF-Service-Portnummer der Kamera. Sie können dies bei Bedarf ändern.",
-                        "nl": "De ONVIF-service Poortnummer van de camera. U kunt dit desgewenst wijzigen.",
-                        "it": "Il numero di porta del servizio ONVIF della telecamera. È possibile modificarlo se necessario."
-                    }
-                },
-                {
-                    "id": "hasSnapshot",
-                    "type": "checkbox",
-                    "label": {
-                        "en": "Supports Snapshots",
-                        "de": "Supports Snapshots",
-                        "nl": "Supports Snapshots",
-                        "it": "Supports Snapshots"
-                    },
-                    "value": false,
-                    "hint": {
-                        "en": "Specifies if the camera supports a snapshot. You can override this if the camera supports a snapshot that is not reported va the ONVIF protocol.",
-                        "de": "Gibt an, ob die Kamera einen Schnappschuss unterstützt. Sie können dies überschreiben, wenn die Kamera einen Schnappschuss unterstützt, der nicht über das ONVIF-Protokoll gemeldet wird.",
-                        "nl": "Geeft aan of de camera een momentopname ondersteunt. U kunt dit negeren als de camera een momentopname ondersteunt die niet wordt gerapporteerd via het ONVIF-protocol.",
-                        "it": "Specifica se la telecamera supporta un'istantanea. È possibile sovrascriverlo se la telecamera supporta un'istantanea che non viene riportata dal protocollo ONVIF."
-                    }
-                },
-                {
-                    "id": "url",
-                    "type": "label",
-                    "label": {
-                        "en": "ONVIF Snapshot URL",
-                        "de": "ONVIF Standbild URL",
-                        "nl": "ONVIF snapshot URL",
-                        "it": "ONVIF Snapshot URL"
-                    },
-                    "value": "",
-                    "hint": {
-                        "en": "The snapshot URL that is reported by the camera.",
-                        "de": "Die Snapshot-URL, die von der Kamera gemeldet wird.",
-                        "nl": "De snapshot-URL die door de camera wordt gerapporteerd.",
-                        "it": "L'URL dell'istantanea segnalato dalla telecamera."
-                    }
-                },
-                {
-                    "id": "userSnapUri",
-                    "type": "text",
-                    "label": {
-                        "en": "USER Snapshot URL",
-                        "de": "USER Standbild URL",
-                        "nl": "USER snapshot URL",
-                        "it": "USER Snapshot URL"
-                    },
-                    "value": "",
-                    "hint": {
-                        "en": "An alternative snapshot URL that overrides th detected one.\nLeave the field blank to use the detected URL.",
-                        "de": "Eine alternative Snapshot-URL, die die erkannte überschreibt.\nCLassen Sie das Feld leer, um die erkannte URL zu verwenden.",
-                        "nl": "Een alternatieve snapshot-URL die de gedetecteerde URL overschrijft.\nLaat het veld leeg om de gedetecteerde URL te gebruiken.",
-                        "it": "Un URL di istantanea alternativo che sostituisce quello rilevato.\nLascia il campo vuoto per utilizzare l'URL rilevato."
-                    }
-                },
-                {
-                    "id": "notificationMethods",
-                    "type": "label",
-                    "label": {
-                        "en": "ONVIF Notification methods",
-                        "de": "ONVIF Mitteilungs Methode",
-                        "nl": "ONVIF notificatie metode",
-                        "it": "ONVIF Metodi di notifica"
-                    },
-                    "value": "",
-                    "hint": {
-                        "en": "The availble methods the camera has reported for detecting an event.",
-                        "de": "Die verfügbaren Methoden, die die Kamera zum Erkennen eines Ereignisses gemeldet hat.",
-                        "nl": "De beschikbare methoden die de camera heeft gerapporteerd voor het detecteren van een gebeurtenis.",
-                        "it": "I metodi disponibili segnalati dalla telecamera per rilevare un evento."
-                    }
-                },
-                {
-                    "id": "notificationTypes",
-                    "type": "label",
-                    "label": {
-                        "en": "ONVIF Notification types",
-                        "de": "ONVIF Mitteilungs Typen",
-                        "nl": "ONVIF notificatie type",
-                        "it": "ONVIF Tipi di notifica"
-                    },
-                    "value": "",
-                    "hint": {
-                        "en": "Shows the types of event the camera supports. The app requires the MOTION event but detects notifications of IsMotion, IsInside for motion as well as IsTamper for tamper detection.",
-                        "de": "Zeigt die von der Kamera unterstützten Ereignistypen an. Die App erfordert das MOTION-Ereignis, erkennt jedoch Benachrichtigungen von IsMotion, IsInside für Bewegungen sowie IsTamper für die Manipulationserkennung.",
-                        "nl": "Toont de soorten gebeurtenissen die de camera ondersteunt. De app vereist de MOTION-gebeurtenis, maar detecteert meldingen van IsMotion, IsInside voor beweging en IsTamper voor sabotagedetectie.",
-                        "it": "Mostra i tipi di eventi supportati dalla telecamera. L'app richiede l'evento MOTION ma rileva le notifiche di IsMotion, IsInside per il movimento e IsTamper per il rilevamento delle manomissioni."
-                    }
-                },
-                {
-                    "id": "notificationToUse",
-                    "type": "radio",
-                    "label": {
-                        "en": "ONVIF Motion Notification to use",
-                        "de": "ONVIF Motion Notification zu verwenden",
-                        "nl": "ONVIF Motion Notification te gebruiken",
-                        "it": "Notifica di movimento ONVIF da utilizzare"
-                    },
-                    "value": "RuleEngine/CellMotionDetector/Motion:IsMotion",
-                    "values": [
-                        {
-                            "id": "RuleEngine/CellMotionDetector/Motion:IsMotion",
-                            "label": {
-                                "en": "MOTION (IsMotion)"
-                            }
-                        },
-                        {
-                            "id": "RuleEngine/FieldDetector/ObjectsInside:IsInside",
-                            "label": {
-                                "en": "ANALYTICSSERVICE (IsInside)"
-                            }
-                        },
-                        {
-                            "id": "VideoSource/MotionAlarm:State",
-                            "label": {
-                                "en": "MOTIONALARM (State)"
-                            }
-                        },
-                        {
-                            "id": "Device/Trigger/DigitalInput:LogicalState",
-                            "label": {
-                                "en": "DIGITALINPUT (LogicalState)"
-                            }
-                        }
-                    ],
-                    "hint": {
-                        "en": "Select the type of notification to use for motion detect. If the selected type is not supported then the setting will fall back to MOTION IsMotion or MOTIONALARM",
-                        "de": "Wählen Sie die Art der Benachrichtigung aus, die für die Bewegungserkennung verwendet werden soll. Wenn der ausgewählte Typ nicht unterstützt wird, wird die Einstellung auf MOTION IsMotion oder MOTIONALARM zurückgesetzt",
-                        "nl": "Selecteer het type melding dat u wilt gebruiken voor bewegingsdetectie. Als het geselecteerde type niet wordt ondersteund, valt de instelling terug op MOTION IsMotion of MOTIONALARM",
-                        "it": "Seleziona il tipo di notifica da utilizzare per il rilevamento del movimento. Se il tipo selezionato non è supportato, l'impostazione tornerà a MOTION IsMotion o MOTIONALARM"
-                    }
-                },
-                {
-                    "id": "objectID",
-                    "type": "text",
-                    "label": {
-                        "en": "Event Object ID"
-                    },
-                    "value": "",
-                    "hint": {
-                        "en": "The ID that is sent from the camera for the ANALYTICSSERVICE event. Leave empty to match any. Seperate multiples with a comma.",
-                        "de": "Die ID, die von der Kamera für das ANALYTICSSERVICE-Ereignis gesendet wird. Lassen Sie das Feld leer. Separate Vielfache mit einem Komma.",
-                        "nl": "De ID die door de camera is verzonden voor de ANALYTICSSERVICE-gebeurtenis. Laat het leeg om het te matchen. Scheid veelvouden met een komma.",
-                        "it": "L'ID inviato dalla telecamera per l'evento ANALYTICSSERVICE. Lascia vuoto per abbinare qualsiasi. Multipli separati con una virgola."
-                    }
-                }
-            ]
-        }
-    ],
-    "images": {
-        "large": "/drivers/camera/assets/images/large.png",
-        "small": "/drivers/camera/assets/images/small.png"
-    }
+	"id": "camera",
+	"name": {
+		"en": "ONVIF Camera",
+		"de": "ONVIF Kamera",
+		"nl": "ONVIF Camera"
+	},
+	"platforms": [
+		"local"
+	],
+	"connectivity": [
+		"lan"
+	],
+	"class": "sensor",
+	"capabilities": [
+		"motion_enabled",
+		"ptz_preset",
+		"alarm_motion",
+		"alarm_sound",
+		"alarm_tamper",
+		"event_time",
+		"tamper_time",
+		"date_time",
+		"button.syncTime",
+		"alarm_line_crossed",
+		"alarm_person",
+		"alarm_visitor",
+		"alarm_face",
+		"alarm_dog_cat",
+		"alarm_vehicle",
+		"alarm_dark_image",
+		"measure_cpu",
+		"alarm_storage"
+	],
+	"capabilitiesOptions": {
+		"button.syncTime": {
+			"maintenanceAction": true,
+			"title": {
+				"en": "Sync. Time",
+				"de": "Sync. Uhrzeit",
+				"nl": "Synchronisatie tijd",
+				"it": "Sinc. Orario"
+			},
+			"desc": {
+				"en": "Set the camera time to Homey's time.",
+				"de": "Setzte die Kamerazeit mit Homeys Zeit gleich",
+				"nl": "Synchroniseer de camera tijd met Homey",
+				"it": "Imposta l'ora camera come quella di Homey."
+			}
+		},
+		"alarm_tamper": {
+			"title": {
+				"en": "Offline / Tamper Alarm",
+				"de": "Offline / Manipulationsalarm",
+				"nl": "Offline / sabotage alarm",
+				"it": "Allarme Offline / Tamper"
+			}
+		}
+	},
+	"pair": [
+		{
+			"id": "list_devices",
+			"template": "list_devices",
+			"navigation": {
+				"next": "my_connect"
+			},
+			"options": {
+				"singular": true
+			}
+		},
+		{
+			"id": "my_connect"
+		},
+		{
+			"id": "list_devices2",
+			"template": "list_devices",
+			"navigation": {
+				"next": "add_devices"
+			},
+			"options": {
+				"singular": false
+			}
+		},
+		{
+			"id": "add_devices",
+			"template": "add_devices"
+		}
+	],
+	"repair": [
+		{
+			"id": "my_repair"
+		}
+	],
+	"settings": [
+		{
+			"type": "group",
+			"label": {
+				"en": "Credentials",
+				"de": "Zugangsdaten",
+				"nl": "Inloggegevens",
+				"it": "Credenziali"
+			},
+			"children": [
+				{
+					"id": "username",
+					"type": "text",
+					"label": {
+						"en": "User Name",
+						"de": "Benutzernamen",
+						"nl": "User Naam",
+						"it": "Nome Utente"
+					},
+					"value": "",
+					"hint": {
+						"en": "User name required to login to the camera.",
+						"de": "Benutzername zum Zugang zur Kamera erforderlich.",
+						"nl": "User naam nodig om in te loggen in de camera",
+						"it": "Nome Utente richiesto per il login con la camera."
+					}
+				},
+				{
+					"id": "password",
+					"type": "password",
+					"label": {
+						"en": "Password",
+						"de": "Passwort",
+						"nl": "Password",
+						"it": "Password"
+					},
+					"value": "",
+					"hint": {
+						"en": "Password required to login to the camera.",
+						"de": "Passwort zum Zugang zur Kamera erforderlich.",
+						"nl": "Password nodig om in te loggen in de camera",
+						"it": "Password richiesta per il login con la camera."
+					}
+				},
+				{
+					"id": "enabled",
+					"type": "checkbox",
+					"label": {
+						"en": "Camera Enabled",
+						"de": "Kamera aktiviert",
+						"nl": "Camera ingeschakeld",
+						"it": "Fotocamera abilitata,"
+					},
+					"value": true,
+					"hint": {
+						"en": "When ticked the camera is enabled."
+					}
+				}
+			]
+		},
+		{
+			"type": "group",
+			"label": {
+				"en": "Motion Trigger",
+				"de": "Bewegungsmelder",
+				"nl": "Bewegings trigger",
+				"it": "Motion Trigger,"
+			},
+			"children": [
+				{
+					"id": "classType",
+					"type": "dropdown",
+					"label": {
+						"en": "Device Class",
+						"de": "Geräteklasse",
+						"nl": "Product indeling",
+						"it": "Classe Dispositivo"
+					},
+					"value": "sensor",
+					"hint": {
+						"en": "When set to Sensor an icon appears on the device tile when motion is detected. When set to Camera, the image might be displayed in other dashboards",
+						"de": "Wenn Sensor ausgewählt wird, wird bei Bewegung ein Icon in der Gerätekachel angezeigt. When Kamera ausgewählt wird, wird ein Bild in anderen Dashboards dargestellt.",
+						"nl": "Indien ingesteld op Sensor verschijnt er een icoon op het device tot er beweging gedetecteerd is. Indien ingesteld op Camera, wordt de afbeelding mogelijk weergegeven op andere plaatsen",
+						"it": "Quando come Sensore, un icona compare sul tile del dispositivo quando un movimento è rilevato. Quando come Camera, l'immagine può essere mostrata in altre dashboards"
+					},
+					"values": [
+						{
+							"id": "sensor",
+							"label": {
+								"en": "Sensor",
+								"de": "Sensor"
+							}
+						},
+						{
+							"id": "camera",
+							"label": {
+								"en": "Camera",
+								"de": "Kamera"
+							}
+						}
+					]
+				},
+				{
+					"id": "single",
+					"type": "checkbox",
+					"label": {
+						"en": "Single",
+						"de": "Einzeln",
+						"nl": "Enkel",
+						"it": "Singolo,"
+					},
+					"value": true,
+					"hint": {
+						"en": "Motion detection waits for no motion before triggering a new motion.",
+						"de": "Bewegungserkennung wartet bis keine Bewegung mehr auftritt, bevor eine weitere Bewegung gemeldet wird.",
+						"nl": "Bewegings detectie wacht tot er geen beweging is voordat er een nieuwe trigger volgt",
+						"it": "Rilevazione movimento attende nessun movimento prima di nuova rilevazione."
+					}
+				},
+				{
+					"id": "delay",
+					"type": "number",
+					"label": {
+						"en": "Delay",
+						"de": "Verzögerung",
+						"nl": "Vertraging",
+						"it": "Ritardo,"
+					},
+					"value": 0.5,
+					"units": "seconds",
+					"hint": {
+						"en": "Delay before image capture after motion triggered.",
+						"de": "Verzögerung bei Bewegung, bevor ein Standbild aufgenommen wird.",
+						"nl": "Vertraging voor Snapshot na beweging",
+						"it": "Ritardo prima che l'immgine sia catturata dopo un movimento rilevato."
+					}
+				},
+				{
+					"id": "on_time",
+					"type": "number",
+					"label": {
+						"en": "Minimum On Time"
+					},
+					"value": 2,
+					"units": "seconds",
+					"hint": {
+						"en": "Minimum time the motion is active and the minimum time between image updates."
+					}
+				},
+				{
+					"id": "channel",
+					"type": "number",
+					"label": {
+						"en": "Channel"
+					},
+					"value": 1,
+					"hint": {
+						"en": "Channel selection to specify which camera to use if the parent IP is an NVR.\nSet to -1 to use the default ONVIF specified one."
+					}
+				},
+				{
+					"id": "token",
+					"type": "text",
+					"label": {
+						"en": "Token"
+					},
+					"value": "",
+					"hint": {
+						"en": "Channel event token to identify which camera the push event came from if the parent IP is an NVR.\nLeave the field blank to use the default ONVIF specified one."
+					}
+				},
+				{
+					"id": "preferPullEvents",
+					"type": "checkbox",
+					"label": {
+						"en": "Prefer Pull Events",
+						"de": "Bevorzuge Empfangsmitteilungen",
+						"nl": "Voorkeur voor Pull Events",
+						"it": "Preferenza Pull Events"
+					},
+					"value": false,
+					"hint": {
+						"en": "If both Pull and Push events are available then choose Pull when checked. Push is more efficient but may not work on some network setups.",
+						"de": "Wenn beide Übertragungsmöglichkeiten vorhanden sind, wird der Empfang bevorzugt. Die Anfrage ist effizienter, kann aber in manchen Netzwerken nicht funktionieren.",
+						"nl": "Als Pull en Push allebei beschikbaar zijn, kies dan Pull (indien gecontroleerd). Push is efficiënter maar werkt bij sommige netwerk setups niet",
+						"it": "Se sono disponivili sia gli eventi Push che Pull allora seleziona Pull, dato che Push è si più efficiente ma non funziona con alcuni setup della rete."
+					}
+				},
+				{
+					"id": "timeFormat",
+					"type": "dropdown",
+					"label": {
+						"en": "Time Format",
+						"de": "Zeitformat",
+						"nl": "Tijd format",
+						"it": "Formato del Tempo"
+					},
+					"value": "mm_dd",
+					"hint": {
+						"en": "The format to show the time capabilities.",
+						"de": "Zeitformat das zur Anzeige genutzt werden soll.",
+						"nl": "Tijd format notatie mogelijkheden",
+						"it": "Il formato mosta capabilities del Tempo."
+					},
+					"values": [
+						{
+							"id": "raw",
+							"label": {
+								"en": "Direct From Camera",
+								"de": "Direkt von der Kamera",
+								"nl": "Live",
+								"it": "Diretto dalla Camera"
+							}
+						},
+						{
+							"id": "system",
+							"label": {
+								"en": "Local",
+								"de": "Lokal",
+								"nl": "Intern",
+								"it": "Locale"
+							}
+						},
+						{
+							"id": "mm_dd",
+							"label": {
+								"en": "Short HH:MM DD-MM",
+								"de": "Kurz HH:MM DD-MM",
+								"nl": "Kort HH:MM DD-MM",
+								"it": "Corto HH:MM DD-MM"
+							}
+						}
+					]
+				},
+				{
+					"id": "utc_time",
+					"type": "checkbox",
+					"label": {
+						"en": "Adjust camera timezone",
+						"de": "Passen Sie die Zeitzone der Kamera an",
+						"nl": "Pas de tijdzone van de camera aan",
+						"it": "Regola il fuso orario della fotocamera"
+					},
+					"value": false,
+					"hint": {
+						"en": "If the camera time is showing in UTC then turn this on to convert to your local time.",
+						"de": "Wenn die Kamerazeit in UTC angezeigt wird, schalten Sie diese Option ein, um sie in Ihre Ortszeit umzuwandeln.",
+						"nl": "Als de cameratijd in UTC wordt weergegeven, schakelt u dit in om naar uw lokale tijd te converteren.",
+						"it": "Se l'ora della fotocamera viene visualizzata in UTC, attiva questa opzione per convertirla nell'ora locale."
+					}
+				},
+				{
+					"id": "offset_time",
+					"type": "number",
+					"label": {
+						"en": "Adjust camera time by",
+						"de": "Passen Sie die Kamerazeit um an",
+						"nl": "Pas de cameratijd aan met",
+						"it": "Regola l'ora della fotocamera di"
+					},
+					"value": 0,
+					"hint": {
+						"en": "Adjust the displayed time by the specified number of hours to correct it.",
+						"de": "Korrigieren Sie die angezeigte Uhrzeit um die angegebene Stundenzahl.",
+						"nl": "Pas de weergegeven tijd aan met het opgegeven aantal uren om dit te corrigeren.",
+						"it": "Regolare l'ora visualizzata del numero di ore specificato per correggerla."
+					}
+				}
+			]
+		},
+		{
+			"type": "group",
+			"label": {
+				"en": "Camera Information",
+				"de": "Kamera Informationen",
+				"nl": "Camera informatie",
+				"it": "Informazioni sulla Camera"
+			},
+			"children": [
+				{
+					"id": "urn",
+					"type": "label",
+					"label": {
+						"en": "URN"
+					},
+					"value": "",
+					"hint": {
+						"en": "Unique identifer for the camera."
+					}
+				},
+				{
+					"id": "mac",
+					"type": "label",
+					"label": {
+						"en": "MAC Address"
+					},
+					"value": "",
+					"hint": {
+						"en": "Unique network identifer for the camera."
+					}
+				},
+				{
+					"id": "manufacturer",
+					"type": "label",
+					"label": {
+						"en": "Manufacturer",
+						"de": "Hersteller",
+						"nl": "Fabrikant",
+						"it": "Costruttore"
+					},
+					"value": "",
+					"hint": {
+						"en": "The manufacture name that is reported by the camera. This might be different to the name on the box"
+					}
+				},
+				{
+					"id": "model",
+					"type": "label",
+					"label": {
+						"en": "Model",
+						"de": "Model",
+						"nl": "Model",
+						"it": "Modello"
+					},
+					"value": "",
+					"hint": {
+						"en": "The model name that is reported by the camera. This might be different to the name on the box"
+					}
+				},
+				{
+					"id": "serialNumber",
+					"type": "label",
+					"label": {
+						"en": "Serial Number",
+						"de": "Serial Nummer",
+						"nl": "Serienummer",
+						"it": "Numero di Serie"
+					},
+					"value": "",
+					"hint": {
+						"en": "The serial number that is reported by the camera."
+					}
+				},
+				{
+					"id": "firmwareVersion",
+					"type": "label",
+					"label": {
+						"en": "Firmware Version",
+						"de": "Firmware Version",
+						"nl": "Software versie",
+						"it": "Versione del Firmware"
+					},
+					"value": "",
+					"hint": {
+						"en": "The firmware version that is reported by the camera."
+					}
+				},
+				{
+					"id": "ip",
+					"type": "text",
+					"label": {
+						"en": "IP Address",
+						"de": "IP-Addresse",
+						"nl": "IP adres",
+						"it": "Indirizzo IP"
+					},
+					"value": "",
+					"hint": {
+						"en": "The IP address of the camera on youe network. You can change this if required."
+					}
+				},
+				{
+					"id": "port",
+					"type": "text",
+					"label": {
+						"en": "Port",
+						"de": "Port",
+						"nl": "Poort",
+						"it": "Porta"
+					},
+					"value": "0",
+					"hint": {
+						"en": "The ONVIF service Port number of the camera. You can change this if required.",
+						"de": "Die ONVIF-Service-Portnummer der Kamera. Sie können dies bei Bedarf ändern.",
+						"nl": "De ONVIF-service Poortnummer van de camera. U kunt dit desgewenst wijzigen.",
+						"it": "Il numero di porta del servizio ONVIF della telecamera. È possibile modificarlo se necessario."
+					}
+				},
+				{
+					"id": "hasSnapshot",
+					"type": "checkbox",
+					"label": {
+						"en": "Supports Snapshots",
+						"de": "Supports Snapshots",
+						"nl": "Supports Snapshots",
+						"it": "Supports Snapshots"
+					},
+					"value": false,
+					"hint": {
+						"en": "Specifies if the camera supports a snapshot. You can override this if the camera supports a snapshot that is not reported va the ONVIF protocol.",
+						"de": "Gibt an, ob die Kamera einen Schnappschuss unterstützt. Sie können dies überschreiben, wenn die Kamera einen Schnappschuss unterstützt, der nicht über das ONVIF-Protokoll gemeldet wird.",
+						"nl": "Geeft aan of de camera een momentopname ondersteunt. U kunt dit negeren als de camera een momentopname ondersteunt die niet wordt gerapporteerd via het ONVIF-protocol.",
+						"it": "Specifica se la telecamera supporta un'istantanea. È possibile sovrascriverlo se la telecamera supporta un'istantanea che non viene riportata dal protocollo ONVIF."
+					}
+				},
+				{
+					"id": "url",
+					"type": "label",
+					"label": {
+						"en": "ONVIF Snapshot URL",
+						"de": "ONVIF Standbild URL",
+						"nl": "ONVIF snapshot URL",
+						"it": "ONVIF Snapshot URL"
+					},
+					"value": "",
+					"hint": {
+						"en": "The snapshot URL that is reported by the camera.",
+						"de": "Die Snapshot-URL, die von der Kamera gemeldet wird.",
+						"nl": "De snapshot-URL die door de camera wordt gerapporteerd.",
+						"it": "L'URL dell'istantanea segnalato dalla telecamera."
+					}
+				},
+				{
+					"id": "userSnapUri",
+					"type": "text",
+					"label": {
+						"en": "USER Snapshot URL",
+						"de": "USER Standbild URL",
+						"nl": "USER snapshot URL",
+						"it": "USER Snapshot URL"
+					},
+					"value": "",
+					"hint": {
+						"en": "An alternative snapshot URL that overrides th detected one.\nLeave the field blank to use the detected URL.",
+						"de": "Eine alternative Snapshot-URL, die die erkannte überschreibt.\nCLassen Sie das Feld leer, um die erkannte URL zu verwenden.",
+						"nl": "Een alternatieve snapshot-URL die de gedetecteerde URL overschrijft.\nLaat het veld leeg om de gedetecteerde URL te gebruiken.",
+						"it": "Un URL di istantanea alternativo che sostituisce quello rilevato.\nLascia il campo vuoto per utilizzare l'URL rilevato."
+					}
+				},
+				{
+					"id": "notificationMethods",
+					"type": "label",
+					"label": {
+						"en": "ONVIF Notification methods",
+						"de": "ONVIF Mitteilungs Methode",
+						"nl": "ONVIF notificatie metode",
+						"it": "ONVIF Metodi di notifica"
+					},
+					"value": "",
+					"hint": {
+						"en": "The availble methods the camera has reported for detecting an event.",
+						"de": "Die verfügbaren Methoden, die die Kamera zum Erkennen eines Ereignisses gemeldet hat.",
+						"nl": "De beschikbare methoden die de camera heeft gerapporteerd voor het detecteren van een gebeurtenis.",
+						"it": "I metodi disponibili segnalati dalla telecamera per rilevare un evento."
+					}
+				},
+				{
+					"id": "notificationTypes",
+					"type": "label",
+					"label": {
+						"en": "ONVIF Notification types",
+						"de": "ONVIF Mitteilungs Typen",
+						"nl": "ONVIF notificatie type",
+						"it": "ONVIF Tipi di notifica"
+					},
+					"value": "",
+					"hint": {
+						"en": "Shows the types of event the camera supports. The app requires the MOTION event but detects notifications of IsMotion, IsInside for motion as well as IsTamper for tamper detection.",
+						"de": "Zeigt die von der Kamera unterstützten Ereignistypen an. Die App erfordert das MOTION-Ereignis, erkennt jedoch Benachrichtigungen von IsMotion, IsInside für Bewegungen sowie IsTamper für die Manipulationserkennung.",
+						"nl": "Toont de soorten gebeurtenissen die de camera ondersteunt. De app vereist de MOTION-gebeurtenis, maar detecteert meldingen van IsMotion, IsInside voor beweging en IsTamper voor sabotagedetectie.",
+						"it": "Mostra i tipi di eventi supportati dalla telecamera. L'app richiede l'evento MOTION ma rileva le notifiche di IsMotion, IsInside per il movimento e IsTamper per il rilevamento delle manomissioni."
+					}
+				},
+				{
+					"id": "notificationToUse",
+					"type": "radio",
+					"label": {
+						"en": "ONVIF Motion Notification to use",
+						"de": "ONVIF Motion Notification zu verwenden",
+						"nl": "ONVIF Motion Notification te gebruiken",
+						"it": "Notifica di movimento ONVIF da utilizzare"
+					},
+					"value": "RuleEngine/CellMotionDetector/Motion:IsMotion",
+					"values": [
+						{
+							"id": "RuleEngine/CellMotionDetector/Motion:IsMotion",
+							"label": {
+								"en": "MOTION (IsMotion)"
+							}
+						},
+						{
+							"id": "RuleEngine/FieldDetector/ObjectsInside:IsInside",
+							"label": {
+								"en": "ANALYTICSSERVICE (IsInside)"
+							}
+						},
+						{
+							"id": "VideoSource/MotionAlarm:State",
+							"label": {
+								"en": "MOTIONALARM (State)"
+							}
+						},
+						{
+							"id": "Device/Trigger/DigitalInput:LogicalState",
+							"label": {
+								"en": "DIGITALINPUT (LogicalState)"
+							}
+						}
+					],
+					"hint": {
+						"en": "Select the type of notification to use for motion detect. If the selected type is not supported then the setting will fall back to MOTION IsMotion or MOTIONALARM",
+						"de": "Wählen Sie die Art der Benachrichtigung aus, die für die Bewegungserkennung verwendet werden soll. Wenn der ausgewählte Typ nicht unterstützt wird, wird die Einstellung auf MOTION IsMotion oder MOTIONALARM zurückgesetzt",
+						"nl": "Selecteer het type melding dat u wilt gebruiken voor bewegingsdetectie. Als het geselecteerde type niet wordt ondersteund, valt de instelling terug op MOTION IsMotion of MOTIONALARM",
+						"it": "Seleziona il tipo di notifica da utilizzare per il rilevamento del movimento. Se il tipo selezionato non è supportato, l'impostazione tornerà a MOTION IsMotion o MOTIONALARM"
+					}
+				},
+				{
+					"id": "objectID",
+					"type": "text",
+					"label": {
+						"en": "Event Object ID"
+					},
+					"value": "",
+					"hint": {
+						"en": "The ID that is sent from the camera for the ANALYTICSSERVICE event. Leave empty to match any. Seperate multiples with a comma.",
+						"de": "Die ID, die von der Kamera für das ANALYTICSSERVICE-Ereignis gesendet wird. Lassen Sie das Feld leer. Separate Vielfache mit einem Komma.",
+						"nl": "De ID die door de camera is verzonden voor de ANALYTICSSERVICE-gebeurtenis. Laat het leeg om het te matchen. Scheid veelvouden met een komma.",
+						"it": "L'ID inviato dalla telecamera per l'evento ANALYTICSSERVICE. Lascia vuoto per abbinare qualsiasi. Multipli separati con una virgola."
+					}
+				}
+			]
+		}
+	],
+	"images": {
+		"large": "/drivers/camera/assets/images/large.png",
+		"small": "/drivers/camera/assets/images/small.png"
+	}
 }

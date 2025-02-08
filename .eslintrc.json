@@ -4,7 +4,7 @@
 	{
 		"node/no-extraneous-require": "off",
 		"indent": "off",
-		"brace-style": "off",
+		"brace-style": ["error", "stroustrup"],
 		"function-paren-newline": ["error", "consistent"],
 		"linebreak-style": ["error", "windows"],
 		"no-tabs": ["error", { "allowIndentationTabs": true }],
