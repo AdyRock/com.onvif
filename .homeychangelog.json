@@ -412,5 +412,8 @@
   },
   "2.0.50": {
 	"en": "Removed deprecated setting from the Flows 'Update Snapshot' action card."
+  },
+  "2.0.51": {
+	"en": "Added support for PTZ presets."
   }
 }
