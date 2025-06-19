@@ -16,85 +16,88 @@
   https://github.com/lego12239/busy_indicator.js
 */
 
-"use strict";
+'use strict';
 
-function busy_indicator(cntr_el, img_el, show_cb, hide_cb)
-{
+function busy_indicator(cntr_el, img_el, show_cb, hide_cb) {
 	this.el = {};
-	this.cb = {show: null, hide: null};
-	this.pos = {x: 0, y: 0};
-	this.show_class = "show";
+	this.cb = { show: null, hide: null };
+	this.pos = { x: 0, y: 0 };
+	this.show_class = 'show';
 
-
-	this._set_prm.call(this.el, "cntr", cntr_el);
+	this._set_prm.call(this.el, 'cntr', cntr_el);
 	this.el.img = img_el;
-	if (show_cb != undefined)
-		this.cb.show = show_cb;
-	if (hide_cb != undefined)
-		this.cb.hide = hide_cb;
+	if (show_cb != undefined) {
+this.cb.show = show_cb;
+}
+	if (hide_cb != undefined) {
+this.cb.hide = hide_cb;
+}
 
 	this.cnt = 0;
 }
 
-busy_indicator.prototype._set_prm = function (n, v)
-{
-	if (( v == undefined ) || ( v == null ))
-		throw("busy_indicator: " + n + " is not supplied");
-	this[n] = v;
+busy_indicator.prototype._set_prm = function(n, v) {
+	if ((v == undefined) || (v == null)) {
+throw (`busy_indicator: ${n} is not supplied`);
 }
+	this[n] = v;
+};
 
-busy_indicator.prototype.show = function ()
-{
-	var top, left;
-	var img_el;
-
+busy_indicator.prototype.show = function() {
+	let top; let
+left;
+	let img_el;
 
 	this.cnt++;
-	if ( this.cnt > 1 )
-		return;
+	if (this.cnt > 1) {
+return;
+}
 
 	this.el.cntr.classList.add(this.show_class);
 
 	this.align();
-	
-	if (this.cb.show != undefined)
-		this.cb.show();
+
+	if (this.cb.show != undefined) {
+this.cb.show();
+}
+};
+
+busy_indicator.prototype.align = function() {
+	if (this.el.img == null) {
+return;
 }
 
-busy_indicator.prototype.align = function ()
-{
-	if (this.el.img == null)
-		return;
-	
 	this.pos = this.calc_pos();
 
-	this.el.img.style.top = this.pos.y + "px";
-	this.el.img.style.left = this.pos.x + "px";
+	this.el.img.style.top = `${this.pos.y}px`;
+	this.el.img.style.left = `${this.pos.x}px`;
+};
+
+busy_indicator.prototype.calc_pos = function() {
+	let x; let
+y;
+
+	x = this.el.cntr.clientWidth / 2 - this.el.img.offsetWidth / 2;
+	y = this.el.cntr.clientHeight / 2 - this.el.img.offsetHeight / 2;
+
+	return { x, y };
+};
+
+busy_indicator.prototype.hide = function() {
+	if (this.cnt > 0) {
+this.cnt--;
+}
+	else {
+return;
 }
 
-busy_indicator.prototype.calc_pos = function ()
-{
-	var x, y;
-
-
-	x = this.el.cntr.clientWidth/2 - this.el.img.offsetWidth/2;
-	y = this.el.cntr.clientHeight/2 - this.el.img.offsetHeight/2;
-	
-	return {x: x, y: y};
+	if (this.cnt) {
+return;
 }
-
-busy_indicator.prototype.hide = function ()
-{
-	if ( this.cnt > 0 )
-		this.cnt--;
-	else
-		return;
-
-	if ( this.cnt )
-		return;
 
 	this.el.cntr.classList.remove(this.show_class);
 
-	if (this.cb.hide != undefined)
-		this.cb.hide();
+	if (this.cb.hide != undefined) {
+this.cb.hide();
 }
+};
