@@ -1,16 +1,16 @@
 {
-    "type": "boolean",
-    "title": {
-        "en": "Storage failed"
-    },
-    "insights": true,
-    "insightsTitleTrue": {
-      "en": "Storage alarm turned on"
-    },
-    "insightsTitleFalse": {
-      "en": "Storage alarm turned off"
-    },
-    "getable": true,
-    "setable": false,
-    "icon": "/assets/sd_card.svg"
+  "type": "boolean",
+  "title": {
+    "en": "Storage failed"
+  },
+  "insights": true,
+  "insightsTitleTrue": {
+    "en": "Storage alarm turned on"
+  },
+  "insightsTitleFalse": {
+    "en": "Storage alarm turned off"
+  },
+  "getable": true,
+  "setable": false,
+  "icon": "/assets/sd_card.svg"
 }

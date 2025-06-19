@@ -1,23 +1,23 @@
 {
-    "title": {
-        "en": "Update snapshot",
-        "de": "Standbild jetzt erneuern",
-        "nl": "Ververs snapshot",
-        "it": "Aggiorna Immagine Istantanea",
-        "fr": "Mettre à jour l'image"
-    },
-    "titleFormatted": {
-        "en": "Update snapshot",
-        "de": "Standbild jetzt erneuern",
-        "nl": "Ververs snapshot",
-        "it": "Aggiorna Immagine Istantanea",
-        "fr": "Mettre à jour l'image"
-    },
-    "args": [
-        {
-        "type": "device",
-        "name": "device",
-        "filter": "driver_id=camera&capabilities=motion_enabled"
-        }
-    ]
+  "title": {
+    "en": "Update snapshot",
+    "de": "Standbild jetzt erneuern",
+    "nl": "Ververs snapshot",
+    "it": "Aggiorna Immagine Istantanea",
+    "fr": "Mettre à jour l'image"
+  },
+  "titleFormatted": {
+    "en": "Update snapshot",
+    "de": "Standbild jetzt erneuern",
+    "nl": "Ververs snapshot",
+    "it": "Aggiorna Immagine Istantanea",
+    "fr": "Mettre à jour l'image"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=camera&capabilities=motion_enabled"
+    }
+  ]
 }

@@ -1,23 +1,23 @@
 {
-    "title": {
-        "en": "Disable motion",
-        "de": "Bewegung abschalten",
-        "nl": "Beweging inactief",
-        "it": "Movimento Disabilitato",
-        "fr": "Désactiver la détection de mouvement"
-    },
-    "titleFormatted": {
-        "en": "Disable motion",
-        "de": "Bewegung abschalten",
-        "nl": "Beweging inactief",
-        "it": "Movimento Disabilitato",
-        "fr": "Désactiver la détection de mouvement"        
-    },
-    "args": [
-        {
-        "type": "device",
-        "name": "device",
-        "filter": "driver_id=camera&capabilities=motion_enabled"
-        }
-    ]
+  "title": {
+    "en": "Disable motion",
+    "de": "Bewegung abschalten",
+    "nl": "Beweging inactief",
+    "it": "Movimento Disabilitato",
+    "fr": "Désactiver la détection de mouvement"
+  },
+  "titleFormatted": {
+    "en": "Disable motion",
+    "de": "Bewegung abschalten",
+    "nl": "Beweging inactief",
+    "it": "Movimento Disabilitato",
+    "fr": "Désactiver la détection de mouvement"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=camera&capabilities=motion_enabled"
+    }
+  ]
 }

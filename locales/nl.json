@@ -1,16 +1,16 @@
 {
-    "settings": {
-        "diagnosticsLog": "Diagnose Log",
-        "logLevel": "Log niveau",
-        "ClearLog": "Log wissen",
-        "SendLog": "Log versturen"
-    },
-    "Push_Pull_Supported": "Push en Pull ondersteuning",
-    "Using_Pull": "Pull gebruiken",
-    "Using_Push": "Push gebruiken",
-    "Only_Pull_Supported": "Alleen Pull ondersteuning",
-    "Only_Push_Supported": "Alleen Push ondersteuning",
-    "Not_Supported": "Wordt niet ondersteund",
-    "Motion_Event": "Beweging",
-    "Now": "Snapshot"
+  "settings": {
+    "diagnosticsLog": "Diagnose Log",
+    "logLevel": "Log niveau",
+    "ClearLog": "Log wissen",
+    "SendLog": "Log versturen"
+  },
+  "Push_Pull_Supported": "Push en Pull ondersteuning",
+  "Using_Pull": "Pull gebruiken",
+  "Using_Push": "Push gebruiken",
+  "Only_Pull_Supported": "Alleen Pull ondersteuning",
+  "Only_Push_Supported": "Alleen Push ondersteuning",
+  "Not_Supported": "Wordt niet ondersteund",
+  "Motion_Event": "Beweging",
+  "Now": "Snapshot"
 }

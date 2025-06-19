@@ -42,7 +42,7 @@ class MyApp extends Homey.App {
 
     this.logLevel = this.homey.settings.get('logLevel');
 
-    this.homey.settings.on('set', (setting) => {
+    this.homey.settings.on('set', setting => {
       if (setting === 'logLevel') {
         this.logLevel = this.homey.settings.get('logLevel');
       }
@@ -76,7 +76,7 @@ class MyApp extends Homey.App {
       this.unregisterCameras();
     });
 
-    this.homey.on('memwarn', (data) => {
+    this.homey.on('memwarn', data => {
       if (data) {
         if (data.count >= data.limit - 2) {
           this.homey.settings.set('diagLog', '');
@@ -88,12 +88,12 @@ class MyApp extends Homey.App {
       }
     });
 
-    this.homey.on('cpuwarn', (data) => {
+    this.homey.on('cpuwarn', data => {
       if (data) {
         if (data.count >= data.limit - 2) {
           this.updateLog('Closing server', 0);
           if (this.server && this.server.listening) {
-            this.server.close((err) => {
+            this.server.close(err => {
               this.updateLog(`Server closed: ${err}`, 0);
             });
             this.server.closeAllConnections();
@@ -112,16 +112,12 @@ class MyApp extends Homey.App {
   }
 
   async registerFlowCard() {
-    this.motionCondition = this.homey.flow.getConditionCard(
-      'motionEnabledCondition',
-    );
+    this.motionCondition = this.homey.flow.getConditionCard('motionEnabledCondition');
     this.motionCondition.registerRunListener(async (args, state) => {
       return await args.device.getCapabilityValue('motion_enabled'); // Promise<boolean>
     });
 
-    this.motionReadyCondition = this.homey.flow.getConditionCard(
-      'motionReadyCondition',
-    );
+    this.motionReadyCondition = this.homey.flow.getConditionCard('motionReadyCondition');
     this.motionReadyCondition.registerRunListener(async (args, state) => {
       let remainingTime = args.waitTime * 10;
       while (remainingTime > 0 && args.device.updatingEventImage) {
@@ -139,9 +135,7 @@ class MyApp extends Homey.App {
       return await args.device.setCapabilityValue('motion_enabled', true); // Promise<void>
     });
 
-    this.motionDisabledAction = this.homey.flow.getActionCard(
-      'motionDisableAction',
-    );
+    this.motionDisabledAction = this.homey.flow.getActionCard('motionDisableAction');
     this.motionDisabledAction.registerRunListener(async (args, state) => {
       console.log('motionDisabledAction');
       args.device.onCapabilityMotionEnable(false, null);
@@ -164,9 +158,7 @@ class MyApp extends Homey.App {
       return err;
     });
 
-    this.motionUpdateAction = this.homey.flow.getActionCard(
-      'updateMotionImageAction',
-    );
+    this.motionUpdateAction = this.homey.flow.getActionCard('updateMotionImageAction');
     this.motionUpdateAction.registerRunListener(async (args, state) => {
       return args.device.updateMotionImage(0);
     });
@@ -180,15 +172,13 @@ class MyApp extends Homey.App {
         return device.gotoPreset(presetNumber);
       });
 
-    this.motionTrigger = this.homey.flow.getTriggerCard(
-      'global_motion_detected',
-    );
+    this.motionTrigger = this.homey.flow.getTriggerCard('global_motion_detected');
   }
 
   hashCode(s) {
     for (var i = 0, h = 0; i < s.length; i++) {
-h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
-}
+      h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+    }
     return h;
   }
 
@@ -220,9 +210,7 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
             data.notificationMessage = [data.notificationMessage];
           }
 
-          const messageToken = this.getMessageToken(
-            data.notificationMessage[0].message.message,
-          );
+          const messageToken = this.getMessageToken(data.notificationMessage[0].message.message);
           this.updateLog(`Push event token: ${messageToken}`, 1);
 
           // Find the referenced device
@@ -234,32 +222,24 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
               const device = devices[i];
               if (device.ip == eventIP) {
                 // Correct IP so check the token for multiple cameras on this IP
-                if (
-                  !device.token
-                  || !messageToken
-                  || messageToken == device.token
-                ) {
+                if (!device.token || !messageToken || messageToken == device.token) {
                   theDevice = device;
                   if (this.logLevel >= 2) {
-                    this.updateLog(
-                      `Push Event found correct Device: ${device.token}`,
-                    );
+                    this.updateLog(`Push Event found correct Device: ${device.token}`);
                   }
                   break;
                 }
  else if (this.logLevel >= 2) {
-                    this.updateLog('Wrong channel token');
-                  }
+                  this.updateLog('Wrong channel token');
+                }
               }
             }
           }
 
           if (theDevice) {
-            data.notificationMessage.forEach((message) => {
+            data.notificationMessage.forEach(message => {
               if (this.logLevel >= 2) {
-                this.updateLog(
-                  `Push Event process: ${this.varToString(message)}`,
-                );
+                this.updateLog(`Push Event process: ${this.varToString(message)}`);
               }
               theDevice.processCamEventMessage(message);
             });
@@ -279,24 +259,17 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
     const requestListener = (request, response) => {
       const pathParts = request.url.split('/');
 
-      if (
-        pathParts[1] === 'onvif'
-        && pathParts[2] === 'events'
-        && request.method === 'POST'
-      ) {
+      if (pathParts[1] === 'onvif' && pathParts[2] === 'events' && request.method === 'POST') {
         const eventIP = pathParts[3];
-        if (
-          request.headers['content-type'].startsWith('application/soap+xml')
-        ) {
+        if (request.headers['content-type'].startsWith('application/soap+xml')) {
           let body = '';
-          request.on('data', (chunk) => {
+          request.on('data', chunk => {
             body += chunk.toString(); // convert Buffer to string
             if (body.length > 50000) {
               this.updateLog('Push data error: Payload too large', 0);
               response.writeHead(413);
               response.end('Payload Too Large');
               body = '';
-
             }
           });
           request.on('end', () => {
@@ -314,32 +287,22 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
           });
         }
  else {
-          this.updateLog(
-            `Push data invalid content type: ${
-              request.headers['content-type']}`,
-            0,
-          );
+          this.updateLog(`Push data invalid content type: ${request.headers['content-type']}`, 0);
           response.writeHead(415);
           response.end('Unsupported Media Type');
         }
       }
  else {
-        this.updateLog(
-          `Push data error: ${request.url}: METHOD = ${request.method}`,
-          0,
-        );
+        this.updateLog(`Push data error: ${request.url}: METHOD = ${request.method}`, 0);
         response.writeHead(405);
         response.end('Method not allowed');
       }
     };
 
     this.server = http.createServer(requestListener);
-    this.server.on('error', (e) => {
+    this.server.on('error', e => {
       if (e.code === 'EADDRINUSE') {
-        this.updateLog(
-          `Server port ${this.pushServerPort} in use, retrying in 10 seconds`,
-          0,
-        );
+        this.updateLog(`Server port ${this.pushServerPort} in use, retrying in 10 seconds`, 0);
         setTimeout(() => {
           this.server.close();
           this.server.listen(this.pushServerPort);
@@ -365,31 +328,23 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
           // function will be called as soon as NVT responds
           this.updateLog(`Reply from ${this.varToString(cam)}`, 1);
           this.updateLog(
-            `Discovery debug - cam.href: ${
-              cam.href
-               }, cam.path: ${
-               cam.path
-               }, cam.port: ${
-               cam.port
-               }, cam.hostname: ${
-               cam.hostname}`,
-            2,
+            `Discovery debug - cam.href: ${cam.href}, cam.path: ${cam.path}, cam.port: ${
+              cam.port
+            }, cam.hostname: ${cam.hostname}`,
+            2
           );
 
           // If cam object doesn't have parsed properties, try to parse from the original discovery data
           if (!cam.hostname && !cam.port && !cam.path && !cam.href) {
-            this.updateLog(
-              'Discovery: cam object missing parsed properties, checking raw data',
-              2,
-            );
+            this.updateLog('Discovery: cam object missing parsed properties, checking raw data', 2);
 
             let xAddrs = null;
 
             // Try multiple ways to extract XAddrs from the cam object
             if (
-              cam.probeMatches
-              && cam.probeMatches.probeMatch
-              && cam.probeMatches.probeMatch.XAddrs
+              cam.probeMatches &&
+              cam.probeMatches.probeMatch &&
+              cam.probeMatches.probeMatch.XAddrs
             ) {
               xAddrs = cam.probeMatches.probeMatch.XAddrs;
             }
@@ -402,10 +357,8 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
                 for (const key in obj) {
                   if (key === 'XAddrs' && typeof obj[key] === 'string') {
                     return obj[key];
-                  } if (
-                    typeof obj[key] === 'object'
-                    && obj[key] !== null
-                  ) {
+                  }
+                  if (typeof obj[key] === 'object' && obj[key] !== null) {
                     const found = searchForXAddrs(obj[key], `${path}.${key}`);
                     if (found) return found;
                   }
@@ -427,27 +380,18 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
                 cam.href = xAddrs;
 
                 this.updateLog(
-                  `Discovery: Parsed - hostname: ${
-                    cam.hostname
-                     }, port: ${
-                     cam.port
-                     }, path: ${
-                     cam.path}`,
-                  2,
+                  `Discovery: Parsed - hostname: ${cam.hostname}, port: ${cam.port}, path: ${
+                    cam.path
+                  }`,
+                  2
                 );
               }
  catch (parseErr) {
-                this.updateLog(
-                  `Discovery: Error parsing XAddrs: ${parseErr.message}`,
-                  0,
-                );
+                this.updateLog(`Discovery: Error parsing XAddrs: ${parseErr.message}`, 0);
               }
             }
  else {
-              this.updateLog(
-                'Discovery: Could not find XAddrs in cam object',
-                1,
-              );
+              this.updateLog('Discovery: Could not find XAddrs in cam object', 1);
             }
           }
 
@@ -457,39 +401,24 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
           // Check if href contains onvif
           if (cam.href && cam.href.toLowerCase().indexOf('onvif') >= 0) {
             isValidOnvifDevice = true;
-            this.updateLog(
-              "Discovery: Device validated via href containing 'onvif'",
-              2,
-            );
+            this.updateLog("Discovery: Device validated via href containing 'onvif'", 2);
           }
 
           // Check if path contains onvif
-          if (
-            !isValidOnvifDevice
-            && cam.path
-            && cam.path.toLowerCase().indexOf('onvif') >= 0
-          ) {
+          if (!isValidOnvifDevice && cam.path && cam.path.toLowerCase().indexOf('onvif') >= 0) {
             isValidOnvifDevice = true;
-            this.updateLog(
-              "Discovery: Device validated via path containing 'onvif'",
-              2,
-            );
+            this.updateLog("Discovery: Device validated via path containing 'onvif'", 2);
           }
 
           // Check if it's on typical ONVIF ports
           if (
-            !isValidOnvifDevice
-            && cam.hostname
-            && cam.port
-            && (cam.port === 80 || cam.port === 2020 || cam.port === 8080)
+            !isValidOnvifDevice &&
+            cam.hostname &&
+            cam.port &&
+            (cam.port === 80 || cam.port === 2020 || cam.port === 8080)
           ) {
             isValidOnvifDevice = true;
-            this.updateLog(
-              `Discovery: Device validated via typical ONVIF port (${
-                cam.port
-                 })`,
-              2,
-            );
+            this.updateLog(`Discovery: Device validated via typical ONVIF port (${cam.port})`, 2);
           }
 
           // If we haven't validated yet, try to construct the full URL from hostname and port to check for onvif
@@ -499,7 +428,7 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
               isValidOnvifDevice = true;
               this.updateLog(
                 "Discovery: Device validated via constructed URL containing 'onvif'",
-                2,
+                2
               );
             }
           }
@@ -507,10 +436,7 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
           // As a last resort, assume any device responding to discovery is valid ONVIF
           if (!isValidOnvifDevice && cam.hostname) {
             isValidOnvifDevice = true;
-            this.updateLog(
-              'Discovery: Device validated as responding to ONVIF discovery probe',
-              2,
-            );
+            this.updateLog('Discovery: Device validated as responding to ONVIF discovery probe', 2);
           }
 
           if (isValidOnvifDevice) {
@@ -542,23 +468,15 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
           }
  else {
             this.updateLog(
-              `Discovery (${
-                cam.hostname
-                 }): Could not validate as ONVIF device - href: '${
-                 cam.href
-                 }', path: '${
-                 cam.path
-                 }', port: ${
-                 cam.port}`,
-              0,
+              `Discovery (${cam.hostname}): Could not validate as ONVIF device - href: '${
+                cam.href
+              }', path: '${cam.path}', port: ${cam.port}`,
+              0
             );
           }
         }
  catch (err) {
-          this.updateLog(
-            `Discovery catch error: ${err.message}\n${err.message}`,
-            0,
-          );
+          this.updateLog(`Discovery catch error: ${err.message}\n${err.message}`, 0);
         }
       });
 
@@ -576,7 +494,7 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
     });
 
     // Allow time for the process to finish
-    await new Promise((resolve) => this.homey.setTimeout(resolve, 9000));
+    await new Promise(resolve => this.homey.setTimeout(resolve, 9000));
 
     // Add in a manual option
 
@@ -589,9 +507,7 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
 
   async connectCamera(hostname, port, username, password) {
     this.updateLog('--------------------------');
-    this.updateLog(
-      `Connect to Camera ${hostname}:${port} - ${username}`,
-    );
+    this.updateLog(`Connect to Camera ${hostname}:${port} - ${username}`);
 
     const camObj = new Cam({
       homeyApp: this.homey,
@@ -638,7 +554,7 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
 
   async checkCameras() {
     do {
-      await new Promise((resolve) => this.homey.setTimeout(resolve, 10000));
+      await new Promise(resolve => this.homey.setTimeout(resolve, 10000));
 
       const driver = this.homey.drivers.getDriver('camera');
       if (driver) {
@@ -734,32 +650,24 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
 
       let unsubscribeRef = null;
       let pushEvent = this.pushEvents.find(
-        (element) => element.devices.length > 0
-          && element.devices[0].cam.hostname === Device.cam.hostname,
+        element =>
+          element.devices.length > 0 && element.devices[0].cam.hostname === Device.cam.hostname
       );
       if (pushEvent) {
-        this.updateLog(
-          `App.subscribeToCamPushEvents: Found entry for ${Device.cam.hostname}`,
-        );
+        this.updateLog(`App.subscribeToCamPushEvents: Found entry for ${Device.cam.hostname}`);
         // An event is already registered for this IP address
         this.homey.clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
         unsubscribeRef = pushEvent.unsubscribeRef;
         pushEvent.eventSubscriptionRenewTimerId = null;
 
         // see if this device is registered
-        if (!pushEvent.devices.find((element) => element.id == Device.id)) {
-          this.updateLog(
-            `App.subscribeToCamPushEvents: Adding device ${
-              Device.name
-               } to the queue`,
-          );
+        if (!pushEvent.devices.find(element => element.id == Device.id)) {
+          this.updateLog(`App.subscribeToCamPushEvents: Adding device ${Device.name} to the queue`);
           pushEvent.devices.push(Device);
         }
       }
  else {
-        this.updateLog(
-          `App.subscribeToCamPushEvents: Registering ${Device.cam.hostname}`,
-        );
+        this.updateLog(`App.subscribeToCamPushEvents: Registering ${Device.cam.hostname}`);
         pushEvent = {
           devices: [],
           refreshTime: 0,
@@ -774,13 +682,7 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
         this.updateLog(`Renew previous events: ${unsubscribeRef}`);
         Device.cam.renew((err, info, xml) => {
           if (err) {
-            this.updateLog(
-              `Renew subscription err (${
-                Device.name
-                 }): ${
-                 this.varToString(err)}`,
-              0,
-            );
+            this.updateLog(`Renew subscription err (${Device.name}): ${this.varToString(err)}`, 0);
             console.log(err);
             // Refresh was probably too late so subscribe again
             pushEvent.unsubscribeRef = null;
@@ -789,16 +691,12 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
               this.subscribeToCamPushEvents(Device).catch(this.err);
             });
             resolve(true);
-
           }
  else {
             this.updateLog(
-              `Renew subscription response (${
-                Device.name
-                 }): ${
-                 Device.cam.hostname
-                 }\r\ninfo: ${
-                 this.varToString(info)}`,
+              `Renew subscription response (${Device.name}): ${
+                Device.cam.hostname
+              }\r\ninfo: ${this.varToString(info)}`
             );
             const startTime = info.currentTime;
             const endTime = info.terminationTime;
@@ -806,10 +704,7 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
             const d2 = new Date(endTime);
             let refreshTime = d2.valueOf() - d1.valueOf();
 
-            this.updateLog(
-              `Push renew every (${Device.name}): ${refreshTime / 1000}`,
-              1,
-            );
+            this.updateLog(`Push renew every (${Device.name}): ${refreshTime / 1000}`, 1);
             refreshTime -= 5000;
             if (refreshTime < 0) {
               this.unsubscribe(Device).catch(this.err);
@@ -821,15 +716,11 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
 
             pushEvent.refreshTime = refreshTime;
             pushEvent.unsubscribeRef = unsubscribeRef;
-            pushEvent.eventSubscriptionRenewTimerId = this.homey.setTimeout(
-              () => {
-                this.updateLog('Renewing subscription');
-                this.subscribeToCamPushEvents(Device).catch(this.err);
-              },
-              refreshTime,
-            );
+            pushEvent.eventSubscriptionRenewTimerId = this.homey.setTimeout(() => {
+              this.updateLog('Renewing subscription');
+              this.subscribeToCamPushEvents(Device).catch(this.err);
+            }, refreshTime);
             resolve(true);
-
           }
         });
       }
@@ -837,29 +728,18 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
         // const url = "http://" + this.homeyIP + ":" + this.pushServerPort + "/onvif/events?deviceId=" + Device.cam.hostname;
         const hostPath = Device.cam.hostname;
 
-        const url = `http://${
-           this.homeyIP
-           }:${
-           this.pushServerPort
-           }/onvif/events/${
-           hostPath}`;
-        this.updateLog(
-          `Setting up Push events (${Device.name}) on: ${url}`,
-        );
+        const url = `http://${this.homeyIP}:${this.pushServerPort}/onvif/events/${hostPath}`;
+        this.updateLog(`Setting up Push events (${Device.name}) on: ${url}`);
         Device.cam.subscribe({ url }, (err, info, xml) => {
           if (err) {
             this.updateLog(`Subscribe err (${Device.name}): ${err}`, 0);
             reject(err);
-
           }
  else {
             this.updateLog(
-              `Subscribe response (${
-                Device.name
-                 }): ${
-                 Device.cam.hostname
-                 } - Info: ${
-                 this.varToString(info)}`,
+              `Subscribe response (${Device.name}): ${
+                Device.cam.hostname
+              } - Info: ${this.varToString(info)}`
             );
             unsubscribeRef = info.subscriptionReference.address;
 
@@ -870,13 +750,8 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
             let refreshTime = d2.valueOf() - d1.valueOf();
 
             this.updateLog(
-              `Push renew every (${
-                Device.name
-                 }): ${
-                 refreshTime / 1000
-                 }s  @ ${
-                 unsubscribeRef}`,
-              1,
+              `Push renew every (${Device.name}): ${refreshTime / 1000}s  @ ${unsubscribeRef}`,
+              1
             );
             refreshTime -= 5000;
             if (refreshTime < 0) {
@@ -889,15 +764,11 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
 
             pushEvent.refreshTime = refreshTime;
             pushEvent.unsubscribeRef = unsubscribeRef;
-            pushEvent.eventSubscriptionRenewTimerId = this.homey.setTimeout(
-              () => {
-                this.updateLog('Renewing subscription');
-                this.subscribeToCamPushEvents(Device).catch(this.err);
-              },
-              refreshTime,
-            );
+            pushEvent.eventSubscriptionRenewTimerId = this.homey.setTimeout(() => {
+              this.updateLog('Renewing subscription');
+              this.subscribeToCamPushEvents(Device).catch(this.err);
+            }, refreshTime);
             resolve(true);
-
           }
         });
       }
@@ -914,15 +785,14 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
       let deviceIdx = -1;
       let pushEvent = null;
       const pushEventIdx = this.pushEvents.findIndex(
-        (element) => element.devices[0]
-          && Device.cam
-          && element.devices[0].cam.hostname === Device.cam.hostname,
+        element =>
+          element.devices[0] &&
+          Device.cam &&
+          element.devices[0].cam.hostname === Device.cam.hostname
       );
       console.log('pushEvent Idx = ', pushEventIdx);
       if (pushEventIdx >= 0) {
-        this.updateLog(
-          `App.unsubscribe: Found entry for ${Device.cam.hostname}`,
-        );
+        this.updateLog(`App.unsubscribe: Found entry for ${Device.cam.hostname}`);
         pushEvent = this.pushEvents[pushEventIdx];
         if (!pushEvent || !pushEvent.devices) {
           resolve(null);
@@ -930,22 +800,16 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
         }
 
         // see if this device is registered
-        deviceIdx = pushEvent.devices.findIndex(
-          (element) => element.id == Device.id,
-        );
+        deviceIdx = pushEvent.devices.findIndex(element => element.id == Device.id);
         if (deviceIdx < 0) {
           // Not registered so do nothing
-          this.updateLog(
-            `App.unsubscribe: No Push entry for device: ${Device.cam.hostname}`,
-          );
+          this.updateLog(`App.unsubscribe: No Push entry for device: ${Device.cam.hostname}`);
           resolve(null);
           return;
         }
       }
  else {
-        this.updateLog(
-          `App.unsubscribe: No Push entry for host: ${Device.cam.hostname}`,
-        );
+        this.updateLog(`App.unsubscribe: No Push entry for host: ${Device.cam.hostname}`);
         Device.cam.removeAllListeners('event');
         resolve(null);
         return;
@@ -953,44 +817,29 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
 
       if (pushEvent) {
         // Remove this device reference
-        this.updateLog(
-          `App.unsubscribe: Unregister entry for ${Device.cam.hostname}`,
-        );
+        this.updateLog(`App.unsubscribe: Unregister entry for ${Device.cam.hostname}`);
         pushEvent.devices.splice(deviceIdx, 1);
 
         if (pushEvent.devices.length == 0 && pushEvent.unsubscribeRef) {
           // No devices left so unregister the event
           this.homey.clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
           this.updateLog(
-            `Unsubscribe push event (${
-              Device.cam.hostname
-               }): ${
-               pushEvent.unsubscribeRef}`,
-            1,
+            `Unsubscribe push event (${Device.cam.hostname}): ${pushEvent.unsubscribeRef}`,
+            1
           );
           const hostPath = Device.cam.hostname;
           Device.cam.unsubscribe((err, info, xml) => {
             if (err) {
               this.updateLog(
-                `Push unsubscribe error (${
-                  hostPath
-                   }): ${
-                   this.varToString(err.message)}`,
-                0,
+                `Push unsubscribe error (${hostPath}): ${this.varToString(err.message)}`,
+                0
               );
               reject(err);
               return;
             }
-              this.updateLog(
-                `Push unsubscribe response (${
-                  hostPath
-                   }): ${
-                   this.varToString(info)}`,
-                2,
-              );
+            this.updateLog(`Push unsubscribe response (${hostPath}): ${this.varToString(info)}`, 2);
 
             resolve(null);
-
           });
 
           Device.cam.removeAllListeners('event');
@@ -1003,13 +852,10 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
             // remove the push event from the list
             this.pushEvents.splice(pushEventIdx, 1);
           }
-          this.updateLog(
-            'App.unsubscribe: Keep subscription as devices are still registered',
-          );
+          this.updateLog('App.unsubscribe: Keep subscription as devices are still registered');
 
           Device.cam.removeAllListeners('event');
           resolve(null);
-
         }
       }
     });
@@ -1017,10 +863,10 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
 
   hasPullSupport(capabilities, id) {
     if (
-      capabilities
-      && capabilities.events
-      && capabilities.events.WSPullPointSupport
-      && capabilities.events.WSPullPointSupport == true
+      capabilities &&
+      capabilities.events &&
+      capabilities.events.WSPullPointSupport &&
+      capabilities.events.WSPullPointSupport == true
     ) {
       this.updateLog(`Camera (${id}) supports PullPoint`);
       return true;
@@ -1032,10 +878,10 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
 
   hasBaseEvents(services, id) {
     if (
-      services
-      && services.Capabilities
-      && (services.Capabilities.MaxNotificationProducers > 0
-        || services.Capabilities.WSSubscriptionPolicySupport === true)
+      services &&
+      services.Capabilities &&
+      (services.Capabilities.MaxNotificationProducers > 0 ||
+        services.Capabilities.WSSubscriptionPolicySupport === true)
     ) {
       this.updateLog(`Camera (${id}) supports Push Events`);
       return true;
@@ -1084,7 +930,7 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
         return `${source.message}\n      ${stack}`;
       }
       if (typeof source === 'object') {
-        const getCircularReplacer = (homey) => {
+        const getCircularReplacer = homey => {
           const seen = new WeakSet();
           return (key, value) => {
             if (typeof value === 'object' && value !== null) {
@@ -1193,12 +1039,7 @@ h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
         const info = await transporter.sendMail({
           from: `"Homey User" <${Homey.env.MAIL_USER}>`, // sender address
           to: Homey.env.MAIL_RECIPIENT, // list of receivers
-          subject:
-            `ONVIF log (${
-            this.homeyHash
-             } : ${
-             this.homey.manifest.version
-             })`, // Subject line
+          subject: `ONVIF log (${this.homeyHash} : ${this.homey.manifest.version})`, // Subject line
           text: `${email}\n${this.homey.settings.get('diagLog')}`, // plain text body
         });
 

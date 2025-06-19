@@ -1,12 +1,12 @@
 {
-    "title": {
-        "en": "The storage alarm turned off"
-    },
-    "args": [
-        {
-        "type": "device",
-        "name": "device",
-        "filter": "driver_id=camera&capabilities=alarm_storage"
-        }
-    ]
+  "title": {
+    "en": "The storage alarm turned off"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=camera&capabilities=alarm_storage"
+    }
+  ]
 }

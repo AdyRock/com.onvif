@@ -1,21 +1,21 @@
 {
-    "title": {
-        "en": "Motion disabled",
-        "de": "Bewegung abgeschaltet",
-        "nl": "Beweging inactief",
-        "it": "Motion disabilitato"
-    },
-    "titleFormatted": {
-        "en": "Motion disabled",
-        "de": "Bewegung abgeschaltet",
-        "nl": "Beweging inactief",
-        "it": "Motion disabilitato"
-    },
-    "args": [
-        {
-        "type": "device",
-        "name": "device",
-        "filter": "driver_id=camera&capabilities=motion_enabled"
-        }
-    ]
+  "title": {
+    "en": "Motion disabled",
+    "de": "Bewegung abgeschaltet",
+    "nl": "Beweging inactief",
+    "it": "Motion disabilitato"
+  },
+  "titleFormatted": {
+    "en": "Motion disabled",
+    "de": "Bewegung abgeschaltet",
+    "nl": "Beweging inactief",
+    "it": "Motion disabilitato"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=camera&capabilities=motion_enabled"
+    }
+  ]
 }

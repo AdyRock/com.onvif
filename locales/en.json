@@ -1,37 +1,37 @@
 {
-    "settings": {
-        "settings": "Settings",
-        "title": "Push Server Settings",
-        "port": "Listening Port",
-        "save": "Save",
-        "diagnosticsLog": "Diagnostics Log",
-        "logLevel": "Log Level",
-        "ClearLog": "Clear Log",
-        "SendLog": "Send Log",
-        "email": "Email Address or Forum id (Required if you want me to respond)"
-    },
-    "Push_Pull_Supported": "Push and Pull supported: ",
-    "Using_Pull": "Using Pull",
-    "Using_Push": "Using Push",
-    "Only_Pull_Supported": "Only Pull supported",
-    "Only_Push_Supported": "Only Push supported",
-    "Not_Supported": "Not supported",
-    "Motion_Event": "Motion Event",
-    "Now": "Snapshot",
-    "pair": {
-        "manual_add":{
-            "intro": "Enter Connection Details",
-            "title": "Add Camera Manually",
-            "title2": "Log in to camera",
-            "username": "Username",
-            "password": "Password",
-            "ip_address": "IP Address",
-            "port": "ONVIF Service Port",
-            "checking": "Checking connection",
-            "try_again": "Try again",
-            "correct": "Successful",
-            "adding": "Adding device(s)",
-			"add_port": "Add Port to device ID (use for NVR that maps cameras via port numbers)"
-        }
+  "settings": {
+    "settings": "Settings",
+    "title": "Push Server Settings",
+    "port": "Listening Port",
+    "save": "Save",
+    "diagnosticsLog": "Diagnostics Log",
+    "logLevel": "Log Level",
+    "ClearLog": "Clear Log",
+    "SendLog": "Send Log",
+    "email": "Email Address or Forum id (Required if you want me to respond)"
+  },
+  "Push_Pull_Supported": "Push and Pull supported: ",
+  "Using_Pull": "Using Pull",
+  "Using_Push": "Using Push",
+  "Only_Pull_Supported": "Only Pull supported",
+  "Only_Push_Supported": "Only Push supported",
+  "Not_Supported": "Not supported",
+  "Motion_Event": "Motion Event",
+  "Now": "Snapshot",
+  "pair": {
+    "manual_add": {
+      "intro": "Enter Connection Details",
+      "title": "Add Camera Manually",
+      "title2": "Log in to camera",
+      "username": "Username",
+      "password": "Password",
+      "ip_address": "IP Address",
+      "port": "ONVIF Service Port",
+      "checking": "Checking connection",
+      "try_again": "Try again",
+      "correct": "Successful",
+      "adding": "Adding device(s)",
+      "add_port": "Add Port to device ID (use for NVR that maps cameras via port numbers)"
     }
+  }
 }

@@ -1,13 +1,13 @@
 {
-    "type": "boolean",
-    "title": {
-        "en": "Dog or Cat Detected"
-    },
-    "insights": true,
-    "insightsTitleTrue": {
-      "en": "Dog / Cat detected alarm turned on"
-    },
-    "getable": true,
-    "setable": false,
-    "icon": "/assets/dog_cat.svg"
+  "type": "boolean",
+  "title": {
+    "en": "Dog or Cat Detected"
+  },
+  "insights": true,
+  "insightsTitleTrue": {
+    "en": "Dog / Cat detected alarm turned on"
+  },
+  "getable": true,
+  "setable": false,
+  "icon": "/assets/dog_cat.svg"
 }

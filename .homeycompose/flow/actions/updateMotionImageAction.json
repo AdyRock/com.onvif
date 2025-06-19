@@ -1,23 +1,23 @@
 {
-    "title": {
-        "en": "Update Motion snapshot",
-        "de": "Motion-Snapshot aktualisieren",
-        "nl": "Bewegingssnapshot bijwerken",
-        "it": "Aggiorna istantanea in movimento",
-        "fr": "Mettre à jour l'image de mouvement"
-    },
-    "titleFormatted": {
-        "en": "Update Motion snapshot",
-        "de": "Motion-Snapshot aktualisieren",
-        "nl": "Bewegingssnapshot bijwerken",
-        "it": "Aggiorna istantanea in movimento",
-        "fr": "Mettre à jour l'image de mouvement"
-    },
-    "args": [
-        {
-        "type": "device",
-        "name": "device",
-        "filter": "driver_id=camera&capabilities=motion_enabled"
-        }
-    ]
+  "title": {
+    "en": "Update Motion snapshot",
+    "de": "Motion-Snapshot aktualisieren",
+    "nl": "Bewegingssnapshot bijwerken",
+    "it": "Aggiorna istantanea in movimento",
+    "fr": "Mettre à jour l'image de mouvement"
+  },
+  "titleFormatted": {
+    "en": "Update Motion snapshot",
+    "de": "Motion-Snapshot aktualisieren",
+    "nl": "Bewegingssnapshot bijwerken",
+    "it": "Aggiorna istantanea in movimento",
+    "fr": "Mettre à jour l'image de mouvement"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=camera&capabilities=motion_enabled"
+    }
+  ]
 }

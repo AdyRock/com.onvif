@@ -1,12 +1,12 @@
 {
-    "title": {
-        "en": "The face detected alarm turned on"
-    },
-    "args": [
-        {
-        "type": "device",
-        "name": "device",
-        "filter": "driver_id=camera&capabilities=alarm_face"
-        }
-    ]
+  "title": {
+    "en": "The face detected alarm turned on"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=camera&capabilities=alarm_face"
+    }
+  ]
 }

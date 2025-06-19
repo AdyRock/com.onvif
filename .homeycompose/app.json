@@ -1,73 +1,69 @@
 {
-	"id": "com.onvif",
-	"version": "2.0.51",
-	"compatibility": ">=7.4.1",
-	"platforms": [
-		"local"
-	],
-	"sdk": 3,
-	"brandColor": "#FF7D4B",
-	"name": {
-		"en": "ONVIF Camera",
-		"de": "ONVIF Kamera",
-		"nl": "ONVIF Camera",
-		"it": "ONVIF Camera",
-		"fr": "Caméra ONVIF"
-	},
-	"description": {
-		"en": "Use an ONVIF compatible camera so Homey can improve your home security",
-		"fr": "Utilisez une caméra compatible ONVIF pour améliorer la sécurité de votre maison avec Homey"
-	},
-	"category": [
-		"video"
-	],
-	"permissions": [],
-	"contributing": {
-		"donate": {
-			"paypal": {
-				"username": "adyrock"
-			}
-		}
-	},
-	"support": "https://github.com/AdyRock/com.onvif/issues",
-	"bugs": {
-		"url": "https://github.com/AdyRock/com.onvif/issues"
-	},
-	"source": "https://github.com/AdyRock/com.onvif",
-	"homeyCommunityTopicId": 28377,
-	"images": {
-		"large": "/assets/images/large.png",
-		"small": "/assets/images/small.png"
-	},
-	"author": {
-		"name": "Adrian Rockall",
-		"email": "ady@rockall.plus.com"
-	},
-	"contributors": {
-		"developers": [
-			{
-				"name": "Flavien317"
-			}
-		],
-		"translators": [
-			{
-				"name": "🇩🇪 - Markus Mahr"
-			},
-			{
-				"name": "nl - Ton Lemmen"
-			},
-			{
-				"name": "it - Andrea Mascioni"
-			},
-			{
-				"name": "fr - Flavien317"
-			}
-		]
-	},
-	"api": {
-		"sendLog": {
-			"method": "post",
-			"path": "/sendLog/"
-		}
-	}
+  "id": "com.onvif",
+  "version": "2.0.51",
+  "compatibility": ">=7.4.1",
+  "platforms": ["local"],
+  "sdk": 3,
+  "brandColor": "#FF7D4B",
+  "name": {
+    "en": "ONVIF Camera",
+    "de": "ONVIF Kamera",
+    "nl": "ONVIF Camera",
+    "it": "ONVIF Camera",
+    "fr": "Caméra ONVIF"
+  },
+  "description": {
+    "en": "Use an ONVIF compatible camera so Homey can improve your home security",
+    "fr": "Utilisez une caméra compatible ONVIF pour améliorer la sécurité de votre maison avec Homey"
+  },
+  "category": ["video"],
+  "permissions": [],
+  "contributing": {
+    "donate": {
+      "paypal": {
+        "username": "adyrock"
+      }
+    }
+  },
+  "support": "https://github.com/AdyRock/com.onvif/issues",
+  "bugs": {
+    "url": "https://github.com/AdyRock/com.onvif/issues"
+  },
+  "source": "https://github.com/AdyRock/com.onvif",
+  "homeyCommunityTopicId": 28377,
+  "images": {
+    "large": "/assets/images/large.png",
+    "small": "/assets/images/small.png"
+  },
+  "author": {
+    "name": "Adrian Rockall",
+    "email": "ady@rockall.plus.com"
+  },
+  "contributors": {
+    "developers": [
+      {
+        "name": "Flavien317"
+      }
+    ],
+    "translators": [
+      {
+        "name": "🇩🇪 - Markus Mahr"
+      },
+      {
+        "name": "nl - Ton Lemmen"
+      },
+      {
+        "name": "it - Andrea Mascioni"
+      },
+      {
+        "name": "fr - Flavien317"
+      }
+    ]
+  },
+  "api": {
+    "sendLog": {
+      "method": "post",
+      "path": "/sendLog/"
+    }
+  }
 }

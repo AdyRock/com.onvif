@@ -1,23 +1,23 @@
 {
-    "title": {
-        "en": "Enable motion",
-        "de": "Bewegung einschalten",
-        "nl": "Beweging actief",
-        "it": "Movimento Abilitato",
-        "fr": "Activer la détection de mouvement"
-    },
-    "titleFormatted": {
-        "en": "Enable motion",
-        "de": "Bewegung einschalten",
-        "nl": "Beweging actief",
-        "it": "Movimento Abilitato",
-        "fr": "Activer la détection de mouvement"
-    },
-    "args": [
-        {
-        "type": "device",
-        "name": "device",
-        "filter": "driver_id=camera&capabilities=motion_enabled"
-        }
-    ]
+  "title": {
+    "en": "Enable motion",
+    "de": "Bewegung einschalten",
+    "nl": "Beweging actief",
+    "it": "Movimento Abilitato",
+    "fr": "Activer la détection de mouvement"
+  },
+  "titleFormatted": {
+    "en": "Enable motion",
+    "de": "Bewegung einschalten",
+    "nl": "Beweging actief",
+    "it": "Movimento Abilitato",
+    "fr": "Activer la détection de mouvement"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=camera&capabilities=motion_enabled"
+    }
+  ]
 }

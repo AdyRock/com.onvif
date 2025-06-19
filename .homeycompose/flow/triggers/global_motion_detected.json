@@ -1,21 +1,21 @@
 {
-    "title": {
-        "en": "Motion was detected"
+  "title": {
+    "en": "Motion was detected"
+  },
+  "tokens": [
+    {
+      "name": "motion_type",
+      "type": "string",
+      "title": {
+        "en": "Motion type"
+      }
     },
-    "tokens": [
-        {
-            "name": "motion_type",
-            "type": "string",
-            "title": {
-                "en": "Motion type"
-            }
-        },
-        {
-            "name": "device_name",
-            "type": "string",
-            "title": {
-                "en": "Camera name"
-            }
-        }
-    ]
+    {
+      "name": "device_name",
+      "type": "string",
+      "title": {
+        "en": "Camera name"
+      }
+    }
+  ]
 }

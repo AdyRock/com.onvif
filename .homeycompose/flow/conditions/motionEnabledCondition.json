@@ -1,23 +1,23 @@
 {
-    "title": {
-        "en": "Motion is enabled",
-        "de": "Bewegung ist eingeschaltet",
-        "nl": "Beweging is actief",
-        "it": "Movimento è abilitato",
-        "fr": "La detection de mouvement est activée"
-    },
-    "titleFormatted": {
-        "en": "Motion is !{{enabled|disabled}}",
-        "de": "Bewegung ist !{{eingeschaltet|abgeschaltet}}",
-        "nl": "Beweging is !{{actief|inactief}}",
-        "it": "Movimento è !{{abilitato|disabilitato}}",
-        "fr": "La detection de mouvement est !{{activée|désativée}}"
-    },
-    "args": [
-        {
-        "type": "device",
-        "name": "device",
-        "filter": "driver_id=camera&capabilities=motion_enabled"
-        }
-    ]
+  "title": {
+    "en": "Motion is enabled",
+    "de": "Bewegung ist eingeschaltet",
+    "nl": "Beweging is actief",
+    "it": "Movimento è abilitato",
+    "fr": "La detection de mouvement est activée"
+  },
+  "titleFormatted": {
+    "en": "Motion is !{{enabled|disabled}}",
+    "de": "Bewegung ist !{{eingeschaltet|abgeschaltet}}",
+    "nl": "Beweging is !{{actief|inactief}}",
+    "it": "Movimento è !{{abilitato|disabilitato}}",
+    "fr": "La detection de mouvement est !{{activée|désativée}}"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=camera&capabilities=motion_enabled"
+    }
+  ]
 }

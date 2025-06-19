@@ -1,12 +1,12 @@
 {
-    "type": "string",
-    "title": {
-        "en": "Offline / Tamper Time",
-        "de": "Offline / Manipulationszeit",
-        "nl": "Offline / sabotage tijd",
-        "it": "Ora Offline / Tamper "
-    },
-    "icon": "/assets/tamper_time.svg",
-    "getable": true,
-    "setable": false
+  "type": "string",
+  "title": {
+    "en": "Offline / Tamper Time",
+    "de": "Offline / Manipulationszeit",
+    "nl": "Offline / sabotage tijd",
+    "it": "Ora Offline / Tamper "
+  },
+  "icon": "/assets/tamper_time.svg",
+  "getable": true,
+  "setable": false
 }

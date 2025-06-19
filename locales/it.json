@@ -1,16 +1,16 @@
 {
-    "settings": {
-        "diagnosticsLog": "Log Diagnostico",
-        "logLevel": "Log livello",
-        "ClearLog": "Cancella Log",
-        "SendLog": "Invia Log"
-    },
-    "Push_Pull_Supported": "Push and Pull supportato:, ",
-    "Using_Pull": "Utilzza Pull,",
-    "Using_Push": "Utilizza Push,",
-    "Only_Pull_Supported": "Solo Pull supportato,",
-    "Only_Push_Supported": "Solo Push supportato,",
-    "Not_Supported": "Non supportato,",
-    "Motion_Event": "Evento Movimento,",
-    "Now": "Istantanea"
+  "settings": {
+    "diagnosticsLog": "Log Diagnostico",
+    "logLevel": "Log livello",
+    "ClearLog": "Cancella Log",
+    "SendLog": "Invia Log"
+  },
+  "Push_Pull_Supported": "Push and Pull supportato:, ",
+  "Using_Pull": "Utilzza Pull,",
+  "Using_Push": "Utilizza Push,",
+  "Only_Pull_Supported": "Solo Pull supportato,",
+  "Only_Push_Supported": "Solo Push supportato,",
+  "Not_Supported": "Non supportato,",
+  "Motion_Event": "Evento Movimento,",
+  "Now": "Istantanea"
 }

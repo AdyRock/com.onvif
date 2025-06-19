@@ -1,14 +1,13 @@
 {
-	"extends": "athom",
-	"rules":
-	{
-		"node/no-extraneous-require": "off",
-		"indent": "off",
-		"brace-style": ["error", "stroustrup"],
-		"function-paren-newline": ["error", "consistent"],
-		"linebreak-style": ["error", "windows"],
-		"no-tabs": ["error", { "allowIndentationTabs": true }],
-		"object-curly-newline": ["error", { "consistent": true }],
-		"max-len": ["error", { "code": 300 }]
-	}
+  "extends": ["athom", "prettier"],
+  "rules": {
+    "node/no-extraneous-require": "off",
+    "indent": "off",
+    "brace-style": ["error", "stroustrup"],
+    "function-paren-newline": ["error", "consistent"],
+    "linebreak-style": ["error", "windows"],
+    "no-tabs": ["error", { "allowIndentationTabs": true }],
+    "object-curly-newline": ["error", { "consistent": true }],
+    "max-len": ["error", { "code": 300 }]
+  }
 }

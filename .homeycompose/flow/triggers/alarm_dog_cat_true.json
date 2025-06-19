@@ -1,12 +1,12 @@
 {
-    "title": {
-        "en": "The dog / cat detected alarm turned on"
-    },
-    "args": [
-        {
-        "type": "device",
-        "name": "device",
-        "filter": "driver_id=camera&capabilities=alarm_dog_cat"
-        }
-    ]
+  "title": {
+    "en": "The dog / cat detected alarm turned on"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=camera&capabilities=alarm_dog_cat"
+    }
+  ]
 }

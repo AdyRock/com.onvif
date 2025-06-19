@@ -1,12 +1,12 @@
 {
-    "type": "string",
-    "title": {
-        "en": "Motion Event Time",
-        "de": "Bewegungsauslösungszeit",
-        "nl": "Tijd van de beweging",
-        "it": "Orario Evento Movimento"
-    },
-    "icon": "/assets/motion_time.svg",
-    "getable": true,
-    "setable": false
+  "type": "string",
+  "title": {
+    "en": "Motion Event Time",
+    "de": "Bewegungsauslösungszeit",
+    "nl": "Tijd van de beweging",
+    "it": "Orario Evento Movimento"
+  },
+  "icon": "/assets/motion_time.svg",
+  "getable": true,
+  "setable": false
 }

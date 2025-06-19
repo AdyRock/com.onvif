@@ -1,16 +1,16 @@
 {
-    "type": "boolean",
-    "title": {
-        "en": "Noise Alarm"
-    },
-    "insights": true,
-    "insightsTitleTrue": {
-      "en": "Audio alarm turned on"
-    },
-    "insightsTitleFalse": {
-      "en": "Audio alarm turned off"
-    },
-    "getable": true,
-    "setable": false,
-    "icon": "/assets/ear.svg"
+  "type": "boolean",
+  "title": {
+    "en": "Noise Alarm"
+  },
+  "insights": true,
+  "insightsTitleTrue": {
+    "en": "Audio alarm turned on"
+  },
+  "insightsTitleFalse": {
+    "en": "Audio alarm turned off"
+  },
+  "getable": true,
+  "setable": false,
+  "icon": "/assets/ear.svg"
 }

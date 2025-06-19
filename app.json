@@ -3,9 +3,7 @@
   "id": "com.onvif",
   "version": "2.0.51",
   "compatibility": ">=7.4.1",
-  "platforms": [
-    "local"
-  ],
+  "platforms": ["local"],
   "sdk": 3,
   "brandColor": "#FF7D4B",
   "name": {
@@ -19,9 +17,7 @@
     "en": "Use an ONVIF compatible camera so Homey can improve your home security",
     "fr": "Utilisez une caméra compatible ONVIF pour améliorer la sécurité de votre maison avec Homey"
   },
-  "category": [
-    "video"
-  ],
+  "category": ["video"],
   "permissions": [],
   "contributing": {
     "donate": {
@@ -543,12 +539,8 @@
         "de": "ONVIF Kamera",
         "nl": "ONVIF Camera"
       },
-      "platforms": [
-        "local"
-      ],
-      "connectivity": [
-        "lan"
-      ],
+      "platforms": ["local"],
+      "connectivity": ["lan"],
       "class": "sensor",
       "capabilities": [
         "motion_enabled",
