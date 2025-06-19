@@ -33,5 +33,5 @@ Touch 'Log In' and if the details are OK the device will be added to the Home se
 
 Only one camera can be selected at a time when adding but you can uses the add device option again to add other cameras.
 
-This app uses a modified version of the onvif library found here https://github.com/agsh/onvif
+This app uses the standard ONVIF library available on npm.
 

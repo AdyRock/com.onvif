@@ -1,6 +1,6 @@
 {
   "name": "com.onvif",
-  "version": "2.0.51",
+  "version": "2.0.52",
   "main": "app.js",
   "devDependencies": {
     "eslint": "^8.34.0"
@@ -11,10 +11,13 @@
   },
   "dependencies": {
     "digest-fetch": "^1.2.1",
-    "node-fetch": "^2.6.7"
+    "node-fetch": "^2.6.7",
+    "nodemailer": "^7.0.3",
+    "onvif": "^0.8.0",
+    "xml2js": "^0.6.2"
   },
   "engines": {
-	"node": ">=12.16.1"
+    "node": ">=14.0.0"
   },
   "license": "GPL-3.0"
 }
