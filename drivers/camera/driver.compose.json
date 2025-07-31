@@ -364,6 +364,187 @@
 		{
 			"type": "group",
 			"label": {
+				"en": "Events to show (You can hide the items that are not supported by your camera)",
+				"de": "Anzuzeigende Ereignisse (Sie können die Elemente ausblenden, die von Ihrer Kamera nicht unterstützt werden)",
+				"nl": "Te tonen gebeurtenissen (U kunt de items verbergen die niet door uw camera worden ondersteund)",
+				"it": "Eventi da mostrare (È possibile nascondere gli elementi non supportati dalla fotocamera)"
+			},
+			"children": [
+				{
+					"id": "line_crossed",
+					"type": "checkbox",
+					"label": {
+						"en": "Line Crossed",
+						"de": "Linie überquert",
+						"nl": "Lijn gekruist",
+						"it": "Linea attraversata"
+					},
+					"value": true,
+					"hint": {
+						"en": "When ticked the line crossed event is visible.",
+						"de": "Wenn aktiviert, ist das Ereignis \"Linie überquert\" sichtbar.",
+						"nl": "Indien aangevinkt is de lijn gekruist gebeurtenis zichtbaar.",
+						"it": "Quando selezionato, l'evento Linea attraversata è visibile."
+					}
+				},
+				{
+					"id": "person",
+					"type": "checkbox",
+					"label": {
+						"en": "Person detected",
+						"de": "Person erkannt",
+						"nl": "Persoon gedetecteerd",
+						"it": "Persona rilevata"
+					},
+					"value": true,
+					"hint": {
+						"en": "When ticked the person detected event is visible.",
+						"de": "Wenn aktiviert, ist das Ereignis \"Person erkannt\" sichtbar.",
+						"nl": "Indien aangevinkt is de persoon gedetecteerd gebeurtenis zichtbaar.",
+						"it": "Quando selezionato, l'evento Persona rilevata è visibile."
+					}
+				},
+				{
+					"id": "visitor",
+					"type": "checkbox",
+					"label": {
+						"en": "Visitor detected",
+						"de": "Besucher erkannt",
+						"nl": "Bezoeker gedetecteerd",
+						"it": "Visitatore rilevato"
+					},
+					"value": true,
+					"hint": {
+						"en": "When ticked the visitor detected event is visible.",
+						"de": "Wenn aktiviert, ist das Ereignis \"Besucher erkannt\" sichtbar.",
+						"nl": "Indien aangevinkt is de bezoeker gedetecteerd gebeurtenis zichtbaar.",
+						"it": "Quando selezionato, l'evento Visitatore rilevato è visibile."
+					}
+				},
+				{
+					"id": "face",
+					"type": "checkbox",
+					"label": {
+						"en": "Face detected",
+						"de": "Gesicht erkannt",
+						"nl": "Gezicht gedetecteerd",
+						"it": "Volto rilevato"
+					},
+					"value": true,
+					"hint": {
+						"en": "When ticked the face detected event is visible.",
+						"de": "Wenn aktiviert, ist das Ereignis \"Gesicht erkannt\" sichtbar.",
+						"nl": "Indien aangevinkt is de gezicht gedetecteerd gebeurtenis zichtbaar.",
+						"it": "Quando selezionato, l'evento Volto rilevato è visibile."
+					}
+				},
+				{
+					"id": "dog_cat",
+					"type": "checkbox",
+					"label": {
+						"en": "Dog or Cat detected",
+						"de": "Hund oder Katze erkannt",
+						"nl": "Hond of Kat gedetecteerd",
+						"it": "Cane o Gatto rilevato"
+					},
+					"value": true,
+					"hint": {
+						"en": "When ticked the dog or cat detected event is visible.",
+						"de": "Wenn aktiviert, ist das Ereignis \"Hund oder Katze erkannt\" sichtbar.",
+						"nl": "Indien aangevinkt is de hond of kat gedetecteerd gebeurtenis zichtbaar.",
+						"it": "Quando selezionato, l'evento Cane o Gatto rilevato è visibile."
+					}
+				},
+				{
+					"id": "vehicle",
+					"type": "checkbox",
+					"label": {
+						"en": "Vehicle detected",
+						"de": "Fahrzeug erkannt",
+						"nl": "Voertuig gedetecteerd",
+						"it": "Veicolo rilevato"
+					},
+					"value": true,
+					"hint": {
+						"en": "When ticked the vehicle detected event is visible.",
+						"de": "Wenn aktiviert, ist das Ereignis \"Fahrzeug erkannt\" sichtbar.",
+						"nl": "Indien aangevinkt is de voertuig gedetecteerd gebeurtenis zichtbaar.",
+						"it": "Quando selezionato, l'evento Veicolo rilevato è visibile."
+					}
+				},
+				{
+					"id": "dark_image",
+					"type": "checkbox",
+					"label": {
+						"en": "Dark Image",
+						"de": "Dunkles Bild",
+						"nl": "Donker beeld",
+						"it": "Immagine scura"
+					},
+					"value": true,
+					"hint": {
+						"en": "When ticked the dark image event is visible.",
+						"de": "Wenn aktiviert, ist das Ereignis \"Dunkles Bild\" sichtbar.",
+						"nl": "Indien aangevinkt is de donker beeld gebeurtenis zichtbaar.",
+						"it": "Quando selezionato, l'evento Immagine scura è visibile."
+					}
+				},
+				{
+					"id": "storage",
+					"type": "checkbox",
+					"label": {
+						"en": "Storage",
+						"de": "Speicher",
+						"nl": "Opslag",
+						"it": "Memoria"
+					},
+					"value": true,
+					"hint": {
+						"en": "When ticked the storage event is visible.",
+						"de": "Wenn aktiviert, ist das Ereignis \"Speicher\" sichtbar.",
+						"nl": "Indien aangevinkt is de opslag gebeurtenis zichtbaar.",
+						"it": "Quando selezionato, l'evento Memoria è visibile."
+					}
+				},
+				{
+					"id": "cpu",
+					"type": "checkbox",
+					"label": {
+						"en": "CPU Usage",
+						"de": "CPU-Auslastung",
+						"nl": "CPU-gebruik",
+						"it": "Utilizzo CPU"
+					},
+					"value": true,
+					"hint": {
+						"en": "When ticked the CPU usage event is visible.",
+						"de": "Wenn aktiviert, ist das Ereignis \"CPU-Auslastung\" sichtbar.",
+						"nl": "Indien aangevinkt is de CPU-gebruik gebeurtenis zichtbaar.",
+						"it": "Quando selezionato, l'evento Utilizzo CPU è visibile."
+					}
+				},
+				{
+					"id": "sound",
+					"type": "checkbox",
+					"label": {
+						"en": "Sound",
+						"de": "Ton",
+						"nl": "Geluid",
+						"it": "Suono"
+					},
+					"value": true,
+					"hint": {
+						"en": "When ticked the sound event is visible.",
+						"de": "Wenn aktiviert, ist das Ereignis \"Ton\" sichtbar.",
+						"nl": "Indien aangevinkt is de geluid gebeurtenis zichtbaar.",
+						"it": "Quando selezionato, l'evento Suono è visibile."
+					}
+				}
+			]
+		},
+		{
+			"type": "group",
+			"label": {
 				"en": "Camera Information",
 				"de": "Kamera Informationen",
 				"nl": "Camera informatie",

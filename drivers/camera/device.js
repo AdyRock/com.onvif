@@ -176,9 +176,11 @@ class CameraDevice extends Homey.Device
 		this.setCapabilityValue('motion_enabled', false).catch(this.err);
 	}
 
-	notificationTypesUpdated(notificationTypes)
+	notificationTypesUpdated(settings)
 	{
-		if (notificationTypes.indexOf('CROSSED') >= 0)
+		// Check if the notification types are enabled in the settings and add/remove capabilities accordingly
+		//		if (notificationTypes.indexOf('CROSSED') >= 0)
+		if (settings.line_crossed === true)
 		{
 			if (!this.hasCapability('alarm_line_crossed'))
 			{
@@ -198,7 +200,8 @@ class CameraDevice extends Homey.Device
 			}
 		}
 
-		if (notificationTypes.indexOf('PERSON') >= 0)
+		//		if (notificationTypes.indexOf('PERSON') >= 0)
+		if (settings.person === true)
 		{
 			if (!this.hasCapability('alarm_person'))
 			{
@@ -218,7 +221,88 @@ class CameraDevice extends Homey.Device
 			}
 		}
 
-		if (notificationTypes.indexOf('IMAGINGSERVICE') >= 0)
+		if (settings.visitor === true)
+		{
+			if (!this.hasCapability('alarm_visitor'))
+			{
+				this.addCapability('alarm_visitor')
+					.then(() =>
+					{
+						this.setCapabilityValue('alarm_visitor', false).catch(this.error);
+					})
+					.catch(this.error);
+			}
+		}
+		else
+		{
+			if (this.hasCapability('alarm_visitor'))
+			{
+				this.removeCapability('alarm_visitor').catch(this.error);
+			}
+		}
+
+		if (settings.face === true)
+		{
+			if (!this.hasCapability('alarm_face'))
+			{
+				this.addCapability('alarm_face')
+					.then(() =>
+					{
+						this.setCapabilityValue('alarm_face', false).catch(this.error);
+					})
+					.catch(this.error);
+			}
+		}
+		else
+		{
+			if (this.hasCapability('alarm_face'))
+			{
+				this.removeCapability('alarm_face').catch(this.error);
+			}
+		}
+
+		if (settings.dog_cat === true)
+		{
+			if (!this.hasCapability('alarm_dog_cat'))
+			{
+				this.addCapability('alarm_dog_cat')
+					.then(() =>
+					{
+						this.setCapabilityValue('alarm_dog_cat', false).catch(this.error);
+					})
+					.catch(this.error);
+			}
+		}
+		else
+		{
+			if (this.hasCapability('alarm_dog_cat'))
+			{
+				this.removeCapability('alarm_dog_cat').catch(this.error);
+			}
+		}
+
+		if (settings.vehicle === true)
+		{
+			if (!this.hasCapability('alarm_vehicle'))
+			{
+				this.addCapability('alarm_vehicle')
+					.then(() =>
+					{
+						this.setCapabilityValue('alarm_vehicle', false).catch(this.error);
+					})
+					.catch(this.error);
+			}
+		}
+		else
+		{
+			if (this.hasCapability('alarm_vehicle'))
+			{
+				this.removeCapability('alarm_vehicle').catch(this.error);
+			}
+		}
+
+		//		if (notificationTypes.indexOf('IMAGINGSERVICE') >= 0)
+		if (settings.dark_image === true)
 		{
 			if (!this.hasCapability('alarm_dark_image'))
 			{
@@ -238,7 +322,8 @@ class CameraDevice extends Homey.Device
 			}
 		}
 
-		if (notificationTypes.indexOf('STORAGEFAILURE') >= 0)
+		//		if (notificationTypes.indexOf('STORAGEFAILURE') >= 0)
+		if (settings.storage === true)
 		{
 			if (!this.hasCapability('alarm_storage'))
 			{
@@ -258,7 +343,8 @@ class CameraDevice extends Homey.Device
 			}
 		}
 
-		if (notificationTypes.indexOf('PROCESSORUSAGE') >= 0)
+		//		if (notificationTypes.indexOf('PROCESSORUSAGE') >= 0)
+		if (settings.cpu === true)
 		{
 			if (!this.hasCapability('measure_cpu'))
 			{
@@ -278,7 +364,8 @@ class CameraDevice extends Homey.Device
 			}
 		}
 
-		if (notificationTypes.indexOf('DETECTEDSOUND') >= 0)
+		//		if (notificationTypes.indexOf('DETECTEDSOUND') >= 0)
+		if (settings.sound === true)
 		{
 			if (!this.hasCapability('alarm_sound'))
 			{
@@ -468,6 +555,20 @@ class CameraDevice extends Homey.Device
 		if (changedKeys.indexOf('classType') >= 0)
 		{
 			this.setClass(newSettings.classType);
+		}
+
+		if ((changedKeys.indexOf('line_crossed') >= 0) ||
+		    (changedKeys.indexOf('person') >= 0) ||
+			(changedKeys.indexOf('visitor') >= 0) ||
+			(changedKeys.indexOf('face') >= 0) ||
+			(changedKeys.indexOf('dog_cat') >= 0) ||
+			(changedKeys.indexOf('vehicle') >= 0) ||
+			(changedKeys.indexOf('dark_image') >= 0) ||
+			(changedKeys.indexOf('storage') >= 0) ||
+			(changedKeys.indexOf('cpu') >= 0) ||
+			(changedKeys.indexOf('sound') >= 0))
+		{
+			this.notificationTypesUpdated(newSettings);
 		}
 
 		if (reconnect)
@@ -677,7 +778,7 @@ class CameraDevice extends Homey.Device
 				}
 
 				let settings = this.getSettings();
-				this.notificationTypesUpdated(settings.notificationTypes);
+				this.notificationTypesUpdated(settings);
 
 				if (!this.hasMotion)
 				{
@@ -741,7 +842,8 @@ class CameraDevice extends Homey.Device
 							await this.removeCapability('ptz_preset');
 						}
 					}
-				} catch (err)
+				}
+				catch (err)
 				{
 					// Error while retrieving presets, remove capability
 					if (this.hasCapability('ptz_preset'))

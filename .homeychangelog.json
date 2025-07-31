@@ -415,5 +415,8 @@
   },
   "2.0.51": {
 	"en": "Added support for PTZ presets."
+  },
+  "2.0.52": {
+	"en": "Replaced automatic event detection with manual configuration in the device settings."
   }
 }
