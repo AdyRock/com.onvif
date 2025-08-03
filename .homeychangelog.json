@@ -418,5 +418,8 @@
   },
   "2.0.52": {
 	"en": "Replaced automatic event detection with manual configuration in the device settings."
+  },
+  "2.0.53": {
+	"en": "Fix 'Go to preset' Flow action card."
   }
 }

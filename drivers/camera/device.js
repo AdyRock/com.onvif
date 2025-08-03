@@ -21,6 +21,7 @@ class CameraDevice extends Homey.Device
 	async onInit()
 	{
 		this.repairing = false;
+		this.connecting = false;
 		this.isReady = false;
 		this.updatingEventImage = false;
 		this.cam = null;
@@ -623,6 +624,7 @@ class CameraDevice extends Homey.Device
 		}
 		else
 		{
+			this.connecting = true;
 			try
 			{
 				this.cam = await this.homey.app.connectCamera(
@@ -884,12 +886,14 @@ class CameraDevice extends Homey.Device
 
 				// this.setCapabilityValue('alarm_tamper', false).catch(this.error);
 			}
+
+			this.connecting = false;
 		}
 	}
 
 	async checkCamera()
 	{
-		if (this.checkTimerId)
+		if (this.checkTimerId || this.connecting)
 		{
 			// Camera disbaled or connect timer is running so allow that to happen
 			return;
@@ -2145,6 +2149,27 @@ class CameraDevice extends Homey.Device
 	async onCapabilityPTZPreset(value)
 	{
 		return this.gotoPreset(value);
+	}
+
+	async gotoPresetNumber(presetNumber)
+	{
+		if (!this.cam) return;
+
+		// Get the capability options for PTZ presets
+		const options = this.getCapabilityOptions('ptz_preset');
+		if (!options || !options.values || options.values.length === 0)
+		{
+			this.homey.app.updateLog(`No PTZ presets available for ${this.name}`, 0);
+			throw new Error('No PTZ presets available');
+		}
+		if (presetNumber < 1 || presetNumber > options.values.length)
+		{
+			this.homey.app.updateLog(`Preset number ${presetNumber} is out of range for ${this.name}`, 0);
+			throw new Error(`Preset number ${presetNumber} is out of range`);
+		}
+		const presetToken = options.values[presetNumber - 1].id; // Get the token for the preset
+		this.homey.app.updateLog(`Moving to preset number ${presetNumber} (${presetToken}) for ${this.name}`, 1);
+		return this.gotoPreset(presetToken);
 	}
 
 	async gotoPreset(presetToken)

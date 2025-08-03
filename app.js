@@ -202,7 +202,7 @@ class MyApp extends Homey.App
 			{
 				const device = args.device;
 				const presetNumber = args.preset;
-				return device.gotoPreset(presetNumber);
+				return device.gotoPresetNumber(presetNumber);
 			});
 
         this.motionTrigger = this.homey.flow.getTriggerCard('global_motion_detected');
