@@ -421,5 +421,8 @@
   },
   "2.0.53": {
 	"en": "Fix 'Go to preset' Flow action card."
+  },
+  "2.0.54": {
+	"en": "Added support for 'RuleEngine/PeopleDetector/People:IsPeople' events."
   }
 }

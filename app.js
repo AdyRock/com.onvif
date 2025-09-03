@@ -4,7 +4,7 @@
 
 // eslint-disable-next-line no-undef
 if (process.env.DEBUG === '1') {
-	require('inspector').open(9225, '0.0.0.0', false);
+	require('inspector').open(9225, '0.0.0.0', true);
 }
 
 const Homey = require('homey');
@@ -640,6 +640,12 @@ class MyApp extends Homey.App
         const promiseGetSnapshotUri = promisify(camObj.getSnapshotUri).bind(camObj);
         return promiseGetSnapshotUri();
     }
+
+	async getStreamURL(camObj, profileToken)
+	{
+		const promiseGetStreamUri = promisify(camObj.getStreamUri).bind(camObj);
+		return promiseGetStreamUri({});
+	}
 
     async hasEventTopics(camObj)
     {

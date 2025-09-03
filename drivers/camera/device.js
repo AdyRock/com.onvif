@@ -1678,7 +1678,7 @@ class CameraDevice extends Homey.Device
 						// Vistor
 						this.triggerVistorEvent(dataValue).catch(this.err);
 					}
-					else if (compareSetting === 'RuleEngine/MyRuleDetector/PeopleDetect:State')
+					else if ((compareSetting === 'RuleEngine/MyRuleDetector/PeopleDetect:State') || (compareSetting === 'RuleEngine/PeopleDetector/People:IsPeople'))
 					{
 						// Person
 						this.triggerPersonEvent(dataValue).catch(this.err);
