@@ -424,5 +424,8 @@
   },
   "2.0.54": {
 	"en": "Added support for 'RuleEngine/PeopleDetector/People:IsPeople' events."
+  },
+  "2.0.55": {
+	"en": "Added support for local RTSP live stream."
   }
 }

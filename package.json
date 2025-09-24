@@ -1,6 +1,6 @@
 {
   "name": "com.onvif",
-  "version": "2.0.54",
+  "version": "2.0.55",
   "main": "app.js",
   "devDependencies": {
     "eslint": "^8.34.0"

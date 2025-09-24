@@ -35,6 +35,7 @@ class CameraDevice extends Homey.Device
 		this.eventMinTimeId = null;
 		this.checkTimerId = null;
 		this.eventTimerId = null;
+		this.video = null;
 
 		this.connectCamera.bind(this);
 
@@ -460,12 +461,24 @@ class CameraDevice extends Homey.Device
 		if (changedKeys.indexOf('username') >= 0)
 		{
 			this.username = newSettings.username;
+			if (this.video)
+			{
+				// Disconnect the video stream so it can be reconnected
+				this.homey.videos.unregisterVideo(this.video);
+				this.video = null;
+			}
 			reconnect = true;
 		}
 
 		if (changedKeys.indexOf('password') >= 0)
 		{
 			this.password = newSettings.password;
+			if (this.video)
+			{
+				// Disconnect the video stream so it can be reconnected
+				this.homey.videos.unregisterVideo(this.video);
+				this.video = null;
+			}
 			reconnect = true;
 		}
 
@@ -476,6 +489,12 @@ class CameraDevice extends Homey.Device
 			await this.homey.app.unsubscribe(this);
 
 			this.ip = newSettings.ip;
+			if (this.video)
+			{
+				// Disconnect the video stream so it can be reconnected
+				this.homey.videos.unregisterVideo(this.video);
+				this.video = null;
+			}
 			reconnect = true;
 		}
 
@@ -816,9 +835,10 @@ class CameraDevice extends Homey.Device
 				}
 
 				// Check available presets directly after connecting
+				let presets = null;
 				try
 				{
-					const presets = await new Promise((resolve, reject) =>
+					presets = await new Promise((resolve, reject) =>
 					{
 						this.cam.getPresets({}, (err, data) =>
 						{
@@ -852,7 +872,7 @@ class CameraDevice extends Homey.Device
 					{
 						await this.removeCapability('ptz_preset');
 					}
-					this.homey.app.updateLog(`Error checking presets (${this.name}): ${err.message}`, 0);
+					this.homey.app.updateLog(`No PTZ presets (${this.name}): ${err.message}`, 0);
 				}
 
 				await this.setAvailable();
@@ -872,8 +892,11 @@ class CameraDevice extends Homey.Device
 				this.homey.app.updateLog('Camera (' + this.name + ') ' + this.homey.app.varToString(this.cam), 3);
 				this.homey.app.updateLog('Camera (' + this.name + ') is ready');
 
-				// Check available presets directly after connecting
-				await this.updatePresets();
+				if (presets && Object.keys(presets).length > 0)
+				{
+					// Check available presets directly after connecting
+					await this.updatePresets();
+				}
 			}
 			catch (err)
 			{
@@ -1612,7 +1635,7 @@ class CameraDevice extends Homey.Device
 				}
 				else if (camMessage.message.message.data && camMessage.message.message.data.elementItem)
 				{
-					this.homey.app.updateLog('WARNING: Data contain an elementItem', 0);
+					this.homey.app.updateLog('WARNING: Data contains an elementItem', 0);
 					dataName = 'elementItem';
 					dataValue = this.homey.app.varToString(camMessage.message.message.data.elementItem);
 				}
@@ -1776,6 +1799,32 @@ class CameraDevice extends Homey.Device
 
 	async setupImages()
 	{
+
+		if (!this.video)
+		{
+			this.homey.app.updateLog('Registering Now video stream (' + this.name + ')');
+			this.video = await this.homey.videos.createVideoRTSP();
+			this.video.registerVideoUrlListener(async () =>
+			{
+				const reply = await this.homey.app.getStreamURL(this.cam);
+				this.homey.app.updateLog(`Setting Live video stream to ${reply.uri}`);
+				const url = `${reply.uri}`;
+				let newUrl = url;
+				// If the url doesn't contain user=<username> then add it
+				if (!url.includes(`user=${this.username}`))
+				{
+					// insert the username and password just after the protocol in the format [username:password@<host>]
+					const auth = `${this.username}:${this.password}@`;
+					const host = reply.uri.split('/')[2];
+					newUrl = url.replace(host, auth + host);
+				}
+				this.homey.app.updateLog(`Setting Live video stream to ${newUrl}`);
+				return { url: newUrl };
+			});
+			this.setCameraVideo('NowVideo', 'Live Video', this.video).catch(this.err);
+			this.homey.app.updateLog('registered Now video stream (' + this.name + ')');
+		}
+
 		if (!this.snapshotSupported && !this.userSnapUri)
 		{
 			return;
@@ -1865,8 +1914,8 @@ class CameraDevice extends Homey.Device
 					});
 
 					this.homey.app.updateLog('Registering Now image (' + this.name + ')');
-					this.homey.app.updateLog('registered Now image (' + this.name + ')');
 					this.setCameraImage('Now', this.homey.__('Now'), this.nowImage).catch(this.err);
+					this.homey.app.updateLog('registered Now image (' + this.name + ')');
 				}
 			}
 			catch (err)
