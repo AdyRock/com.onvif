@@ -427,5 +427,8 @@
   },
   "2.0.55": {
 	"en": "Added support for local RTSP live stream."
+  },
+  "2.0.56": {
+	"en": "Added check for Homey version before registering RTSP video to prevent crashes on older Homey versions."
   }
 }

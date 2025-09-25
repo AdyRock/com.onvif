@@ -1160,6 +1160,15 @@ class MyApp extends Homey.App
             return false;
         }
     }
+
+	checkSymVersionGreaterEqual(versionString, major, minor, patch) {
+		const versionParts = versionString.split('.').map(num => parseInt(num, 10));
+		if (versionParts.length < 3) {
+			return false;
+		}
+		const [vMajor, vMinor, vPatch] = versionParts;
+		return vMajor > major || (vMajor === major && vMinor > minor) || (vMajor === major && vMinor === minor && vPatch >= patch);
+	}
 }
 
 module.exports = MyApp;

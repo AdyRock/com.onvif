@@ -1800,7 +1800,7 @@ class CameraDevice extends Homey.Device
 	async setupImages()
 	{
 
-		if (!this.video)
+		if (this.homey.app.checkSymVersionGreaterEqual(this.homey.version, 12, 7, 0) && !this.video)
 		{
 			this.homey.app.updateLog('Registering Now video stream (' + this.name + ')');
 			this.video = await this.homey.videos.createVideoRTSP();
