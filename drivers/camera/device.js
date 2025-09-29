@@ -1282,6 +1282,26 @@ class CameraDevice extends Homey.Device
 		this.setAvailable().catch(this.error);
 
 		this.homey.app.updateLog('Event Processing (' + this.name + '):' + ObjectId);
+
+		if (!this.hasCapability('alarm_line_crossed'))
+		{
+			this.addCapability('alarm_line_crossed')
+				.then(() =>
+				{
+					this.triggerLineCrossedEvent(ObjectId);
+					this.setCapabilityValue('alarm_line_crossed', true).catch(this.error);
+				})
+				.catch(this.error);
+
+			return;
+		}
+		else if (this.getCapabilityValue('alarm_line_crossed'))
+		{
+			// Already triggered so ignore
+			this.homey.app.updateLog('Ignoring unchanged event (' + this.name + ') Line Crossed', 1);
+			return;
+		}
+
 		this.setCapabilityValue('alarm_line_crossed', true).catch(this.error);
 
 		this.triggerMotionEvent('Line Crossed', true).catch(this.err);
@@ -1312,6 +1332,7 @@ class CameraDevice extends Homey.Device
 				.then(() =>
 				{
 					this.triggerPersonEvent(dataValue);
+					this.setCapabilityValue('alarm_person', dataValue).catch(this.error);
 				})
 				.catch(this.error);
 
@@ -1319,10 +1340,14 @@ class CameraDevice extends Homey.Device
 		}
 		else
 		{
-			this.setCapabilityValue('alarm_person', dataValue).catch(this.error);
-		}
+			if (this.getCapabilityValue('alarm_person') !== dataValue)
+			{
+				// Only trigger if the state has changed
+				this.triggerMotionEvent('Person Detected', dataValue).catch(this.err);
 
-		this.triggerMotionEvent('Person Detected', dataValue).catch(this.err);
+				this.setCapabilityValue('alarm_person', dataValue).catch(this.error);
+			}
+		}
 
 		this.homey.clearTimeout(this.personTimeoutId);
 		if (dataValue)
@@ -1353,6 +1378,7 @@ class CameraDevice extends Homey.Device
 				.then(() =>
 				{
 					this.triggerDogCatEvent(dataValue);
+					this.setCapabilityValue('alarm_dog_cat', dataValue).catch(this.error);
 				})
 				.catch(this.error);
 
@@ -1360,10 +1386,14 @@ class CameraDevice extends Homey.Device
 		}
 		else
 		{
-			this.setCapabilityValue('alarm_dog_cat', dataValue).catch(this.error);
-		}
+			// Only trigger if the state has changed
+			if (this.getCapabilityValue('alarm_dog_cat') !== dataValue)
+			{
+				this.triggerMotionEvent('Dog / Cat Detected', dataValue).catch(this.err);
 
-		this.triggerMotionEvent('Dog / Cat Detected', dataValue).catch(this.err);
+				this.setCapabilityValue('alarm_dog_cat', dataValue).catch(this.error);
+			}
+		}
 
 		// If this event doesn't clear, set a timer to clear it
 		this.homey.clearTimeout(this.dogCatTimeoutId);
@@ -1394,6 +1424,7 @@ class CameraDevice extends Homey.Device
 				.then(() =>
 				{
 					this.triggerVistorEvent(dataValue);
+					this.setCapabilityValue('alarm_visitor', dataValue).catch(this.error);
 				})
 				.catch(this.error);
 
@@ -1401,15 +1432,22 @@ class CameraDevice extends Homey.Device
 		}
 		else
 		{
-			this.setCapabilityValue('alarm_visitor', dataValue).catch(this.error);
-		}
+			if (this.hasCapability('alarm_generic'))
+			{
+				if (this.getCapabilityValue('alarm_generic') !== dataValue)
+				{
+					this.triggerMotionEvent('Generic Detected', dataValue).catch(this.err);
+					this.setCapabilityValue('alarm_generic', dataValue).catch(this.error);
+				}
+			}
 
-		if (this.hasCapability('alarm_generic'))
-		{
-			this.setCapabilityValue('alarm_generic', dataValue).catch(this.error);
+			// Only trigger if the state has changed
+			if (this.getCapabilityValue('alarm_visitor') !== dataValue)
+			{
+				this.triggerMotionEvent('Vistor Detected', dataValue).catch(this.err);
+				this.setCapabilityValue('alarm_visitor', dataValue).catch(this.error);
+			}
 		}
-
-		this.triggerMotionEvent('Vistor Detected', dataValue).catch(this.err);
 
 		// If this event doesn't clear, set a timer to clear it
 		this.homey.clearTimeout(this.vistorTimeoutId);
@@ -1446,6 +1484,7 @@ class CameraDevice extends Homey.Device
 				.then(() =>
 				{
 					this.triggerFaceEvent(dataValue);
+					this.setCapabilityValue('alarm_face', dataValue).catch(this.error);
 				})
 				.catch(this.error);
 
@@ -1453,10 +1492,14 @@ class CameraDevice extends Homey.Device
 		}
 		else
 		{
-			this.setCapabilityValue('alarm_face', dataValue).catch(this.error);
-		}
+			// Only trigger if the state has changed
+			if (this.getCapabilityValue('alarm_face') !== dataValue)
+			{
+				this.triggerMotionEvent('Face Detected', dataValue).catch(this.err);
 
-		this.triggerMotionEvent('Face Detected', dataValue).catch(this.err);
+				this.setCapabilityValue('alarm_face', dataValue).catch(this.error);
+			}
+		}
 
 		// If this event doesn't clear, set a timer to clear it
 		this.homey.clearTimeout(this.faceTimeoutId);
@@ -1487,6 +1530,7 @@ class CameraDevice extends Homey.Device
 				.then(() =>
 				{
 					this.triggerVehicleEvent(dataValue);
+					this.setCapabilityValue('alarm_vehicle', dataValue).catch(this.error);
 				})
 				.catch(this.error);
 
@@ -1494,10 +1538,14 @@ class CameraDevice extends Homey.Device
 		}
 		else
 		{
-			this.setCapabilityValue('alarm_vehicle', dataValue).catch(this.error);
-		}
+			// Only trigger if the state has changed
+			if (this.getCapabilityValue('alarm_vehicle') !== dataValue)
+			{
+				this.triggerMotionEvent('Vehicle Detected', dataValue).catch(this.err);
+				this.setCapabilityValue('alarm_vehicle', dataValue).catch(this.error);
+			}
 
-		this.triggerMotionEvent('Vehicle Detected', dataValue).catch(this.err);
+		}
 
 		// If this event doesn't clear, set a timer to clear it
 		this.homey.clearTimeout(this.vehicleTimeoutId);
@@ -1802,7 +1850,7 @@ class CameraDevice extends Homey.Device
 
 		if (this.homey.app.checkSymVersionGreaterEqual(this.homey.version, 12, 7, 0) && !this.video)
 		{
-			this.homey.app.updateLog('Registering Now video stream (' + this.name + ')');
+			this.homey.app.updateLog('Registering Live video stream (' + this.name + ')');
 			this.video = await this.homey.videos.createVideoRTSP();
 			this.video.registerVideoUrlListener(async () =>
 			{
@@ -1822,7 +1870,7 @@ class CameraDevice extends Homey.Device
 				return { url: newUrl };
 			});
 			this.setCameraVideo('NowVideo', 'Live Video', this.video).catch(this.err);
-			this.homey.app.updateLog('registered Now video stream (' + this.name + ')');
+			this.homey.app.updateLog('registered Live video stream (' + this.name + ')');
 		}
 
 		if (!this.snapshotSupported && !this.userSnapUri)

@@ -430,5 +430,8 @@
   },
   "2.0.56": {
 	"en": "Added check for Homey version before registering RTSP video to prevent crashes on older Homey versions."
+  },
+  "2.0.57": {
+	"en": "Only trigger Flows when event state changes."
   }
 }
