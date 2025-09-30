@@ -85,6 +85,7 @@ class CameraDevice extends Homey.Device
 		this.channel = settings.channel;
 		this.token = settings.token;
 		this.userSnapUri = settings.userSnapUri;
+		this.userliveUri = settings.userLiveUri;
 		this.eventTN = this.getEventTN(settings, false);
 		this.eventObjectID = settings.objectID;
 		if (this.eventTN !== 'RuleEngine/FieldDetector/ObjectsInside:IsInside')
@@ -544,6 +545,20 @@ class CameraDevice extends Homey.Device
 			}
 		}
 
+		if (changedKeys.indexOf('userLiveUri') >= 0)
+		{
+			this.userLiveUri = newSettings.userLiveUri;
+			if (!reconnect)
+			{
+				// refresh image settings after exiting this callback
+				setImmediate(() =>
+				{
+					this.setupImages().catch(this.error);
+					return;
+				});
+			}
+		}
+
 		if (changedKeys.indexOf('preferPullEvents') >= 0)
 		{
 			// Changing preferred event method
@@ -875,6 +890,17 @@ class CameraDevice extends Homey.Device
 					this.homey.app.updateLog(`No PTZ presets (${this.name}): ${err.message}`, 0);
 				}
 
+				try
+				{
+					let reply = await this.homey.app.getStreamURL(this.cam);
+					this.liveUri = `${reply.uri}`;
+					this.setSettings({ urlLive: this.liveUri });
+				}
+				catch (err)
+				{
+					this.homey.app.updateLog('Get stream URL error (' + this.name + '): ' + err.message, 0);
+				}
+
 				await this.setAvailable();
 
 				await this.setupImages();
@@ -887,6 +913,7 @@ class CameraDevice extends Homey.Device
 						this.listenForEvents(this.cam).catch(this.error);
 					}
 				}
+
 				this.isReady = true;
 				this.setCapabilityValue('alarm_tamper', false).catch(this.error);
 				this.homey.app.updateLog('Camera (' + this.name + ') ' + this.homey.app.varToString(this.cam), 3);
@@ -1848,24 +1875,35 @@ class CameraDevice extends Homey.Device
 	async setupImages()
 	{
 
-		if (this.homey.app.checkSymVersionGreaterEqual(this.homey.version, 12, 7, 0) && !this.video)
+		if ((this.liveUri || this.userLiveUri) && this.homey.app.checkSymVersionGreaterEqual(this.homey.version, 12, 7, 0) && !this.video)
 		{
 			this.homey.app.updateLog('Registering Live video stream (' + this.name + ')');
 			this.video = await this.homey.videos.createVideoRTSP();
 			this.video.registerVideoUrlListener(async () =>
 			{
-				const reply = await this.homey.app.getStreamURL(this.cam);
-				this.homey.app.updateLog(`Setting Live video stream to ${reply.uri}`);
-				const url = `${reply.uri}`;
-				let newUrl = url;
+				let newUrl = this.userLiveUri;
+
+				if (!newUrl)
+				{
+					// Use ONVIF stream URL
+					// let reply = await this.homey.app.getStreamURL(this.cam);
+					// newUrl = `${reply.uri}`;
+					newUrl = this.liveUri;
+				}
+
+				this.homey.app.updateLog(`Live video stream to URL: ${newUrl}`);
+
 				// If the url doesn't contain user=<username> then add it
-				if (!url.includes(`user=${this.username}`))
+				if (!newUrl.includes(`user=${this.username}`))
 				{
 					// insert the username and password just after the protocol in the format [username:password@<host>]
-					const auth = `${this.username}:${this.password}@`;
-					const host = reply.uri.split('/')[2];
-					newUrl = url.replace(host, auth + host);
+					// URL encode username and password
+					const auth = encodeURIComponent(this.username) + ':' + encodeURIComponent(this.password) + '@';
+
+					const host = newUrl.split('/')[2];
+					newUrl = newUrl.replace(host, auth + host);
 				}
+
 				this.homey.app.updateLog(`Setting Live video stream to ${newUrl}`);
 				return { url: newUrl };
 			});

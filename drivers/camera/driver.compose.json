@@ -712,6 +712,40 @@
 					}
 				},
 				{
+					"id": "urlLive",
+					"type": "label",
+					"label": {
+						"en": "ONVIF Live Stream URL",
+						"de": "ONVIF Live-Stream-URL",
+						"nl": "ONVIF live stream URL",
+						"it": "ONVIF Live Stream URL"
+					},
+					"value": "",
+					"hint": {
+						"en": "The live stream URL that is reported by the camera.",
+						"de": "Die Live-Stream-URL, die von der Kamera gemeldet wird.",
+						"nl": "De live stream URL die door de camera wordt gerapporteerd.",
+						"it": "L'URL del live stream segnalato dalla telecamera."
+					}
+				},
+				{
+					"id": "userLiveUri",
+					"type": "text",
+					"label": {
+						"en": "USER Live Stream URL",
+						"de": "USER Live-Stream-URL",
+						"nl": "USER live stream URL",
+						"it": "USER Live Stream URL"
+					},
+					"value": "",
+					"hint": {
+						"en": "An alternative live stream URL that overrides the detected one.\nLeave the field blank to use the detected URL.",
+						"de": "Eine alternative Live-Stream-URL, die die erkannte überschreibt.\nCLassen Sie das Feld leer, um die erkannte URL zu verwenden.",
+						"nl": "Een alternatieve live stream URL die de gedetecteerde URL overschrijft.\nLaat het veld leeg om de gedetecteerde URL te gebruiken.",
+						"it": "Un URL di live stream alternativo che sostituisce quello rilevato.\nLascia il campo vuoto per utilizzare l'URL rilevato."
+					}
+				},
+				{
 					"id": "notificationMethods",
 					"type": "label",
 					"label": {

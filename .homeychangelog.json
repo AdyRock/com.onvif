@@ -433,5 +433,8 @@
   },
   "2.0.57": {
 	"en": "Only trigger Flows when event state changes."
+  },
+  "2.0.58": {
+	"en": "Ensure username and password are URL encoded when added to the RTSP url. Added option to set a custom RTSP url in the Advanced settings."
   }
 }
