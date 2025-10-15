@@ -436,5 +436,8 @@
   },
   "2.0.58": {
 	"en": "Ensure username and password are URL encoded when added to the RTSP url. Added option to set a custom RTSP url in the Advanced settings."
+  },
+  "2.0.59": {
+	"en": "Added check homey live stream feature."
   }
 }

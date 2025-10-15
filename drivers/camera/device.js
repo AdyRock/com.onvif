@@ -1875,7 +1875,7 @@ class CameraDevice extends Homey.Device
 	async setupImages()
 	{
 
-		if ((this.liveUri || this.userLiveUri) && this.homey.app.checkSymVersionGreaterEqual(this.homey.version, 12, 7, 0) && !this.video)
+		if ((this.liveUri || this.userLiveUri) && this.homey.app.checkSymVersionGreaterEqual(this.homey.version, 12, 7, 1) && this.homey.hasFeature('camera-streaming') && !this.video)
 		{
 			this.homey.app.updateLog('Registering Live video stream (' + this.name + ')');
 			this.video = await this.homey.videos.createVideoRTSP();
