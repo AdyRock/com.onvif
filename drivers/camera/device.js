@@ -1875,42 +1875,62 @@ class CameraDevice extends Homey.Device
 	async setupImages()
 	{
 
-		if ((this.liveUri || this.userLiveUri) && this.homey.app.checkSymVersionGreaterEqual(this.homey.version, 12, 7, 1) && this.homey.hasFeature('camera-streaming') && !this.video)
+		if (!this.video)
 		{
-			this.homey.app.updateLog('Registering Live video stream (' + this.name + ')');
-			this.video = await this.homey.videos.createVideoRTSP();
-			this.video.registerVideoUrlListener(async () =>
+			if ((this.liveUri || this.userLiveUri) && (typeof this.homey.hasFeature === 'function') && this.homey.hasFeature('camera-streaming'))
 			{
-				let newUrl = this.userLiveUri;
-
-				if (!newUrl)
+				this.homey.app.updateLog('Registering Live video stream (' + this.name + ')');
+				this.video = await this.homey.videos.createVideoRTSP();
+				this.video.registerVideoUrlListener(async () =>
 				{
-					// Use ONVIF stream URL
-					// let reply = await this.homey.app.getStreamURL(this.cam);
-					// newUrl = `${reply.uri}`;
-					newUrl = this.liveUri;
-				}
+					let newUrl = this.userLiveUri;
 
-				this.homey.app.updateLog(`Live video stream to URL: ${newUrl}`);
+					if (!newUrl)
+					{
+						// Use ONVIF stream URL
+						// let reply = await this.homey.app.getStreamURL(this.cam);
+						// newUrl = `${reply.uri}`;
+						newUrl = this.liveUri;
+					}
 
-				// If the url doesn't contain user=<username> then add it
-				if (!newUrl.includes(`user=${this.username}`))
+					this.homey.app.updateLog(`Live video stream to URL: ${newUrl}`);
+
+					// If the url doesn't contain user=<username> then add it
+					if (!newUrl.includes(`user=${this.username}`))
+					{
+						// insert the username and password just after the protocol in the format [username:password@<host>]
+						// URL encode username and password
+						const auth = encodeURIComponent(this.username) + ':' + encodeURIComponent(this.password) + '@';
+
+						const host = newUrl.split('/')[2];
+						newUrl = newUrl.replace(host, auth + host);
+					}
+
+					this.homey.app.updateLog(`Setting Live video stream to ${newUrl}`);
+					return { url: newUrl };
+				});
+				this.setCameraVideo('NowVideo', 'Live Video', this.video).catch(this.err);
+				this.homey.app.updateLog('registered Live video stream (' + this.name + ')');
+			}
+			else
+			{
+				if (!this.liveUri && !this.userLiveUri)
 				{
-					// insert the username and password just after the protocol in the format [username:password@<host>]
-					// URL encode username and password
-					const auth = encodeURIComponent(this.username) + ':' + encodeURIComponent(this.password) + '@';
-
-					const host = newUrl.split('/')[2];
-					newUrl = newUrl.replace(host, auth + host);
+					this.homey.app.updateLog('Live video streams require a valid stream URL', 0);
 				}
-
-				this.homey.app.updateLog(`Setting Live video stream to ${newUrl}`);
-				return { url: newUrl };
-			});
-			this.setCameraVideo('NowVideo', 'Live Video', this.video).catch(this.err);
-			this.homey.app.updateLog('registered Live video stream (' + this.name + ')');
+				else if (!this.homey.app.checkSymVersionGreaterEqual(this.homey.version, 12, 7, 1))
+				{
+					this.homey.app.updateLog('Live video streams require Homey 2023 v12.7.1 or higher', 0);
+				}
+				else if (!this.homey.hasFeature('camera-streaming'))
+				{
+					this.homey.app.updateLog('Live video streams require a Homey Pro or Homey Max', 0);
+				}
+			}
 		}
 
+		// Setup snapshot images
+		// If snapshot is not supported and no user defined snapshot URL then skip this
 		if (!this.snapshotSupported && !this.userSnapUri)
 		{
 			return;

@@ -1,443 +1,446 @@
 {
-  "0.0.1": {
-    "en": "First version for public testing."
-  },
-  "0.0.2": {
-    "en": "First test release"
-  },
-  "0.0.5": {
-    "en": "Rewrite of discovery routine, selectable time format, camera information now available in advanced settings, updated to latest ONVIF library."
-  },
-  "0.0.6": {
-    "en": "Added log page to App config to help diagnose issues. Added extra error traps to prevent app crashes on invalid responses."
-  },
-  "0.0.9": {
-    "en": "Added image update and trigger flow cards. More error checking for cameras that don't support pullpoints"
-  },
-  "0.0.10": {
-    "en": "Added button to send the Diagnostics log to the dev. Improved reconnection to a camera that went offline. Added the Repair feature to reconnect a camera that has changed IP address or login details"
-  },
-  "0.0.11": {
-    "en": "Fixed pairing that was broken by last test version"
-  },
-  "0.0.12": {
-    "en": "Fixed error when discovery returns a null port"
-  },
-  "0.0.13": {
-    "en": "Add more log messages to image registration"
-  },
-  "0.0.14": {
-    "en": "Added user name and password if missing from the returned snapshot URI"
-  },
-  "0.0.15": {
-    "en": "Improved error reporting and fixed a typo from last build"
-  },
-  "0.0.16": {
-    "en": "Fetch snapshot URI before each image fetch if the \"invalidAfterConnect\" is true"
-  },
-  "0.0.17": {
-    "en": "Added option to change the snapshot URL in advanced settings"
-  },
-  "0.0.18": {
-    "en": "Added Authorization header to image fetch"
-  },
-  "0.0.19": {
-    "en": "Added option to set Authorization html headers to image fetch. Included Authorization option for event image."
-  },
-  "0.0.20": {
-    "en": "Added Digest Authorization with auto authorization mode. Removed a few advanced options as the auto detection is now better."
-  },
-  "0.0.21": {
-    "en": "Fixed error in last build where the user URI was removed that prevented the image appearing in newly added cameras."
-  },
-  "0.0.22": {
-    "en": "Added push event handling (partial implementation). Added Motion snapshot ready trigger card."
-  },
-  "0.0.23": {
-    "en": "Updated push event method"
-  },
-  "0.0.24": {
-    "en": "Added motion alarm to device tile."
-  },
-  "0.0.25": {
-    "en": "Added option to switch between push and pull events when both are available. Tidy up of switching events on and off. Added features required for supporting other languages once I have some translations."
-  },
-  "0.0.26": {
-    "en": "Added retries to event image capture."
-  },
-  "0.0.27": {
-    "en": "Implemented Push Events Refresh instead of unsubscribing and subscribing. Now detects IsTamper event and set the 'Offline / Tamper alarm'. Optimised network timeout for pull events. Re-enable events when camera comes back online."
-  },
-  "0.0.28": {
-    "en": "Made device class settable between camera and sensor in Advanced Settings."
-  },
-  "0.0.29": {
-    "en": "Optimized libraries to considerably reduce the size of the app."
-  },
-  "0.0.30": {
-    "en": "Extra diagnostics and possible fix for invalid video source object"
-  },
-  "0.0.31": {
-    "en": "Extra diagnostics for connect camera function"
-  },
-  "0.0.32": {
-    "en": "Added German, Dutch and Italian. Try getSystemDateAndTime with credentials if it fails without."
-  },
-  "0.0.33": {
-    "en": "Added missing translation text. Added more diagnostics for a specific camera."
-  },
-  "0.0.34": {
-    "en": "Moved camera offline check to the app to smooth out processor demand when lots of cameras are added."
-  },
-  "0.0.35": {
-    "en": "Filter out devices that are not proper ONVIF cameras from search"
-  },
-  "0.0.36": {
-    "en": "Fixed case where the password was appearing in the log. Fixed issue with Sync Time function. A bad snapshot URI is rechecked during the camera check."
-  },
-  "0.0.37": {
-    "en": "Fix crash when Sync. Time fails"
-  },
-  "0.0.38": {
-    "en": "send log change"
-  },
-  "0.0.39": {
-    "en": "Added a few more checks for bad data from cameras."
-  },
-  "0.0.40": {
-    "en": "Changed order of images so the 'Now' image is the default when the section is selected."
-  },
-  "0.1.0": {
-    "en": "Added \"Motion image is ready within...\" flow condition, deprecated \"Update Now snapshot\" flow action, added \"Update Motion snapshot\" flow action."
-  },
-  "0.1.1": {
-    "en": "Motion image available even when camera does not support it so that the flow trigger can update it."
-  },
-  "0.1.2": {
-    "en": "Fixed broken motion image update when motion detected"
-  },
-  "0.1.3": {
-    "en": "Added experimental channel selection"
-  },
-  "0.1.4": {
-    "en": "Added extra logging for push event to determine if channel is specified."
-  },
-  "1.0.0": {
-    "en": "Experimental!!!! Added support for multiple cameras on one IP via channels."
-  },
-  "1.0.1": {
-    "en": "Experimental!!!! Added support for multiple cameras on one IP via channels."
-  },
-  "1.0.2": {
-    "en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fixed a bug when enumerating the channels"
-  },
-  "1.0.3": {
-    "en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix subscription for multiple channels"
-  },
-  "1.0.4": {
-    "en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix subscription for multiple channels"
-  },
-  "1.0.5": {
-    "en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix subscription for multiple channels"
-  },
-  "1.0.6": {
-    "en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix subscription for multiple channels"
-  },
-  "1.0.7": {
-    "en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix subscription for multiple channels"
-  },
-  "1.0.8": {
-    "en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix pairing loop."
-  },
-  "1.0.9": {
-    "en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix bug in unsubscribe"
-  },
-  "1.0.10": {
-    "en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix bug in unsubscribe"
-  },
-  "1.0.11": {
-    "en": "Experimental!!!! Added support for multiple cameras on one IP via channels."
-  },
-  "1.1.0": {
-    "en": "Added support for multiple cameras on one IP via channels."
-  },
-  "1.1.1": {
-    "en": "Fix push event issue for single camera introduced when adding multiple camera support."
-  },
-  "1.1.2": {
-    "en": "More logging"
-  },
-  "1.1.3": {
-    "en": "Handle missing time from camera."
-  },
-  "1.1.4": {
-    "en": "Put catch around each image retrieval method instead of relaying on camera returning a failure message."
-  },
-  "1.1.5": {
-    "en": "Switch log off when full instead of clearing it."
-  },
-  "1.1.6": {
-    "en": "Added diagnostics to find a specific problem"
-  },
-  "1.1.7": {
-    "en": "More logging"
-  },
-  "1.1.8": {
-    "en": "Fix 255.255.255.255 ip address returned from pull point subscription"
-  },
-  "1.1.9": {
-    "en": "Allow channel to stay set to 0"
-  },
-  "1.1.10": {
-    "en": "Extra error logging"
-  },
-  "1.1.11": {
-    "en": "Fixed enable / disable flow actions. Improved robustness against network failures."
-  },
-  "1.1.12": {
-    "en": "More diagnostics in parseSOAPString"
-  },
-  "1.1.13": {
-    "en": "More diag for invalid soap"
-  },
-  "1.1.14": {
-    "en": "Change to 3 levels of logging. Handle an uncaught exception. Fixed typo in discovery message."
-  },
-  "1.1.15": {
-    "en": "Fix to cope with a single service."
-  },
-  "1.1.16": {
-    "en": "Fix to cope with a single video source."
-  },
-  "1.1.17": {
-    "en": "Fix to cope with a 'numeric' serial number."
-  },
-  "1.1.18": {
-    "en": "Added an option to include a camera manually by specifying the IP and port."
-  },
-  "1.1.19": {
-    "en": "Fix to cope with custom services."
-  },
-  "1.1.20": {
-    "en": "Fix error when manually adding a DVR."
-  },
-  "1.1.21": {
-    "en": "Fix error when manually adding a DVR."
-  },
-  "1.1.22": {
-    "en": "Stop polling for camera check when logging more than error so the log is not flooded."
-  },
-  "1.1.23": {
-    "en": "Added an option to the Advanced settings to select the motion trigger source."
-  },
-  "1.1.24": {
-    "en": "Added an option to set the event object ID."
-  },
-  "1.1.25": {
-    "en": "Stability improvements."
-  },
-  "1.1.26": {
-    "en": "Added option to disable a camera."
-  },
-  "1.1.27": {
-    "en": "Fix for adding multiple cameras on a different VLAN."
-  },
-  "1.1.28": {
-    "en": "Fix for adding multiple cameras on a different VLAN. Fix missing token identifier in a flow resource."
-  },
-  "1.1.29": {
-    "en": "Fix for adding multiple cameras on a different VLAN. Fix for Pull Event subscription that was broken in 1.2.6."
-  },
-  "1.1.30": {
-    "en": "Fix for cameras that are not supporting pull refresh correctly."
-  },
-  "1.1.31": {
-    "en": "Enhanced logging facility to help diagnose camera issues more easily."
-  },
-  "1.1.32": {
-    "en": "Added Minimum On Time to advanced settings."
-  },
-  "1.1.33": {
-    "en": "Added support for line crossed, image too dark and storage broken alarms plus cpu usage report."
-  },
-  "2.0.0": {
-    "en": "Converted to SDK3. Added extra capabilities (line crossed, camera cpu usage, audio, dark image, SD card failure) when supported by the camera."
-  },
-  "2.0.1": {
-    "en": "Fixed Timeout issue introduce in v2.0.0"
-  },
-  "2.0.2": {
-    "en": "Fixed missing flow card registrations"
-  },
-  "2.0.3": {
-    "en": "Fixed potential error when logging res.headers.raw()."
-  },
-  "2.0.4": {
-    "en": "Updated all libraries to improve robustness of the app."
-  },
-  "2.0.5": {
-    "en": "Updated store images to current Athom store standards."
-  },
-  "2.0.6": {
-    "en": "Add more diagnostics for camera discover."
-  },
-  "2.0.7": {
-    "en": "Attempt each Auth mode if fetching a snapshot fails any time."
-  },
-  "2.0.8": {
-    "en": "Filtered flow cards so only applicable cards are shown."
-  },
-  "2.0.9": {
-    "en": "Use the current date and time for the camera id if the mac address is not detected."
-  },
-  "2.0.10": {
-    "en": "Fix to enable mostion when the MOTION type is not supported but other types are."
-  },
-  "2.0.11": {
-    "en": "Extra error reporting."
-  },
-  "2.0.12": {
-    "en": "Extra error checking."
-  },
-  "2.0.13": {
-    "en": "More error checking."
-  },
-  "2.0.14": {
-    "en": "Made upstart functions synchronous incase the camera can't cope with multiple simultaneous requests."
-  },
-  "2.0.15": {
-    "en": "Fixed an issue connecting to a camera that returns the firmware version as a number instead of a string."
-  },
-  "2.0.16": {
-    "en": "Increased Push notification buffer allowance."
-  },
-  "2.0.17": {
-    "en": "Added detection of RuleEngine/MyRuleDetector/Visitor to activate the alarm_generic."
-  },
-  "2.0.18": {
-    "en": "Added detection of RuleEngine/MyRuleDetector/Visitor:State to activate the alarm_generic."
-  },
-  "2.0.19": {
-    "en": "Try to reduce strange unhandled reject reports for handled rejection."
-  },
-  "2.0.20": {
-    "en": "Updated all libraries to improve robustness of the app."
-  },
-  "2.0.21": {
-    "en": "Fix a crash if the camera goes offline while renewing the push notifications."
-  },
-  "2.0.22": {
-    "en": "Fix for NVR multi-channel events."
-  },
-  "2.0.23": {
-    "en": "Update ONVIF library."
-  },
-  "2.0.24": {
-    "en": "Log requests to track down SOAP error."
-  },
-  "2.0.25": {
-    "en": "Updated for compatability with Homey 2023."
-  },
-  "2.0.26": {
-    "en": "Set option to ignore certificate errors to allow for self-signed https connection for snapshot."
-  },
-  "2.0.27": {
-    "en": "Fix possible crash when logging."
-  },
-  "2.0.28": {
-    "en": "Added alarms for People, Visitor, Face, Cat / Dog and Vehicle (note: support is camera dependent)."
-  },
-  "2.0.29": {
-    "en": "Returned General alarm trigger for visitor (doorbell pressed) for backward compatability."
-  },
-  "2.0.30": {
-    "en": "Fix for event token on individual cameras that was introduced when adding support for a NVR."
-  },
-  "2.0.31": {
-    "en": "Improved some error handling"
-  },
-  "2.0.32": {
-    "en": "Improved more error handling"
-  },
-  "2.0.33": {
-    "en": "Improved more error handling"
-  },
-  "2.0.34": {
-    "en": "Improved error handling"
-  },
-  "2.0.35": {
-    "en": "Fix triggers for custom motion events"
-  },
-  "2.0.36": {
-    "en": "Improved error handling"
-  },
-  "2.0.37": {
-    "en": "Improved error handling"
-  },
-  "2.0.38": {
-    "en": "Update ONVIF library."
-  },
-  "2.0.39": {
-    "en": "Fix camera timezone / DST."
-  },
-  "2.0.40": {
-    "en": "Added options to enable / dissable time zone for camera times and add an offset to correct for DST."
-  },
-  "2.0.41": {
-    "en": "Trap for errors getting MAC address."
-  },
-  "2.0.42": {
-    "en": "Add more diagnostics for camera discover."
-  },
-  "2.0.43": {
-    "en": "Promisify ONVIF lib to try and catch more errors."
-  },
-  "2.0.44": {
-    "en": "Switched back to using camera URN, when availabled, to identify cameras, as it seems some Homey gets the MAC wrong in some networks."
-  },
-  "2.0.45": {
-    "en": "Add storage failed alarm capability on the fly when required."
-  },
-  "2.0.46": {
-    "en": "Clean up cam error handling."
-  },
-  "2.0.47": {
-    "en": "More cam error handling. Added app motion Flow trigger that is fired by any enabled device and has tags for the camera name and event type."
-  },
-  "2.0.48": {
-    "en": "Allow for response.CurrentTime as well as response.currentTime in pull renewal."
-  },
-  "2.0.49": {
-	"en": "Added option to add port number to camera ID for NVRs that map cameras via port numbers."
-  },
-  "2.0.50": {
-	"en": "Removed deprecated setting from the Flows 'Update Snapshot' action card."
-  },
-  "2.0.51": {
-	"en": "Added support for PTZ presets."
-  },
-  "2.0.52": {
-	"en": "Replaced automatic event detection with manual configuration in the device settings."
-  },
-  "2.0.53": {
-	"en": "Fix 'Go to preset' Flow action card."
-  },
-  "2.0.54": {
-	"en": "Added support for 'RuleEngine/PeopleDetector/People:IsPeople' events."
-  },
-  "2.0.55": {
-	"en": "Added support for local RTSP live stream."
-  },
-  "2.0.56": {
-	"en": "Added check for Homey version before registering RTSP video to prevent crashes on older Homey versions."
-  },
-  "2.0.57": {
-	"en": "Only trigger Flows when event state changes."
-  },
-  "2.0.58": {
-	"en": "Ensure username and password are URL encoded when added to the RTSP url. Added option to set a custom RTSP url in the Advanced settings."
-  },
-  "2.0.59": {
-	"en": "Added check homey live stream feature."
-  }
+	"0.0.1": {
+		"en": "First version for public testing."
+	},
+	"0.0.2": {
+		"en": "First test release"
+	},
+	"0.0.5": {
+		"en": "Rewrite of discovery routine, selectable time format, camera information now available in advanced settings, updated to latest ONVIF library."
+	},
+	"0.0.6": {
+		"en": "Added log page to App config to help diagnose issues. Added extra error traps to prevent app crashes on invalid responses."
+	},
+	"0.0.9": {
+		"en": "Added image update and trigger flow cards. More error checking for cameras that don't support pullpoints"
+	},
+	"0.0.10": {
+		"en": "Added button to send the Diagnostics log to the dev. Improved reconnection to a camera that went offline. Added the Repair feature to reconnect a camera that has changed IP address or login details"
+	},
+	"0.0.11": {
+		"en": "Fixed pairing that was broken by last test version"
+	},
+	"0.0.12": {
+		"en": "Fixed error when discovery returns a null port"
+	},
+	"0.0.13": {
+		"en": "Add more log messages to image registration"
+	},
+	"0.0.14": {
+		"en": "Added user name and password if missing from the returned snapshot URI"
+	},
+	"0.0.15": {
+		"en": "Improved error reporting and fixed a typo from last build"
+	},
+	"0.0.16": {
+		"en": "Fetch snapshot URI before each image fetch if the \"invalidAfterConnect\" is true"
+	},
+	"0.0.17": {
+		"en": "Added option to change the snapshot URL in advanced settings"
+	},
+	"0.0.18": {
+		"en": "Added Authorization header to image fetch"
+	},
+	"0.0.19": {
+		"en": "Added option to set Authorization html headers to image fetch. Included Authorization option for event image."
+	},
+	"0.0.20": {
+		"en": "Added Digest Authorization with auto authorization mode. Removed a few advanced options as the auto detection is now better."
+	},
+	"0.0.21": {
+		"en": "Fixed error in last build where the user URI was removed that prevented the image appearing in newly added cameras."
+	},
+	"0.0.22": {
+		"en": "Added push event handling (partial implementation). Added Motion snapshot ready trigger card."
+	},
+	"0.0.23": {
+		"en": "Updated push event method"
+	},
+	"0.0.24": {
+		"en": "Added motion alarm to device tile."
+	},
+	"0.0.25": {
+		"en": "Added option to switch between push and pull events when both are available. Tidy up of switching events on and off. Added features required for supporting other languages once I have some translations."
+	},
+	"0.0.26": {
+		"en": "Added retries to event image capture."
+	},
+	"0.0.27": {
+		"en": "Implemented Push Events Refresh instead of unsubscribing and subscribing. Now detects IsTamper event and set the 'Offline / Tamper alarm'. Optimised network timeout for pull events. Re-enable events when camera comes back online."
+	},
+	"0.0.28": {
+		"en": "Made device class settable between camera and sensor in Advanced Settings."
+	},
+	"0.0.29": {
+		"en": "Optimized libraries to considerably reduce the size of the app."
+	},
+	"0.0.30": {
+		"en": "Extra diagnostics and possible fix for invalid video source object"
+	},
+	"0.0.31": {
+		"en": "Extra diagnostics for connect camera function"
+	},
+	"0.0.32": {
+		"en": "Added German, Dutch and Italian. Try getSystemDateAndTime with credentials if it fails without."
+	},
+	"0.0.33": {
+		"en": "Added missing translation text. Added more diagnostics for a specific camera."
+	},
+	"0.0.34": {
+		"en": "Moved camera offline check to the app to smooth out processor demand when lots of cameras are added."
+	},
+	"0.0.35": {
+		"en": "Filter out devices that are not proper ONVIF cameras from search"
+	},
+	"0.0.36": {
+		"en": "Fixed case where the password was appearing in the log. Fixed issue with Sync Time function. A bad snapshot URI is rechecked during the camera check."
+	},
+	"0.0.37": {
+		"en": "Fix crash when Sync. Time fails"
+	},
+	"0.0.38": {
+		"en": "send log change"
+	},
+	"0.0.39": {
+		"en": "Added a few more checks for bad data from cameras."
+	},
+	"0.0.40": {
+		"en": "Changed order of images so the 'Now' image is the default when the section is selected."
+	},
+	"0.1.0": {
+		"en": "Added \"Motion image is ready within...\" flow condition, deprecated \"Update Now snapshot\" flow action, added \"Update Motion snapshot\" flow action."
+	},
+	"0.1.1": {
+		"en": "Motion image available even when camera does not support it so that the flow trigger can update it."
+	},
+	"0.1.2": {
+		"en": "Fixed broken motion image update when motion detected"
+	},
+	"0.1.3": {
+		"en": "Added experimental channel selection"
+	},
+	"0.1.4": {
+		"en": "Added extra logging for push event to determine if channel is specified."
+	},
+	"1.0.0": {
+		"en": "Experimental!!!! Added support for multiple cameras on one IP via channels."
+	},
+	"1.0.1": {
+		"en": "Experimental!!!! Added support for multiple cameras on one IP via channels."
+	},
+	"1.0.2": {
+		"en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fixed a bug when enumerating the channels"
+	},
+	"1.0.3": {
+		"en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix subscription for multiple channels"
+	},
+	"1.0.4": {
+		"en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix subscription for multiple channels"
+	},
+	"1.0.5": {
+		"en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix subscription for multiple channels"
+	},
+	"1.0.6": {
+		"en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix subscription for multiple channels"
+	},
+	"1.0.7": {
+		"en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix subscription for multiple channels"
+	},
+	"1.0.8": {
+		"en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix pairing loop."
+	},
+	"1.0.9": {
+		"en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix bug in unsubscribe"
+	},
+	"1.0.10": {
+		"en": "Experimental!!!! Added support for multiple cameras on one IP via channels. Fix bug in unsubscribe"
+	},
+	"1.0.11": {
+		"en": "Experimental!!!! Added support for multiple cameras on one IP via channels."
+	},
+	"1.1.0": {
+		"en": "Added support for multiple cameras on one IP via channels."
+	},
+	"1.1.1": {
+		"en": "Fix push event issue for single camera introduced when adding multiple camera support."
+	},
+	"1.1.2": {
+		"en": "More logging"
+	},
+	"1.1.3": {
+		"en": "Handle missing time from camera."
+	},
+	"1.1.4": {
+		"en": "Put catch around each image retrieval method instead of relaying on camera returning a failure message."
+	},
+	"1.1.5": {
+		"en": "Switch log off when full instead of clearing it."
+	},
+	"1.1.6": {
+		"en": "Added diagnostics to find a specific problem"
+	},
+	"1.1.7": {
+		"en": "More logging"
+	},
+	"1.1.8": {
+		"en": "Fix 255.255.255.255 ip address returned from pull point subscription"
+	},
+	"1.1.9": {
+		"en": "Allow channel to stay set to 0"
+	},
+	"1.1.10": {
+		"en": "Extra error logging"
+	},
+	"1.1.11": {
+		"en": "Fixed enable / disable flow actions. Improved robustness against network failures."
+	},
+	"1.1.12": {
+		"en": "More diagnostics in parseSOAPString"
+	},
+	"1.1.13": {
+		"en": "More diag for invalid soap"
+	},
+	"1.1.14": {
+		"en": "Change to 3 levels of logging. Handle an uncaught exception. Fixed typo in discovery message."
+	},
+	"1.1.15": {
+		"en": "Fix to cope with a single service."
+	},
+	"1.1.16": {
+		"en": "Fix to cope with a single video source."
+	},
+	"1.1.17": {
+		"en": "Fix to cope with a 'numeric' serial number."
+	},
+	"1.1.18": {
+		"en": "Added an option to include a camera manually by specifying the IP and port."
+	},
+	"1.1.19": {
+		"en": "Fix to cope with custom services."
+	},
+	"1.1.20": {
+		"en": "Fix error when manually adding a DVR."
+	},
+	"1.1.21": {
+		"en": "Fix error when manually adding a DVR."
+	},
+	"1.1.22": {
+		"en": "Stop polling for camera check when logging more than error so the log is not flooded."
+	},
+	"1.1.23": {
+		"en": "Added an option to the Advanced settings to select the motion trigger source."
+	},
+	"1.1.24": {
+		"en": "Added an option to set the event object ID."
+	},
+	"1.1.25": {
+		"en": "Stability improvements."
+	},
+	"1.1.26": {
+		"en": "Added option to disable a camera."
+	},
+	"1.1.27": {
+		"en": "Fix for adding multiple cameras on a different VLAN."
+	},
+	"1.1.28": {
+		"en": "Fix for adding multiple cameras on a different VLAN. Fix missing token identifier in a flow resource."
+	},
+	"1.1.29": {
+		"en": "Fix for adding multiple cameras on a different VLAN. Fix for Pull Event subscription that was broken in 1.2.6."
+	},
+	"1.1.30": {
+		"en": "Fix for cameras that are not supporting pull refresh correctly."
+	},
+	"1.1.31": {
+		"en": "Enhanced logging facility to help diagnose camera issues more easily."
+	},
+	"1.1.32": {
+		"en": "Added Minimum On Time to advanced settings."
+	},
+	"1.1.33": {
+		"en": "Added support for line crossed, image too dark and storage broken alarms plus cpu usage report."
+	},
+	"2.0.0": {
+		"en": "Converted to SDK3. Added extra capabilities (line crossed, camera cpu usage, audio, dark image, SD card failure) when supported by the camera."
+	},
+	"2.0.1": {
+		"en": "Fixed Timeout issue introduce in v2.0.0"
+	},
+	"2.0.2": {
+		"en": "Fixed missing flow card registrations"
+	},
+	"2.0.3": {
+		"en": "Fixed potential error when logging res.headers.raw()."
+	},
+	"2.0.4": {
+		"en": "Updated all libraries to improve robustness of the app."
+	},
+	"2.0.5": {
+		"en": "Updated store images to current Athom store standards."
+	},
+	"2.0.6": {
+		"en": "Add more diagnostics for camera discover."
+	},
+	"2.0.7": {
+		"en": "Attempt each Auth mode if fetching a snapshot fails any time."
+	},
+	"2.0.8": {
+		"en": "Filtered flow cards so only applicable cards are shown."
+	},
+	"2.0.9": {
+		"en": "Use the current date and time for the camera id if the mac address is not detected."
+	},
+	"2.0.10": {
+		"en": "Fix to enable mostion when the MOTION type is not supported but other types are."
+	},
+	"2.0.11": {
+		"en": "Extra error reporting."
+	},
+	"2.0.12": {
+		"en": "Extra error checking."
+	},
+	"2.0.13": {
+		"en": "More error checking."
+	},
+	"2.0.14": {
+		"en": "Made upstart functions synchronous incase the camera can't cope with multiple simultaneous requests."
+	},
+	"2.0.15": {
+		"en": "Fixed an issue connecting to a camera that returns the firmware version as a number instead of a string."
+	},
+	"2.0.16": {
+		"en": "Increased Push notification buffer allowance."
+	},
+	"2.0.17": {
+		"en": "Added detection of RuleEngine/MyRuleDetector/Visitor to activate the alarm_generic."
+	},
+	"2.0.18": {
+		"en": "Added detection of RuleEngine/MyRuleDetector/Visitor:State to activate the alarm_generic."
+	},
+	"2.0.19": {
+		"en": "Try to reduce strange unhandled reject reports for handled rejection."
+	},
+	"2.0.20": {
+		"en": "Updated all libraries to improve robustness of the app."
+	},
+	"2.0.21": {
+		"en": "Fix a crash if the camera goes offline while renewing the push notifications."
+	},
+	"2.0.22": {
+		"en": "Fix for NVR multi-channel events."
+	},
+	"2.0.23": {
+		"en": "Update ONVIF library."
+	},
+	"2.0.24": {
+		"en": "Log requests to track down SOAP error."
+	},
+	"2.0.25": {
+		"en": "Updated for compatability with Homey 2023."
+	},
+	"2.0.26": {
+		"en": "Set option to ignore certificate errors to allow for self-signed https connection for snapshot."
+	},
+	"2.0.27": {
+		"en": "Fix possible crash when logging."
+	},
+	"2.0.28": {
+		"en": "Added alarms for People, Visitor, Face, Cat / Dog and Vehicle (note: support is camera dependent)."
+	},
+	"2.0.29": {
+		"en": "Returned General alarm trigger for visitor (doorbell pressed) for backward compatability."
+	},
+	"2.0.30": {
+		"en": "Fix for event token on individual cameras that was introduced when adding support for a NVR."
+	},
+	"2.0.31": {
+		"en": "Improved some error handling"
+	},
+	"2.0.32": {
+		"en": "Improved more error handling"
+	},
+	"2.0.33": {
+		"en": "Improved more error handling"
+	},
+	"2.0.34": {
+		"en": "Improved error handling"
+	},
+	"2.0.35": {
+		"en": "Fix triggers for custom motion events"
+	},
+	"2.0.36": {
+		"en": "Improved error handling"
+	},
+	"2.0.37": {
+		"en": "Improved error handling"
+	},
+	"2.0.38": {
+		"en": "Update ONVIF library."
+	},
+	"2.0.39": {
+		"en": "Fix camera timezone / DST."
+	},
+	"2.0.40": {
+		"en": "Added options to enable / dissable time zone for camera times and add an offset to correct for DST."
+	},
+	"2.0.41": {
+		"en": "Trap for errors getting MAC address."
+	},
+	"2.0.42": {
+		"en": "Add more diagnostics for camera discover."
+	},
+	"2.0.43": {
+		"en": "Promisify ONVIF lib to try and catch more errors."
+	},
+	"2.0.44": {
+		"en": "Switched back to using camera URN, when availabled, to identify cameras, as it seems some Homey gets the MAC wrong in some networks."
+	},
+	"2.0.45": {
+		"en": "Add storage failed alarm capability on the fly when required."
+	},
+	"2.0.46": {
+		"en": "Clean up cam error handling."
+	},
+	"2.0.47": {
+		"en": "More cam error handling. Added app motion Flow trigger that is fired by any enabled device and has tags for the camera name and event type."
+	},
+	"2.0.48": {
+		"en": "Allow for response.CurrentTime as well as response.currentTime in pull renewal."
+	},
+	"2.0.49": {
+		"en": "Added option to add port number to camera ID for NVRs that map cameras via port numbers."
+	},
+	"2.0.50": {
+		"en": "Removed deprecated setting from the Flows 'Update Snapshot' action card."
+	},
+	"2.0.51": {
+		"en": "Added support for PTZ presets."
+	},
+	"2.0.52": {
+		"en": "Replaced automatic event detection with manual configuration in the device settings."
+	},
+	"2.0.53": {
+		"en": "Fix 'Go to preset' Flow action card."
+	},
+	"2.0.54": {
+		"en": "Added support for 'RuleEngine/PeopleDetector/People:IsPeople' events."
+	},
+	"2.0.55": {
+		"en": "Added support for local RTSP live stream."
+	},
+	"2.0.56": {
+		"en": "Added check for Homey version before registering RTSP video to prevent crashes on older Homey versions."
+	},
+	"2.0.57": {
+		"en": "Only trigger Flows when event state changes."
+	},
+	"2.0.58": {
+		"en": "Ensure username and password are URL encoded when added to the RTSP url. Added option to set a custom RTSP url in the Advanced settings."
+	},
+	"2.0.59": {
+		"en": "Added check homey live stream feature."
+	},
+	"2.0.60": {
+		"en": "Changed check method for homey live stream feature."
+	}
 }
