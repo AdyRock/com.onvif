@@ -1924,7 +1924,7 @@ class CameraDevice extends Homey.Device
 				}
 				else if (!this.homey.hasFeature('camera-streaming'))
 				{
-					this.homey.app.updateLog('Live video streams require a Homey Pro or Homey Max', 0);
+					this.homey.app.updateLog('Live video streams require a Homey Pro 2023 or later', 0);
 				}
 			}
 		}
