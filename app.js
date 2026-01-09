@@ -1,10 +1,11 @@
 /* eslint-disable no-unused-vars */
 /*jslint node: true */
 'use strict';
-
+console.log('[BOOT-0] entry file executing');
 // eslint-disable-next-line no-undef
 if (process.env.DEBUG === '1') {
 	require('inspector').open(9225, '0.0.0.0', true);
+    console.log('[BOOT-1] inspector connected');
 }
 
 const Homey = require('homey');
@@ -17,11 +18,62 @@ const nodemailer = require('./lib/nodemailer');
 
 const http = require('http');
 const { promisify } = require('util');
+
+console.log('[BOOT] module loaded');
 class MyApp extends Homey.App
 {
 
+    _getHostKeyFromDevice(Device) {
+        // Prefer device.ip + device.port; fallback to cam.hostname + cam.port
+        const ip = (Device && Device.ip) ? String(Device.ip) : (Device && Device.cam && Device.cam.hostname ? String(Device.cam.hostname) : '');
+        const port =
+            (Device && Device.port) ? String(Device.port) :
+            (Device && Device.cam && Device.cam.port) ? String(Device.cam.port) : '';
+
+        // If port is missing, still return ip
+        if (ip && port) return `${ip}:${port}`;
+        return ip || '';
+    }
+
+    _dedupePush(key, ttlMs) {
+        // Simple TTL cache to drop duplicate push deliveries (e.g., double subscription)
+        // key should be stable for identical POST bodies. ttlMs typically 2000-5000ms.
+        if (!this._pushDedupe) this._pushDedupe = new Map();
+
+        const now = Date.now();
+
+        // Prune occasionally (cheap)
+        if (this._pushDedupe.size > 2000) {
+            for (const [k, ts] of this._pushDedupe.entries()) {
+                if ((now - ts) > ttlMs) this._pushDedupe.delete(k);
+            }
+            // Hard cap if still too big
+            if (this._pushDedupe.size > 2500) {
+                // delete oldest-ish by iteration order
+                let n = this._pushDedupe.size - 2000;
+                for (const k of this._pushDedupe.keys()) {
+                    this._pushDedupe.delete(k);
+                    if (--n <= 0) break;
+                }
+            }
+        } else {
+            // small prune
+            for (const [k, ts] of this._pushDedupe.entries()) {
+                if ((now - ts) > ttlMs) this._pushDedupe.delete(k);
+            }
+        }
+
+        const last = this._pushDedupe.get(key);
+        if (last && (now - last) <= ttlMs) {
+            return true; // duplicate
+        }
+        this._pushDedupe.set(key, now);
+        return false;
+    }
+
     async onInit()
     {
+
         this.log('MyApp is running...');
 
         this.pushServerPort = this.homey.settings.get('port');
@@ -109,7 +161,7 @@ class MyApp extends Homey.App
             {
                 if (data.count >= data.limit - 2)
                 {
-                    this.updateLog('Closing server', 0);
+                    this.updateLog('Closing server (cpu warning)', 0);
                     if (this.server && this.server.listening)
                     {
                         this.server.close((err) =>
@@ -238,8 +290,7 @@ class MyApp extends Homey.App
         return null;
     }
 
-    async processEventMessage(soapMsg, eventIP)
-    {
+    async processEventMessage(soapMsg, eventHostKey){
         parseSOAPString(soapMsg, (err, res, xml) =>
         {
             if (!err && res)
@@ -259,15 +310,22 @@ class MyApp extends Homey.App
                     // Find the referenced device
                     const driver = this.homey.drivers.getDriver('camera');
                     let theDevice = null;
+
                     if (driver)
                     {
                         let devices = driver.getDevices();
                         for (let i = 0; i < devices.length; i++)
                         {
                             let device = devices[i];
-                            if (device.ip == eventIP)
+
+                            // Build hostKey for this device: ip:port
+                            const dIp = device && device.ip ? String(device.ip) : '';
+                            const dPort = device && device.port ? String(device.port) : '';
+                            const deviceHostKey = (dIp && dPort) ? `${dIp}:${dPort}` : dIp;
+
+                            if (deviceHostKey === eventHostKey)
                             {
-                                // Correct IP so check the token for multiple cameras on this IP
+                                // Correct IP:PORT so check token (multi-channel)
                                 if (!device.token || !messageToken || (messageToken == device.token))
                                 {
                                     theDevice = device;
@@ -301,7 +359,7 @@ class MyApp extends Homey.App
                     }
                     else
                     {
-                        this.updateLog('Push Event unknown Device: ' + eventIP, 0);
+                        this.updateLog('Push Event unknown Device: ' + eventHostKey, 0);
                     }
                 }
             }
@@ -312,21 +370,29 @@ class MyApp extends Homey.App
         });
     }
 
-    async runsListener()
-    {
+
+    async runsListener(){
         const requestListener = (request, response) =>
         {
             let pathParts = request.url.split('/');
 
             if ((pathParts[1] === 'onvif') && (pathParts[2] === 'events') && request.method === 'POST')
             {
-                let eventIP = pathParts[3];
-                if (request.headers['content-type'].startsWith('application/soap+xml'))
+                const rawHostKey = pathParts[3] || '';
+                let eventHostKey = '';
+                try {
+                    eventHostKey = decodeURIComponent(rawHostKey);
+                } catch (e) {
+                    eventHostKey = rawHostKey;
+                }
+
+                const ctype = request.headers['content-type'] || '';
+                if (ctype.startsWith('application/soap+xml'))
                 {
                     let body = '';
                     request.on('data', chunk =>
                     {
-                        body += chunk.toString(); // convert Buffer to string
+                        body += chunk.toString();
                         if (body.length > 50000)
                         {
                             this.updateLog('Push data error: Payload too large', 0);
@@ -336,26 +402,44 @@ class MyApp extends Homey.App
                             return;
                         }
                     });
+
                     request.on('end', () =>
                     {
-                        let soapMsg = body;
+                        const soapMsg = body;
                         body = '';
+
+                        // Always ACK quickly
                         response.writeHead(200);
                         response.end('ok');
+
+                        // DEDUPE: identical push deliveries within TTL (e.g., double subscription)
+                        // Use a stable key: hostKey + payload length + first/last slice
+                        // (No crypto dependency; cheap and good enough for duplicates.)
+                        const head = soapMsg.slice(0, 400);
+                        const tail = soapMsg.slice(-400);
+                        const dedupeKey = `${eventHostKey}|${soapMsg.length}|${head}|${tail}`;
+
+                        if (this._dedupePush(dedupeKey, 4000)) {
+                            // Duplicate delivery detected; drop it quietly (or log at debug)
+                            this.updateLog(`Push event deduped: ${eventHostKey}`, 2);
+                            return;
+                        }
+
                         if (this.logLevel >= 3)
                         {
                             this.updateLog('Push event: ' + soapMsg, 3);
                         }
                         else
                         {
-                            this.updateLog(`Push event: ${eventIP}`, 1);
+                            this.updateLog(`Push event: ${eventHostKey}`, 2);
                         }
-                        this.processEventMessage(soapMsg, eventIP);
+
+                        this.processEventMessage(soapMsg, eventHostKey);
                     });
                 }
                 else
                 {
-                    this.updateLog('Push data invalid content type: ' + request.headers['content-type'], 0);
+                    this.updateLog('Push data invalid content type: ' + ctype, 0);
                     response.writeHead(415);
                     response.end('Unsupported Media Type');
                 }
@@ -641,11 +725,45 @@ class MyApp extends Homey.App
         return promiseGetSnapshotUri();
     }
 
-	async getStreamURL(camObj, profileToken)
-	{
-		const promiseGetStreamUri = promisify(camObj.getStreamUri).bind(camObj);
-		return promiseGetStreamUri({});
-	}
+    async getStreamURL(camObj, profileToken)
+    {
+        const promiseGetStreamUri = promisify(camObj.getStreamUri).bind(camObj);
+        const promiseGetProfiles  = promisify(camObj.getProfiles).bind(camObj);
+
+        let token = profileToken;
+
+        // 1) Als geen token meegegeven: probeer profiles op te halen
+        if (!token)
+        {
+            try
+            {
+                const profiles = await promiseGetProfiles();
+                // Shape varieert per lib/camera; probeer meerdere vormen
+                const p0 = Array.isArray(profiles) ? profiles[0] : profiles?.profiles?.[0] ?? profiles?.[0];
+                token = p0?.$.token || p0?.token || p0?.profileToken || p0?.$?.profileToken;
+
+                this.updateLog(`getStreamURL: selected profileToken=${token || '(none)'}`, 1);
+            }
+            catch (err)
+            {
+                // Log echte err details i.p.v. "undefined"
+                this.updateLog(`getStreamURL: getProfiles failed: ${this.varToString(err)}`, 0);
+            }
+        }
+
+        // 2) Alleen callen als we een token hebben
+        if (!token)
+        {
+            throw new Error('No ONVIF profileToken available (getProfiles failed). Cannot request RTSP stream.');
+        }
+
+        // 3) Vraag RTSP streamUri op met expliciet profileToken
+        return promiseGetStreamUri({
+            profileToken: token,
+            protocol: 'RTSP',
+        });
+    }
+
 
     async hasEventTopics(camObj)
     {
@@ -683,21 +801,27 @@ class MyApp extends Homey.App
     {
         return new Promise((resolve, reject) =>
         {
-
             this.updateLog('App.subscribeToCamPushEvents: ' + Device.name);
 
-            let unsubscribeRef = null;
-            let pushEvent = this.pushEvents.find(element => element.devices.length > 0 && (element.devices[0].cam.hostname) === (Device.cam.hostname));
+            const hostKey = this._getHostKeyFromDevice(Device);     // "ip:port"
+            const settingsKey = 'pushSubRef:' + hostKey;
+
+            if (!hostKey) {
+                const err = new Error('subscribeToCamPushEvents: Missing hostKey (ip/port)');
+                this.updateLog(err.message, 0);
+                reject(err);
+                return;
+            }
+
+            // Find or create pushEvent bucket per hostKey (not per devices[0] heuristics)
+            let pushEvent = this.pushEvents.find(pe => pe && pe.hostKey === hostKey);
             if (pushEvent)
             {
-                this.updateLog('App.subscribeToCamPushEvents: Found entry for ' + Device.cam.hostname);
-                // An event is already registered for this IP address
+                this.updateLog('App.subscribeToCamPushEvents: Found entry for ' + hostKey);
                 this.homey.clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
-                unsubscribeRef = pushEvent.unsubscribeRef;
-                pushEvent.eventSubscriptionRenewTimerId = null;
 
-                // see if this device is registered
-                if (!pushEvent.devices.find(element => element.id == Device.id))
+                // Ensure device is registered in that bucket
+                if (!pushEvent.devices.find(d => d.id == Device.id))
                 {
                     this.updateLog('App.subscribeToCamPushEvents: Adding device ' + Device.name + ' to the queue');
                     pushEvent.devices.push(Device);
@@ -705,214 +829,246 @@ class MyApp extends Homey.App
             }
             else
             {
-                this.updateLog('App.subscribeToCamPushEvents: Registering ' + Device.cam.hostname);
+                this.updateLog('App.subscribeToCamPushEvents: Registering ' + hostKey);
                 pushEvent = {
-                    'devices': [],
-                    'refreshTime': 0,
-                    'unsubscribeRef': unsubscribeRef,
-                    'eventSubscriptionRenewTimerId': null
+                    hostKey: hostKey,
+                    devices: [Device],
+                    refreshTime: 0,
+                    unsubscribeRef: null,
+                    eventSubscriptionRenewTimerId: null
                 };
-                pushEvent.devices.push(Device);
                 this.pushEvents.push(pushEvent);
             }
 
+            // Pull current in-memory ref; if missing, load persisted ref (survives app restart)
+            let unsubscribeRef = pushEvent.unsubscribeRef;
+            if (!unsubscribeRef)
+            {
+                const persisted = this.homey.settings.get(settingsKey);
+                if (persisted)
+                {
+                    unsubscribeRef = persisted;
+                    pushEvent.unsubscribeRef = persisted;
+                    this.updateLog('App.subscribeToCamPushEvents: Loaded persisted subscription ref for ' + hostKey, 1);
+                }
+            }
+
+            const scheduleRenew = (ref, refreshTimeMs) =>
+            {
+                // clamp and schedule
+                let rt = refreshTimeMs - 5000;
+                if (rt < 0)
+                {
+                    this.unsubscribe(Device).catch(this.err);
+                    rt = 3000;
+                }
+                if (rt < 3000) rt = 3000;
+
+                pushEvent.refreshTime = rt;
+                pushEvent.unsubscribeRef = ref;
+
+                // Persist so app restart can renew instead of creating a 2nd subscription
+                this.homey.settings.set(settingsKey, ref);
+
+                pushEvent.eventSubscriptionRenewTimerId = this.homey.setTimeout(() =>
+                {
+                    this.updateLog('Renewing subscription');
+                    this.subscribeToCamPushEvents(Device).catch(this.err);
+                }, rt);
+            };
+
             if (unsubscribeRef)
             {
+                // Try renew existing subscription
                 this.updateLog('Renew previous events: ' + unsubscribeRef);
+
                 Device.cam.RenewPushEventSubscription(unsubscribeRef, (err, info, xml) =>
                 {
                     if (err)
                     {
                         this.updateLog('Renew subscription err (' + Device.name + '): ' + this.varToString(err), 0);
-                        console.log(err);
-                        // Refresh was probably too late so subscribe again
+
+                        // Best effort: if renew fails, try to unsubscribe the old ref (may or may not work)
+                        try {
+                            Device.cam.UnsubscribePushEventSubscription(unsubscribeRef, (e2) => {
+                                if (e2) this.updateLog('Best-effort unsubscribe after renew fail: ' + this.varToString(e2), 1);
+                            });
+                        } catch (e3) {
+                            // ignore
+                        }
+
+                        // Reset ref and resubscribe (new subscription)
                         pushEvent.unsubscribeRef = null;
+                        this.homey.settings.set(settingsKey, null);
+
                         setImmediate(() =>
                         {
                             this.updateLog('Resubscribing');
                             this.subscribeToCamPushEvents(Device).catch(this.err);
                         });
+
                         resolve(true);
                         return;
                     }
                     else
                     {
                         this.updateLog('Renew subscription response (' + Device.name + '): ' + Device.cam.hostname + '\r\ninfo: ' + this.varToString(info));
+
+                        // Compute refresh time from response
                         let startTime = info[0].renewResponse[0].currentTime[0];
                         let endTime = info[0].renewResponse[0].terminationTime[0];
                         let d1 = new Date(startTime);
                         let d2 = new Date(endTime);
-                        let refreshTime = ((d2.valueOf() - d1.valueOf()));
+                        let refreshTime = (d2.valueOf() - d1.valueOf());
 
                         this.updateLog('Push renew every (' + Device.name + '): ' + (refreshTime / 1000), 1);
-                        refreshTime -= 5000;
-                        if (refreshTime < 0)
-                        {
-                            this.unsubscribe(Device).catch(this.err);
-                        }
 
-                        if (refreshTime < 3000)
-                        {
-                            refreshTime = 3000;
-                        }
-
-                        pushEvent.refreshTime = refreshTime;
-                        pushEvent.unsubscribeRef = unsubscribeRef;
-                        pushEvent.eventSubscriptionRenewTimerId = this.homey.setTimeout(() =>
-                        {
-                            this.updateLog('Renewing subscription');
-                            this.subscribeToCamPushEvents(Device).catch(this.err);
-                        }, refreshTime);
+                        scheduleRenew(unsubscribeRef, refreshTime);
                         resolve(true);
                         return;
                     }
                 });
+
+                return;
             }
-            else
+
+            // No ref known => create a new subscription (but stored persistently afterwards)
+            const hostPath = encodeURIComponent(hostKey); // safe in URL path
+            const url = 'http://' + this.homeyIP + ':' + this.pushServerPort + '/onvif/events/' + hostPath;
+
+            this.updateLog('Setting up Push events (' + Device.name + ') on: ' + url);
+
+            Device.cam.SubscribeToPushEvents(url, (err, info, xml) =>
             {
-                // const url = "http://" + this.homeyIP + ":" + this.pushServerPort + "/onvif/events?deviceId=" + Device.cam.hostname;
-                const hostPath = Device.cam.hostname;
-
-                const url = 'http://' + this.homeyIP + ':' + this.pushServerPort + '/onvif/events/' + hostPath;
-                this.updateLog('Setting up Push events (' + Device.name + ') on: ' + url);
-                Device.cam.SubscribeToPushEvents(url, (err, info, xml) =>
+                if (err)
                 {
-                    if (err)
-                    {
-                        this.updateLog('Subscribe err (' + Device.name + '): ' + err, 0);
-                        reject(err);
-                        return;
-                    }
-                    else
-                    {
+                    this.updateLog('Subscribe err (' + Device.name + '): ' + err, 0);
+                    reject(err);
+                    return;
+                }
+                else
+                {
+                    this.updateLog('Subscribe response (' + Device.name + '): ' + Device.cam.hostname + ' - Info: ' + this.varToString(info));
 
-                        this.updateLog('Subscribe response (' + Device.name + '): ' + Device.cam.hostname + ' - Info: ' + this.varToString(info));
-                        unsubscribeRef = info[0].subscribeResponse[0].subscriptionReference[0].address[0];
+                    unsubscribeRef = info[0].subscribeResponse[0].subscriptionReference[0].address[0];
 
-                        let startTime = info[0].subscribeResponse[0].currentTime[0];
-                        let endTime = info[0].subscribeResponse[0].terminationTime[0];
-                        let d1 = new Date(startTime);
-                        let d2 = new Date(endTime);
-                        let refreshTime = ((d2.valueOf() - d1.valueOf()));
+                    let startTime = info[0].subscribeResponse[0].currentTime[0];
+                    let endTime = info[0].subscribeResponse[0].terminationTime[0];
+                    let d1 = new Date(startTime);
+                    let d2 = new Date(endTime);
+                    let refreshTime = (d2.valueOf() - d1.valueOf());
 
-                        this.updateLog('Push renew every (' + Device.name + '): ' + (refreshTime / 1000) + 's  @ ' + unsubscribeRef, 1);
-                        refreshTime -= 5000;
-                        if (refreshTime < 0)
-                        {
-                            this.unsubscribe(Device).catch(this.err);
-                        }
+                    this.updateLog('Push renew every (' + Device.name + '): ' + (refreshTime / 1000) + 's  @ ' + unsubscribeRef, 1);
 
-                        if (refreshTime < 3000)
-                        {
-                            refreshTime += 3000;
-                        }
+                    scheduleRenew(unsubscribeRef, refreshTime);
 
-                        pushEvent.refreshTime = refreshTime;
-                        pushEvent.unsubscribeRef = unsubscribeRef;
-                        pushEvent.eventSubscriptionRenewTimerId = this.homey.setTimeout(() =>
-                        {
-                            this.updateLog('Renewing subscription');
-                            this.subscribeToCamPushEvents(Device).catch(this.err);
-                        }, refreshTime);
-                        resolve(true);
-                        return;
-                    }
-                });
-            }
+                    resolve(true);
+                    return;
+                }
+            });
         });
     }
+
 
     async unsubscribe(Device)
     {
         return new Promise((resolve, reject) =>
         {
-            if (!Device.cam || !this.pushEvents)
+            if (!Device || !Device.cam || !this.pushEvents)
             {
                 resolve(null);
                 return;
             }
-            this.updateLog('App.unsubscribe: ' + Device.name);
-            let deviceIdx = -1;
-            let pushEvent = null;
-            let pushEventIdx = this.pushEvents.findIndex(element => (element.devices[0] && Device.cam && ((element.devices[0].cam.hostname) === (Device.cam.hostname))));
-            console.log('pushEvent Idx = ', pushEventIdx);
-            if (pushEventIdx >= 0)
-            {
-                this.updateLog('App.unsubscribe: Found entry for ' + Device.cam.hostname);
-                pushEvent = this.pushEvents[pushEventIdx];
-                if (!pushEvent || !pushEvent.devices)
-                {
-                    resolve(null);
-                    return;
-                }
 
-                // see if this device is registered
-                deviceIdx = pushEvent.devices.findIndex(element => element.id == Device.id);
-                if (deviceIdx < 0)
-                {
-                    // Not registered so do nothing
-                    this.updateLog('App.unsubscribe: No Push entry for device: ' + Device.cam.hostname);
-                    resolve(null);
-                    return;
-                }
-            }
-            else
+            const hostKey = this._getHostKeyFromDevice(Device);
+            const settingsKey = 'pushSubRef:' + hostKey;
+
+            this.updateLog('App.unsubscribe: ' + Device.name);
+
+            let pushEventIdx = this.pushEvents.findIndex(pe => pe && pe.hostKey === hostKey);
+            if (pushEventIdx < 0)
             {
-                this.updateLog('App.unsubscribe: No Push entry for host: ' + Device.cam.hostname);
+                this.updateLog('App.unsubscribe: No Push entry for hostKey: ' + hostKey);
                 Device.cam.removeAllListeners('event');
                 resolve(null);
                 return;
             }
 
-            if (pushEvent)
+            const pushEvent = this.pushEvents[pushEventIdx];
+            if (!pushEvent || !pushEvent.devices)
             {
-                // Remove this device reference
-                this.updateLog('App.unsubscribe: Unregister entry for ' + Device.cam.hostname);
-                pushEvent.devices.splice(deviceIdx, 1);
+                resolve(null);
+                return;
+            }
 
-                if ((pushEvent.devices.length == 0) && pushEvent.unsubscribeRef)
+            // Find device in bucket
+            const deviceIdx = pushEvent.devices.findIndex(d => d && d.id == Device.id);
+            if (deviceIdx < 0)
+            {
+                this.updateLog('App.unsubscribe: No Push entry for device in hostKey: ' + hostKey);
+                resolve(null);
+                return;
+            }
+
+            // Remove this device reference
+            this.updateLog('App.unsubscribe: Unregister entry for ' + hostKey);
+            pushEvent.devices.splice(deviceIdx, 1);
+
+            // If no devices left, unsubscribe at camera and clear persisted ref
+            const ref = pushEvent.unsubscribeRef || this.homey.settings.get(settingsKey);
+
+            if ((pushEvent.devices.length === 0) && ref)
+            {
+                this.homey.clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
+                pushEvent.eventSubscriptionRenewTimerId = null;
+
+                this.updateLog('Unsubscribe push event (' + hostKey + '): ' + ref, 1);
+
+                Device.cam.UnsubscribePushEventSubscription(ref, (err, info, xml) =>
                 {
-                    // No devices left so unregister the event
-                    this.homey.clearTimeout(pushEvent.eventSubscriptionRenewTimerId);
-                    this.updateLog('Unsubscribe push event (' + Device.cam.hostname + '): ' + pushEvent.unsubscribeRef, 1);
-                    const hostPath = Device.cam.hostname;
-                    Device.cam.UnsubscribePushEventSubscription(pushEvent.unsubscribeRef, (err, info, xml) =>
+                    if (err)
                     {
-                        if (err)
-                        {
-                            this.updateLog('Push unsubscribe error (' + hostPath + '): ' + this.varToString(err.message), 0);
-                            reject(err);
-                            return;
-                        }
-                        else
-                        {
-                            this.updateLog('Push unsubscribe response (' + hostPath + '): ' + this.varToString(info), 2);
-                        }
+                        this.updateLog('Push unsubscribe error (' + hostKey + '): ' + this.varToString(err.message || err), 0);
+                        // Even if unsubscribe fails, clear local state to avoid reusing a bad ref
+                        try { this.homey.settings.set(settingsKey, null); } catch (e) { /* ignore */ }
+                        // Remove bucket anyway to avoid stale entries
+                        this.pushEvents.splice(pushEventIdx, 1);
+
+                        Device.cam.removeAllListeners('event');
+                        reject(err);
+                        return;
+                    }
+                    else
+                    {
+                        this.updateLog('Push unsubscribe response (' + hostKey + '): ' + this.varToString(info), 2);
+                        try { this.homey.settings.set(settingsKey, null); } catch (e) { /* ignore */ }
+
+                        // Remove bucket
+                        this.pushEvents.splice(pushEventIdx, 1);
+
+                        Device.cam.removeAllListeners('event');
                         resolve(null);
                         return;
+                    }
                 });
 
-                    Device.cam.removeAllListeners('event');
-
-                    // remove the push event from the list
-                    this.pushEvents.splice(pushEventIdx, 1);
-                }
-                else
-                {
-                    if (pushEvent.devices.length == 0)
-                    {
-                        // remove the push event from the list
-                        this.pushEvents.splice(pushEventIdx, 1);
-                    }
-                    this.updateLog('App.unsubscribe: Keep subscription as devices are still registered');
-
-                    Device.cam.removeAllListeners('event');
-                    resolve(null);
-                    return;
-                }
+                return;
             }
+
+            // Devices still registered (or no ref). Keep subscription.
+            if (pushEvent.devices.length === 0)
+            {
+                // No ref known; remove bucket anyway
+                this.pushEvents.splice(pushEventIdx, 1);
+            }
+            this.updateLog('App.unsubscribe: Keep subscription as devices are still registered');
+
+            Device.cam.removeAllListeners('event');
+            resolve(null);
+            return;
         });
     }
+
 
     hasPullSupport(capabilities, id)
     {
@@ -1021,70 +1177,93 @@ class MyApp extends Homey.App
         return source.toString();
     }
 
-    updateLog(newMessage, logLevel = 2, insertBlankLine = false)
+    updateLog(newMessage, logLevel = 2, insertBlankLine = false) 
     {
-        if (logLevel > this.logLevel)
-        {
-            return;
-        }
+        if (logLevel > this.logLevel) return;
 
-        this.log(newMessage);
+        // ---- Tuning knobs ----
+        const MAX_CHARS = 200000;        // hard ceiling for diagLog string
+        const TARGET_CHARS = 180000;     // trim down to this when exceeding MAX_CHARS (hysteresis)
+        const MAX_LINES = 1200;          // ring-buffer-like: keep last N lines
+        const MAX_MSG_CHARS = 2000;      // cap one message to prevent huge blobs
+        // ----------------------
+
+        // Normalize message early (avoid non-string surprises)
+        let msg = (newMessage === undefined || newMessage === null) ? '' : String(newMessage);
+        if (msg.length > MAX_MSG_CHARS) msg = msg.slice(0, MAX_MSG_CHARS) + ' …(truncated)';
+
+        this.log(msg);
+
+        const nowTime = new Date();
+        const ms = String(nowTime.getMilliseconds()).padStart(3, '0');
+        const ts = `${nowTime.getHours()}:${nowTime.getMinutes()}:${nowTime.getSeconds()}.${ms}`;
+
+        let append = '';
+        if (insertBlankLine) append += '\r\n';
+        append += `${ts}: ${msg}\r\n`;
 
         let oldText = this.homey.settings.get('diagLog');
-        if (oldText && oldText.length > 200000)
-        {
-            // Remove the first 1000 characters.
-            oldText = oldText.substring(1000);
-            let n = oldText.indexOf('\n');
-            if (n >= 0)
-            {
-                // Remove up to and including the first \n so the log starts on a whole line
-                oldText = oldText.substring(n + 1);
-            }
-        }
 
-        const nowTime = new Date(Date.now());
-
-        if (!oldText || (oldText.length == 0) || (this.logDay !== nowTime.getDate()))
-        {
+        // Daily header reset behavior preserved
+        if (!oldText || oldText.length === 0 || (this.logDay !== nowTime.getDate())) {
             this.logDay = nowTime.getDate();
-            oldText = 'Log ID: ';
-            oldText += nowTime.toJSON();
-            oldText += '\r\n';
-            oldText += 'App version ';
-            oldText += this.homey.manifest.version;
-            oldText += '\r\n\r\n';
-            this.logLastTime = nowTime;
+            oldText =
+            'Log ID: ' + nowTime.toJSON() + '\r\n' +
+            'App version ' + this.homey.manifest.version + '\r\n\r\n';
         }
 
         this.logLastTime = nowTime;
 
-        if (insertBlankLine)
-        {
-            oldText += '\r\n';
+        let combined = oldText + append;
+
+        // ---- Ring-buffer-like trimming by LINES first ----
+        // Keep header, but ring only the body lines (after the first blank line block)
+        // Header ends at the first double CRLF in your format: "\r\n\r\n"
+        const headerSplit = combined.split('\r\n\r\n');
+        let header = '';
+        let body = combined;
+
+        if (headerSplit.length >= 2) {
+            // Reconstruct header exactly once
+            header = headerSplit[0] + '\r\n\r\n';
+            body = headerSplit.slice(1).join('\r\n\r\n'); // rest is body
+        } else {
+            // If format not as expected, treat everything as body
+            header = '';
+            body = combined;
         }
 
-        oldText += (nowTime.getHours());
-        oldText += ':';
-        oldText += nowTime.getMinutes();
-        oldText += ':';
-        oldText += nowTime.getSeconds();
-        oldText += '.';
-        let milliSeconds = nowTime.getMilliseconds().toString();
-        if (milliSeconds.length == 2)
-        {
-            oldText += '0';
+        // Split body into lines and keep last MAX_LINES (true ring-buffer behavior)
+        // Note: split() produces an extra "" at end if body ends with \r\n; filter it out.
+        let lines = body.split('\r\n').filter(l => l.length > 0);
+        if (lines.length > MAX_LINES) {
+            lines = lines.slice(lines.length - MAX_LINES);
         }
-        else if (milliSeconds.length == 1)
-        {
-            oldText += '00';
+
+        combined = header + lines.join('\r\n') + '\r\n';
+
+        // ---- Hard ceiling by CHARS (secondary safety net) ----
+        if (combined.length > MAX_CHARS) {
+            // Trim from the front (body only) down to TARGET_CHARS
+            // Keep header if present
+            const hLen = header.length;
+            let bodyText = combined.slice(hLen);
+
+            // If still too large, drop oldest chars to reach TARGET_CHARS total
+            const allowedBodyLen = Math.max(0, TARGET_CHARS - hLen);
+            if (bodyText.length > allowedBodyLen) {
+            bodyText = bodyText.slice(bodyText.length - allowedBodyLen);
+
+            // Ensure we start at a line boundary
+            const firstNL = bodyText.indexOf('\n');
+            if (firstNL >= 0) bodyText = bodyText.slice(firstNL + 1);
+            }
+            combined = header + bodyText;
         }
-        oldText += milliSeconds;
-        oldText += ': ';
-        oldText += newMessage;
-        oldText += '\r\n';
-        this.homey.settings.set('diagLog', oldText);
-    }
+
+        this.homey.settings.set('diagLog', combined);
+        }
+
 
     async sendLog({email = ''})
     {
