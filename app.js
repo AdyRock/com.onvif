@@ -23,6 +23,7 @@ class MyApp extends Homey.App
     async onInit()
     {
         this.log('MyApp is running...');
+        this.err = (err) => this.error(err);
 
         this.pushServerPort = this.homey.settings.get('port');
         if (!this.pushServerPort)
@@ -158,7 +159,7 @@ class MyApp extends Homey.App
         this.motionEnabledAction.registerRunListener(async (args, state) =>
         {
             console.log('motionEnabledAction');
-            args.device.onCapabilityMotionEnable(true, null);
+            await args.device.onCapabilityMotionEnable(true, null);
             return await args.device.setCapabilityValue('motion_enabled', true); // Promise<void>
         });
 
@@ -167,7 +168,7 @@ class MyApp extends Homey.App
         {
 
             console.log('motionDisabledAction');
-            args.device.onCapabilityMotionEnable(false, null);
+            await args.device.onCapabilityMotionEnable(false, null);
             return await args.device.setCapabilityValue('motion_enabled', false); // Promise<void>
         });
 
@@ -242,72 +243,82 @@ class MyApp extends Homey.App
     {
         parseSOAPString(soapMsg, (err, res, xml) =>
         {
-            if (!err && res)
+            try
             {
-                let data = linerase(res).notify;
-
-                if (data && data.notificationMessage)
+                if (!err && res)
                 {
-                    if (!Array.isArray(data.notificationMessage))
-                    {
-                        data.notificationMessage = [data.notificationMessage];
-                    }
+                    let data = linerase(res).notify;
 
-                    let messageToken = this.getMessageToken(data.notificationMessage[0].message.message);
-                    this.updateLog(`Push event token: ${messageToken}`, 1);
-
-                    // Find the referenced device
-                    const driver = this.homey.drivers.getDriver('camera');
-                    let theDevice = null;
-                    if (driver)
+                    if (data && data.notificationMessage)
                     {
-                        let devices = driver.getDevices();
-                        for (let i = 0; i < devices.length; i++)
+                        if (!Array.isArray(data.notificationMessage))
                         {
-                            let device = devices[i];
-                            if (device.ip == eventIP)
+                            data.notificationMessage = [data.notificationMessage];
+                        }
+
+                        let messageToken = this.getMessageToken(data.notificationMessage[0].message.message);
+                        this.updateLog(`Push event token: ${messageToken}`, 1);
+
+                        // Find the referenced device
+                        const driver = this.homey.drivers.getDriver('camera');
+                        let theDevice = null;
+                        if (driver)
+                        {
+                            let devices = driver.getDevices();
+                            for (let i = 0; i < devices.length; i++)
                             {
-                                // Correct IP so check the token for multiple cameras on this IP
-                                if (!device.token || !messageToken || (messageToken == device.token))
+                                let device = devices[i];
+                                if (device.ip == eventIP)
                                 {
-                                    theDevice = device;
-                                    if (this.logLevel >= 2)
+                                    // Correct IP so check the token for multiple cameras on this IP
+                                    if (!device.token || !messageToken || (messageToken == device.token))
                                     {
-                                        this.updateLog('Push Event found correct Device: ' + device.token);
+                                        theDevice = device;
+                                        if (this.logLevel >= 2)
+                                        {
+                                            this.updateLog('Push Event found correct Device: ' + device.token);
+                                        }
+                                        break;
                                     }
-                                    break;
-                                }
-                                else
-                                {
-                                    if (this.logLevel >= 2)
+                                    else
                                     {
-                                        this.updateLog('Wrong channel token');
+                                        if (this.logLevel >= 2)
+                                        {
+                                            this.updateLog('Wrong channel token');
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    if (theDevice)
-                    {
-                        data.notificationMessage.forEach((message) =>
+                        if (theDevice)
                         {
-                            if (this.logLevel >= 2)
+                            data.notificationMessage.forEach((message) =>
                             {
-                                this.updateLog('Push Event process: ' + this.varToString(message));
-                            }
-                            theDevice.processCamEventMessage(message);
-                        });
-                    }
-                    else
-                    {
-                        this.updateLog('Push Event unknown Device: ' + eventIP, 0);
+                                if (this.logLevel >= 2)
+                                {
+                                    this.updateLog('Push Event process: ' + this.varToString(message));
+                                }
+                                theDevice.processCamEventMessage(message).catch((processError) =>
+                                {
+                                    this.updateLog('Push Event process error: ' + this.varToString(processError), 0);
+                                });
+                            });
+                        }
+                        else
+                        {
+                            this.updateLog('Push Event unknown Device: ' + eventIP, 0);
+                        }
                     }
                 }
+                else
+                {
+                    this.updateLog('Push data error: ' + err, 0);
+                }
             }
-            else
+            catch (processErr)
             {
-                this.updateLog('Push data error: ' + err, 0);
+                this.updateLog('Push data processing exception: ' + this.varToString(processErr), 0);
             }
         });
     }
@@ -321,7 +332,8 @@ class MyApp extends Homey.App
             if ((pathParts[1] === 'onvif') && (pathParts[2] === 'events') && request.method === 'POST')
             {
                 let eventIP = pathParts[3];
-                if (request.headers['content-type'].startsWith('application/soap+xml'))
+                const contentType = request.headers['content-type'] || '';
+                if (contentType.startsWith('application/soap+xml'))
                 {
                     let body = '';
                     request.on('data', chunk =>
@@ -350,12 +362,15 @@ class MyApp extends Homey.App
                         {
                             this.updateLog(`Push event: ${eventIP}`, 1);
                         }
-                        this.processEventMessage(soapMsg, eventIP);
+                        this.processEventMessage(soapMsg, eventIP).catch((processError) =>
+                        {
+                            this.updateLog('Push event processing failed: ' + this.varToString(processError), 0);
+                        });
                     });
                 }
                 else
                 {
-                    this.updateLog('Push data invalid content type: ' + request.headers['content-type'], 0);
+                    this.updateLog('Push data invalid content type: ' + contentType, 0);
                     response.writeHead(415);
                     response.end('Unsupported Media Type');
                 }

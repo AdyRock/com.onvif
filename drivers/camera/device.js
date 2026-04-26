@@ -20,6 +20,8 @@ class CameraDevice extends Homey.Device
 {
 	async onInit()
 	{
+		this.err = (err) => this.error(err);
+
 		this.repairing = false;
 		this.connecting = false;
 		this.isReady = false;
@@ -1853,7 +1855,7 @@ class CameraDevice extends Homey.Device
 					catch (err)
 					{
 						this.homey.app.updateLog(this.getName() + ' onCapabilityOff Error (' + this.name + ') ' + err.mesage, 0);
-						throw (err);
+						return false;
 					}
 
 					this.driver.motionDisabledTrigger
@@ -1862,14 +1864,18 @@ class CameraDevice extends Homey.Device
 						.then(this.log('Triggered enable off'));
 				}
 
+				return true;
+
 			}
 			catch (err)
 			{
 				//this.setUnavailable();
 				this.homey.app.updateLog(this.getName() + ' onCapabilityOnoff Error (' + this.name + ') ' + err.message, 0);
-				throw (err);
+				return false;
 			}
 		}
+
+		return false;
 	}
 
 	async setupImages()

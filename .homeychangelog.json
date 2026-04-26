@@ -442,5 +442,8 @@
 	},
 	"2.0.60": {
 		"en": "Changed check method for homey live stream feature."
+	},
+	"2.0.61": {
+		"en": "Added extra error handling."
 	}
 }
