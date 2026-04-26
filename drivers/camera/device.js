@@ -1003,7 +1003,7 @@ class CameraDevice extends Homey.Device
 					this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, this.getSettings(), false)).catch(this.error);
 				}
 
-				if (errStr.indexOf('EHOSTUNREACH') >= 0)
+				if ((errStr.indexOf('EHOSTUNREACH') >= 0) || (errStr.indexOf('ECONNREFUSED') >= 0))
 				{
 					this.setUnavailable(err).catch(this.err);
 					try

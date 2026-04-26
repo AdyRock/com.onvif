@@ -509,6 +509,17 @@ class MyApp extends Homey.App
                 autoconnect: false,
             });
 
+        // Attach an error handler immediately so low-level connection failures
+        // (for example ECONNREFUSED) never become unhandled EventEmitter errors.
+        camObj.on('error', (err, xml) =>
+        {
+            this.updateLog('Camera socket error (' + hostname + ':' + port + '): ' + this.varToString(err), 0);
+            if (xml)
+            {
+                this.updateLog('Camera socket error xml: ' + this.varToString(xml), 3);
+            }
+        });
+
         // Use Promisify that was added to Node v8
 
         const promiseGetSystemDateAndTime = promisify(camObj.getSystemDateAndTime).bind(camObj);

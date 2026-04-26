@@ -445,5 +445,8 @@
 	},
 	"2.0.61": {
 		"en": "Added extra error handling."
+	},
+	"2.0.62": {
+		"en": "Enhance error handling for camera connections; add handler for ECONNREFUSED and improve logging for socket errors."
 	}
 }
