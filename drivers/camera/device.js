@@ -392,6 +392,22 @@ class CameraDevice extends Homey.Device
 
 	}
 
+	isEventFeatureEnabled(settingName, capabilityName)
+	{
+		const settings = this.getSettings();
+		if (settings[settingName] === true)
+		{
+			return true;
+		}
+
+		if (capabilityName && this.hasCapability(capabilityName))
+		{
+			this.removeCapability(capabilityName).catch(this.error);
+		}
+
+		return false;
+	}
+
 	getEventTN(settings, fromSetSettings)
 	{
 		const searchType = notificationMap[settings.notificationToUse];
@@ -1308,6 +1324,11 @@ class CameraDevice extends Homey.Device
 
 	async triggerLineCrossedEvent(ObjectId)
 	{
+		if (!this.isEventFeatureEnabled('line_crossed', 'alarm_line_crossed'))
+		{
+			return;
+		}
+
 		this.setAvailable().catch(this.error);
 
 		this.homey.app.updateLog('Event Processing (' + this.name + '):' + ObjectId);
@@ -1352,6 +1373,11 @@ class CameraDevice extends Homey.Device
 
 	async triggerPersonEvent(dataValue)
 	{
+		if (!this.isEventFeatureEnabled('person', 'alarm_person'))
+		{
+			return;
+		}
+
 		this.setAvailable().catch(this.error);
 
 		this.homey.app.updateLog('Event Processing (' + this.name + '):' + dataValue);
@@ -1398,6 +1424,11 @@ class CameraDevice extends Homey.Device
 
 	async triggerDogCatEvent(dataValue)
 	{
+		if (!this.isEventFeatureEnabled('dog_cat', 'alarm_dog_cat'))
+		{
+			return;
+		}
+
 		this.setAvailable().catch(this.error);
 
 		this.homey.app.updateLog('Event Processing (' + this.name + '):' + dataValue);
@@ -1444,6 +1475,11 @@ class CameraDevice extends Homey.Device
 
 	async triggerVistorEvent(dataValue)
 	{
+		if (!this.isEventFeatureEnabled('visitor', 'alarm_visitor'))
+		{
+			return;
+		}
+
 		this.setAvailable().catch(this.error);
 
 		this.homey.app.updateLog('Event Processing (' + this.name + '):' + dataValue);
@@ -1504,6 +1540,11 @@ class CameraDevice extends Homey.Device
 
 	async triggerFaceEvent(dataValue)
 	{
+		if (!this.isEventFeatureEnabled('face', 'alarm_face'))
+		{
+			return;
+		}
+
 		this.setAvailable().catch(this.error);
 
 		this.homey.app.updateLog('Event Processing (' + this.name + '):' + dataValue);
@@ -1550,6 +1591,11 @@ class CameraDevice extends Homey.Device
 
 	async triggerVehicleEvent(dataValue)
 	{
+		if (!this.isEventFeatureEnabled('vehicle', 'alarm_vehicle'))
+		{
+			return;
+		}
+
 		this.setAvailable().catch(this.error);
 
 		this.homey.app.updateLog('Event Processing (' + this.name + '):' + dataValue);
@@ -1596,6 +1642,11 @@ class CameraDevice extends Homey.Device
 
 	async triggerDarkImageEvent(value)
 	{
+		if (!this.isEventFeatureEnabled('dark_image', 'alarm_dark_image'))
+		{
+			return;
+		}
+
 		this.setAvailable().catch(this.error);
 
 		this.homey.app.updateLog('Event Processing (' + this.name + '):' + value);
@@ -1748,6 +1799,11 @@ class CameraDevice extends Homey.Device
 					}
 					else if (compareSetting === 'Monitoring/ProcessorUsage:Value')
 					{
+						if (!this.isEventFeatureEnabled('cpu', 'measure_cpu'))
+						{
+							return;
+						}
+
 						// Processor usage = 'Value', 'dataValue = %usage
 						if (!this.hasCapability('measure_cpu'))
 						{
@@ -1761,6 +1817,11 @@ class CameraDevice extends Homey.Device
 					}
 					else if (compareSetting === 'Device/HardwareFailure/StorageFailure:Failed')
 					{
+						if (!this.isEventFeatureEnabled('storage', 'alarm_storage'))
+						{
+							return;
+						}
+
 						// Processor usage = 'Value', 'dataValue = %usage
 						if (!this.hasCapability('alarm_storage'))
 						{
@@ -1770,6 +1831,16 @@ class CameraDevice extends Homey.Device
 					}
 					else if (compareSetting === 'AudioAnalytics/Audio/DetectedSound:IsSoundDetected')
 					{
+						if (!this.isEventFeatureEnabled('sound', 'alarm_sound'))
+						{
+							return;
+						}
+
+						if (!this.hasCapability('alarm_sound'))
+						{
+							await this.addCapability('alarm_sound');
+						}
+
 						// Processor usage = 'Value', 'dataValue = %usage
 						this.setCapabilityValue('alarm_sound', dataValue).catch(this.error);
 					}
