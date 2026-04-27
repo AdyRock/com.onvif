@@ -6,6 +6,18 @@ const Homey = require('homey');
 
 class CameraDriver extends Homey.Driver
 {
+	getDeviceTriggerCardWithFallback(primaryId, fallbackId)
+	{
+		try
+		{
+			return this.homey.flow.getDeviceTriggerCard(primaryId);
+		}
+		catch (err)
+		{
+			this.homey.app.updateLog('Trigger card not found: ' + primaryId + ', using fallback ' + fallbackId, 1);
+			return this.homey.flow.getDeviceTriggerCard(fallbackId);
+		}
+	}
 
 	onInit()
 	{
@@ -27,7 +39,8 @@ class CameraDriver extends Homey.Driver
 		this.eventSoundTrigger = this.homey.flow.getDeviceTriggerCard('alarm_sound_true');
 		this.eventStorageTrigger = this.homey.flow.getDeviceTriggerCard('alarm_storage_true');
 		this.eventVehicleTrigger = this.homey.flow.getDeviceTriggerCard('alarm_vehicle_true');
-		this.eventVistorTrigger = this.homey.flow.getDeviceTriggerCard('alarm_vistor_true');
+		this.eventVisitorTrigger = this.getDeviceTriggerCardWithFallback('alarm_visitor_true', 'alarm_vistor_true');
+		this.eventVistorTrigger = this.eventVisitorTrigger;
 	}
 
 	async onPair(session)
@@ -134,7 +147,7 @@ class CameraDriver extends Homey.Driver
 		session.setHandler('list_devices_selection', async (data) =>
 		{
 			// User selected a device so cache the information required to validate it when the credentials are set
-			console.log('list_devices_selection: ', data);
+			this.homey.app.updateLog('list_devices_selection: ' + this.homey.app.varToString(data), 1);
 			this.lastHostName = data[0].settings.ip;
 			this.lastPort = data[0].settings.port;
 			this.lastURN = data[0].settings.urn;
@@ -198,7 +211,7 @@ class CameraDriver extends Homey.Driver
 			catch (err)
 			{
 				this.homey.app.updateLog(`Failed to connect to camera, error: ${err.message}`, 0);
-				throw new Error(`Discovery error: ${err.message}`, { cause: err });
+				throw new Error(`Camera connection error: ${err.message}`, { cause: err });
 			}
 
 			this.homey.app.updateLog('Credentials OK. Adding ' + this.homey.app.varToString(cam.videoSources), 1);
@@ -281,7 +294,7 @@ class CameraDriver extends Homey.Driver
 			let settings = device.getSettings();
 			let devices = await this.homey.app.discoverCameras();
 
-			console.log('Discovered devices: ', devices);
+			this.homey.app.updateLog('Discovered devices: ' + this.homey.app.varToString(devices), 1);
 
 			let matched = false;
 

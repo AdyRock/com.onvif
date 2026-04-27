@@ -8,6 +8,11 @@ const fetch = require('node-fetch');
 const https = require('https');
 const http = require('http');
 const fs = require('fs');
+const {
+	EVENT_METRIC_HANDLERS,
+	createEventCompareHandlers,
+	createEventSpecialHandlers
+} = require('./event-routing');
 
 const notificationMap = {
 	'RuleEngine/CellMotionDetector/Motion:IsMotion': ['MOTION'],
@@ -16,11 +21,32 @@ const notificationMap = {
 	'Device/Trigger/DigitalInput:LogicalState': ['DIGITALINPUT']
 };
 
+const OPTIONAL_EVENT_CAPABILITIES = {
+	line_crossed: { capability: 'alarm_line_crossed', defaultValue: false },
+	person: { capability: 'alarm_person', defaultValue: false },
+	visitor: { capability: 'alarm_visitor', defaultValue: false },
+	face: { capability: 'alarm_face', defaultValue: false },
+	dog_cat: { capability: 'alarm_dog_cat', defaultValue: false },
+	vehicle: { capability: 'alarm_vehicle', defaultValue: false },
+	dark_image: { capability: 'alarm_dark_image', defaultValue: false },
+	storage: { capability: 'alarm_storage', defaultValue: false },
+	cpu: { capability: 'measure_cpu', defaultValue: 0 },
+	sound: { capability: 'alarm_sound', defaultValue: false }
+};
+
+const EVENT_RATE_LIMIT_WINDOW_MS = 5000;
+const MAX_EVENTS_PER_WINDOW = 100;
+const MAX_CONCURRENT_EVENT_HANDLERS = 8;
+const EVENT_FLOOD_WARNING_INTERVAL_MS = 15000;
+
 class CameraDevice extends Homey.Device
 {
 	async onInit()
 	{
 		this.err = (err) => this.error(err);
+		this.eventCompareHandlers = createEventCompareHandlers(this);
+		this.eventSpecialHandlers = createEventSpecialHandlers(this);
+		this.lastSnapshotIssueLogAt = {};
 
 		this.repairing = false;
 		this.connecting = false;
@@ -38,6 +64,11 @@ class CameraDevice extends Homey.Device
 		this.checkTimerId = null;
 		this.eventTimerId = null;
 		this.video = null;
+		this.activeEventHandlers = 0;
+		this.eventWindowStartedAt = 0;
+		this.eventCountInWindow = 0;
+		this.droppedEventCount = 0;
+		this.lastEventFloodWarningAt = 0;
 
 		this.connectCamera.bind(this);
 
@@ -181,231 +212,411 @@ class CameraDevice extends Homey.Device
 		this.setCapabilityValue('motion_enabled', false).catch(this.err);
 	}
 
-	notificationTypesUpdated(settings)
+	async notificationTypesUpdated(settings)
 	{
-		// Check if the notification types are enabled in the settings and add/remove capabilities accordingly
-		//		if (notificationTypes.indexOf('CROSSED') >= 0)
-		if (settings.line_crossed === true)
-		{
-			if (!this.hasCapability('alarm_line_crossed'))
-			{
-				this.addCapability('alarm_line_crossed')
-					.then(() =>
-					{
-						this.setCapabilityValue('alarm_line_crossed', false).catch(this.error);
-					})
-					.catch(this.error);
-			}
-		}
-		else
-		{
-			if (this.hasCapability('alarm_line_crossed'))
-			{
-				this.removeCapability('alarm_line_crossed').catch(this.error);
-			}
-		}
-
-		//		if (notificationTypes.indexOf('PERSON') >= 0)
-		if (settings.person === true)
-		{
-			if (!this.hasCapability('alarm_person'))
-			{
-				this.addCapability('alarm_person')
-					.then(() =>
-					{
-						this.setCapabilityValue('alarm_person', false).catch(this.error);
-					})
-					.catch(this.error);
-			}
-		}
-		else
-		{
-			if (this.hasCapability('alarm_person'))
-			{
-				this.removeCapability('alarm_person').catch(this.error);
-			}
-		}
-
-		if (settings.visitor === true)
-		{
-			if (!this.hasCapability('alarm_visitor'))
-			{
-				this.addCapability('alarm_visitor')
-					.then(() =>
-					{
-						this.setCapabilityValue('alarm_visitor', false).catch(this.error);
-					})
-					.catch(this.error);
-			}
-		}
-		else
-		{
-			if (this.hasCapability('alarm_visitor'))
-			{
-				this.removeCapability('alarm_visitor').catch(this.error);
-			}
-		}
-
-		if (settings.face === true)
-		{
-			if (!this.hasCapability('alarm_face'))
-			{
-				this.addCapability('alarm_face')
-					.then(() =>
-					{
-						this.setCapabilityValue('alarm_face', false).catch(this.error);
-					})
-					.catch(this.error);
-			}
-		}
-		else
-		{
-			if (this.hasCapability('alarm_face'))
-			{
-				this.removeCapability('alarm_face').catch(this.error);
-			}
-		}
-
-		if (settings.dog_cat === true)
-		{
-			if (!this.hasCapability('alarm_dog_cat'))
-			{
-				this.addCapability('alarm_dog_cat')
-					.then(() =>
-					{
-						this.setCapabilityValue('alarm_dog_cat', false).catch(this.error);
-					})
-					.catch(this.error);
-			}
-		}
-		else
-		{
-			if (this.hasCapability('alarm_dog_cat'))
-			{
-				this.removeCapability('alarm_dog_cat').catch(this.error);
-			}
-		}
-
-		if (settings.vehicle === true)
-		{
-			if (!this.hasCapability('alarm_vehicle'))
-			{
-				this.addCapability('alarm_vehicle')
-					.then(() =>
-					{
-						this.setCapabilityValue('alarm_vehicle', false).catch(this.error);
-					})
-					.catch(this.error);
-			}
-		}
-		else
-		{
-			if (this.hasCapability('alarm_vehicle'))
-			{
-				this.removeCapability('alarm_vehicle').catch(this.error);
-			}
-		}
-
-		//		if (notificationTypes.indexOf('IMAGINGSERVICE') >= 0)
-		if (settings.dark_image === true)
-		{
-			if (!this.hasCapability('alarm_dark_image'))
-			{
-				this.addCapability('alarm_dark_image')
-					.then(() =>
-					{
-						this.setCapabilityValue('alarm_dark_image', false).catch(this.error);
-					})
-					.catch(this.error);
-			}
-		}
-		else
-		{
-			if (this.hasCapability('alarm_dark_image'))
-			{
-				this.removeCapability('alarm_dark_image').catch(this.error);
-			}
-		}
-
-		//		if (notificationTypes.indexOf('STORAGEFAILURE') >= 0)
-		if (settings.storage === true)
-		{
-			if (!this.hasCapability('alarm_storage'))
-			{
-				this.addCapability('alarm_storage')
-					.then(() =>
-					{
-						this.setCapabilityValue('alarm_storage', false).catch(this.error);
-					})
-					.catch(this.error);
-			}
-		}
-		else
-		{
-			if (this.hasCapability('alarm_storage'))
-			{
-				this.removeCapability('alarm_storage').catch(this.error);
-			}
-		}
-
-		//		if (notificationTypes.indexOf('PROCESSORUSAGE') >= 0)
-		if (settings.cpu === true)
-		{
-			if (!this.hasCapability('measure_cpu'))
-			{
-				this.addCapability('measure_cpu')
-					.then(() =>
-					{
-						this.setCapabilityValue('measure_cpu', 0).catch(this.error);
-					})
-					.catch(this.error);
-			}
-		}
-		else
-		{
-			if (this.hasCapability('measure_cpu'))
-			{
-				this.removeCapability('measure_cpu').catch(this.error);
-			}
-		}
-
-		//		if (notificationTypes.indexOf('DETECTEDSOUND') >= 0)
-		if (settings.sound === true)
-		{
-			if (!this.hasCapability('alarm_sound'))
-			{
-				this.addCapability('alarm_sound')
-					.then(() =>
-					{
-						this.setCapabilityValue('alarm_sound', 0).catch(this.error);
-					})
-					.catch(this.error);
-			}
-		}
-		else
-		{
-			if (this.hasCapability('alarm_sound'))
-			{
-				this.removeCapability('alarm_sound').catch(this.error);
-			}
-		}
-
+		await Promise.all(
+			Object.keys(OPTIONAL_EVENT_CAPABILITIES).map((settingName) => this.syncOptionalCapability(settingName, settings))
+		);
 	}
 
-	isEventFeatureEnabled(settingName, capabilityName)
+	getOptionalEventCapability(settingName)
 	{
-		const settings = this.getSettings();
+		const capabilityConfig = OPTIONAL_EVENT_CAPABILITIES[settingName];
+		if (capabilityConfig)
+		{
+			return capabilityConfig;
+		}
+
+		return null;
+	}
+
+	async syncOptionalCapability(settingName, settings = this.getSettings())
+	{
+		const capabilityConfig = this.getOptionalEventCapability(settingName);
+		if (!capabilityConfig)
+		{
+			return false;
+		}
+
 		if (settings[settingName] === true)
+		{
+			if (!this.hasCapability(capabilityConfig.capability))
+			{
+				await this.addCapability(capabilityConfig.capability).catch(this.error);
+				this.setCapabilityValue(capabilityConfig.capability, capabilityConfig.defaultValue).catch(this.error);
+			}
+
+			return true;
+		}
+
+		if (this.hasCapability(capabilityConfig.capability))
+		{
+			await this.removeCapability(capabilityConfig.capability).catch(this.error);
+		}
+
+		return false;
+	}
+
+	async ensureOptionalCapability(settingName, settings = this.getSettings())
+	{
+		const capabilityConfig = this.getOptionalEventCapability(settingName);
+		if (!capabilityConfig)
+		{
+			return false;
+		}
+
+		if (settings[settingName] !== true)
+		{
+			if (this.hasCapability(capabilityConfig.capability))
+			{
+				await this.removeCapability(capabilityConfig.capability).catch(this.error);
+			}
+
+			return false;
+		}
+
+		if (!this.hasCapability(capabilityConfig.capability))
+		{
+			await this.addCapability(capabilityConfig.capability).catch(this.error);
+			this.setCapabilityValue(capabilityConfig.capability, capabilityConfig.defaultValue).catch(this.error);
+		}
+
+		return this.hasCapability(capabilityConfig.capability);
+	}
+
+	normalizeEventValue(value)
+	{
+		if (value === 'true')
 		{
 			return true;
 		}
 
-		if (capabilityName && this.hasCapability(capabilityName))
+		if (value === 'false')
 		{
-			this.removeCapability(capabilityName).catch(this.error);
+			return false;
+		}
+
+		return value;
+	}
+
+	logSnapshotIssue(key, message, level = 0, throttleMs = 60000)
+	{
+		const now = Date.now();
+		const lastLoggedAt = this.lastSnapshotIssueLogAt[key] || 0;
+		if ((now - lastLoggedAt) >= throttleMs)
+		{
+			this.lastSnapshotIssueLogAt[key] = now;
+			this.homey.app.updateLog(message, level);
+		}
+	}
+
+	getLogDeviceLabel()
+	{
+		return this.name + (this.ip ? ' [' + this.ip + ']' : '');
+	}
+
+	resetEventFloodWindow(now)
+	{
+		if (!this.eventWindowStartedAt || ((now - this.eventWindowStartedAt) >= EVENT_RATE_LIMIT_WINDOW_MS))
+		{
+			if (this.eventWindowStartedAt && (this.droppedEventCount > 0))
+			{
+				this.homey.app.updateLog(
+					'Event flood protection recovered (' + this.getLogDeviceLabel() + '): dropped ' + this.droppedEventCount + ' events in the previous window',
+					0
+				);
+			}
+
+			this.eventWindowStartedAt = now;
+			this.eventCountInWindow = 0;
+			this.droppedEventCount = 0;
+		}
+	}
+
+	noteDroppedCameraEvent(now, reason)
+	{
+		this.droppedEventCount += 1;
+		const windowElapsedMs = Math.max(1, now - this.eventWindowStartedAt);
+		const eventsPerSecond = (this.eventCountInWindow * 1000) / windowElapsedMs;
+
+		if (!this.lastEventFloodWarningAt || ((now - this.lastEventFloodWarningAt) >= EVENT_FLOOD_WARNING_INTERVAL_MS))
+		{
+			this.lastEventFloodWarningAt = now;
+			this.homey.app.updateLog(
+				'Event flood protection active (' + this.getLogDeviceLabel() + '): dropping excess camera events (' + reason + ', ' + this.eventCountInWindow + ' events in ' + windowElapsedMs + ' ms, burst rate ' + eventsPerSecond.toFixed(1) + ' events/s)',
+				0
+			);
+		}
+
+		return true;
+	}
+
+	shouldDropCameraEvent()
+	{
+		const now = Date.now();
+		this.resetEventFloodWindow(now);
+
+		if (this.activeEventHandlers >= MAX_CONCURRENT_EVENT_HANDLERS)
+		{
+			return this.noteDroppedCameraEvent(now, 'busy');
+		}
+
+		this.eventCountInWindow += 1;
+		if (this.eventCountInWindow > MAX_EVENTS_PER_WINDOW)
+		{
+			return this.noteDroppedCameraEvent(now, 'rate-limit');
 		}
 
 		return false;
+	}
+
+	isTransientSnapshotError(err)
+	{
+		const details = `${err?.code || ''} ${err?.message || ''}`.toLowerCase();
+		return details.includes('socket hang up') ||
+			details.includes('econnreset') ||
+			details.includes('etimedout') ||
+			details.includes('ehostunreach') ||
+			details.includes('econnrefused');
+	}
+
+	logSnapshotFetchError(err, name)
+	{
+		const message = err?.message || this.homey.app.varToString(err);
+		if (this.isTransientSnapshotError(err))
+		{
+			this.logSnapshotIssue(
+				'snapshot_transient_error',
+				'Snapshot transient error (' + this.getLogDeviceLabel() + ') [' + name + ']: ' + message,
+				1,
+				60000
+			);
+			return;
+		}
+
+		this.homey.app.updateLog('SnapShot error (' + this.getLogDeviceLabel() + '): ' + message, 0);
+	}
+
+	isEventObjectIdEnabled(objectId)
+	{
+		return (this.eventObjectID === '') || (this.eventObjectID.indexOf(objectId) >= 0);
+	}
+
+	isEventForActiveToken(camMessage, dataSource)
+	{
+		if (!this.token)
+		{
+			return true;
+		}
+
+		let eventSource = camMessage.message?.message.source.simpleItem;
+		if (Array.isArray(eventSource))
+		{
+			eventSource = eventSource[0];
+		}
+
+		if (eventSource?.$)
+		{
+			this.homey.app.updateLog(`*** Event token ${eventSource.$.Value}, channel token ${this.token} `, 1);
+
+			if ((eventSource.$.Name == 'VideoSourceConfigurationToken') ||
+				(eventSource.$.Name == 'Source'))
+			{
+				if (eventSource.$.Value !== this.token)
+				{
+					// Different channel so ignore this event
+					this.homey.app.updateLog(`Event Ignored on this channel:\r\n${this.homey.app.varToString(dataSource)}\r\n`, 1);
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		this.homey.app.updateLog(`*** Event source invalid: ${this.homey.app.varToString(camMessage)}`, 1);
+		return true;
+	}
+
+	parseCamEvent(camMessage)
+	{
+		let dataName = '';
+		let dataValue = '';
+		let objectId = '';
+		const dataSource = camMessage?.message.message.data.simpleItem;
+
+		if (!this.isEventForActiveToken(camMessage, dataSource))
+		{
+			return null;
+		}
+
+		let eventTopic = camMessage.topic._;
+		eventTopic = this.homey.app.stripNamespaces(eventTopic);
+
+		// DATA (Name:Value)
+		if (dataSource)
+		{
+			if (Array.isArray(dataSource))
+			{
+				dataName = camMessage.message.message.data.simpleItem[0].$.Name;
+				dataValue = this.normalizeEventValue(camMessage.message.message.data.simpleItem[0].$.Value);
+			}
+			else
+			{
+				dataName = camMessage.message.message.data.simpleItem.$.Name;
+				dataValue = this.normalizeEventValue(camMessage.message.message.data.simpleItem.$.Value);
+			}
+		}
+		else if (camMessage.message.message.data && camMessage.message.message.data.elementItem)
+		{
+			this.homey.app.updateLog('WARNING: Data contains an elementItem', 0);
+			dataName = 'elementItem';
+			dataValue = this.homey.app.varToString(camMessage.message.message.data.elementItem);
+		}
+		else
+		{
+			this.homey.app.updateLog('WARNING: Data does not contain a simpleItem or elementItem', 0);
+			dataName = null;
+			dataValue = null;
+		}
+
+		if (dataName && camMessage.message.message.key && camMessage.message.message.key.simpleItem)
+		{
+			objectId = camMessage.message.message.key.simpleItem.$.Value;
+		}
+
+		return {
+			eventTopic,
+			dataName,
+			dataValue,
+			objectId,
+			compareSetting: dataName ? (eventTopic + ':' + dataName) : ''
+		};
+	}
+
+	async handleMetricEvent(compareSetting, dataValue)
+	{
+		const metricHandler = EVENT_METRIC_HANDLERS[compareSetting];
+		if (!metricHandler)
+		{
+			return false;
+		}
+
+		if (!(await this.ensureOptionalCapability(metricHandler.optionalCapability)))
+		{
+			return true;
+		}
+
+		const metricValue = metricHandler.transform ? metricHandler.transform(dataValue) : dataValue;
+		this.setCapabilityValue(metricHandler.capability, metricValue).catch(this.error);
+
+		return true;
+	}
+
+	routePrimaryMotionEvent(compareSetting, dataName, dataValue, objectId)
+	{
+		if ((compareSetting === this.eventTN) && this.isEventObjectIdEnabled(objectId))
+		{
+			this.triggerMotionEvent(dataName, dataValue).catch(this.err);
+			return true;
+		}
+
+		return false;
+	}
+
+	routeLineCrossedEvent(dataValue)
+	{
+		if (!this.isEventObjectIdEnabled(dataValue))
+		{
+			return false;
+		}
+
+		this.triggerLineCrossedEvent(dataValue).catch(this.err);
+		return true;
+	}
+
+	routeDarkImageEvent(dataValue)
+	{
+		this.triggerDarkImageEvent(dataValue).catch(this.err);
+		return true;
+	}
+
+	routeSpecialCompareEvent(compareSetting, dataValue)
+	{
+		const specialHandler = this.eventSpecialHandlers[compareSetting];
+		if (typeof specialHandler === 'function')
+		{
+			return specialHandler(dataValue);
+		}
+
+		return false;
+	}
+
+	routeCompareEvent(compareSetting, dataValue)
+	{
+		const compareHandler = this.eventCompareHandlers[compareSetting];
+		if (typeof compareHandler === 'function')
+		{
+			compareHandler(dataValue).catch(this.err);
+			return true;
+		}
+
+		return false;
+	}
+
+	routeTamperEvent(dataName, dataValue)
+	{
+		if (dataName === 'IsTamper')
+		{
+			this.triggerTamperEvent(dataName, dataValue).catch(this.err);
+			return true;
+		}
+
+		return false;
+	}
+
+	async routeCamEvent(camEvent)
+	{
+		const {
+			eventTopic,
+			dataName,
+			dataValue,
+			objectId,
+			compareSetting
+		} = camEvent;
+
+		if (!dataName)
+		{
+			return;
+		}
+
+		this.homey.app.updateLog('Event data: (' + this.name + ') ' + eventTopic + ': ' + dataName + ' = ' + dataValue + (objectId === '' ? '' : (' (' + objectId + ')')), 1, true);
+
+		if (this.routePrimaryMotionEvent(compareSetting, dataName, dataValue, objectId))
+		{
+			return;
+		}
+
+		if (this.routeSpecialCompareEvent(compareSetting, dataValue))
+		{
+			return;
+		}
+
+		if (await this.handleMetricEvent(compareSetting, dataValue))
+		{
+			return;
+		}
+
+		if (this.routeCompareEvent(compareSetting, dataValue))
+		{
+			return;
+		}
+
+		if (this.routeTamperEvent(dataName, dataValue))
+		{
+			return;
+		}
+
+		this.homey.app.updateLog('Ignoring event type (' + this.name + ') ' + eventTopic + ': ' + dataName + ' = ' + dataValue);
 	}
 
 	getEventTN(settings, fromSetSettings)
@@ -414,7 +625,7 @@ class CameraDevice extends Homey.Device
 		const availableTypes = settings.notificationTypes.split(',');
 
 		// See if the required type is available
-		if (availableTypes.map(function (type) { return searchType.indexOf(type); }))
+		if (Array.isArray(searchType) && availableTypes.some((type) => searchType.indexOf(type) >= 0))
 		//        if (availableTypes.indexOf(searchType) >= 0)
 		{
 			return settings.notificationToUse;
@@ -590,7 +801,7 @@ class CameraDevice extends Homey.Device
 				}
 				catch (err)
 				{
-					this.homey.app.updateLog('unsubscribe error (' + this.name + '): ' + this.homey.app.varToString(err.mesage), 0);
+					this.homey.app.updateLog('unsubscribe error (' + this.name + '): ' + this.homey.app.varToString(err.message), 0);
 				}
 
 				if (!reconnect)
@@ -610,26 +821,16 @@ class CameraDevice extends Homey.Device
 			this.setClass(newSettings.classType);
 		}
 
-		if ((changedKeys.indexOf('line_crossed') >= 0) ||
-		    (changedKeys.indexOf('person') >= 0) ||
-			(changedKeys.indexOf('visitor') >= 0) ||
-			(changedKeys.indexOf('face') >= 0) ||
-			(changedKeys.indexOf('dog_cat') >= 0) ||
-			(changedKeys.indexOf('vehicle') >= 0) ||
-			(changedKeys.indexOf('dark_image') >= 0) ||
-			(changedKeys.indexOf('storage') >= 0) ||
-			(changedKeys.indexOf('cpu') >= 0) ||
-			(changedKeys.indexOf('sound') >= 0))
-		{
-			this.notificationTypesUpdated(newSettings);
-		}
+		// Always resync optional capabilities on settings changes to avoid missed UI updates
+		// when changedKeys does not include all toggles in some Homey flows.
+		await this.notificationTypesUpdated(newSettings);
 
 		if (reconnect)
 		{
 			// re-connect to camera after exiting this callback
 			setImmediate(() =>
 			{
-				this.connectCamera(false).catch(this.error).catch(this.error);
+				this.connectCamera(false).catch(this.error);
 				return;
 			});
 		}
@@ -653,7 +854,7 @@ class CameraDevice extends Homey.Device
 					}
 					catch (err)
 					{
-						this.homey.app.updateLog('unsubscribe error (' + this.name + '): ' + this.homey.app.varToString(err.mesage), 0);
+						this.homey.app.updateLog('unsubscribe error (' + this.name + '): ' + this.homey.app.varToString(err.message), 0);
 					}
 				}
 				this.cam = null;
@@ -832,7 +1033,7 @@ class CameraDevice extends Homey.Device
 				}
 
 				let settings = this.getSettings();
-				this.notificationTypesUpdated(settings);
+				await this.notificationTypesUpdated(settings);
 
 				if (!this.hasMotion)
 				{
@@ -867,19 +1068,35 @@ class CameraDevice extends Homey.Device
 					}
 				}
 
-				// Check available presets directly after connecting
-				let presets = null;
-				try
-				{
-					presets = await new Promise((resolve, reject) =>
+				// Fetch presets and stream URL in parallel — they are independent SOAP calls
+				const [presetsResult, streamResult] = await Promise.allSettled([
+					new Promise((resolve, reject) =>
 					{
 						this.cam.getPresets({}, (err, data) =>
 						{
 							if (err) reject(err);
 							else resolve(data);
 						});
-					});
+					}),
+					this.homey.app.getStreamURL(this.cam)
+				]);
 
+				// Handle stream URL result
+				if (streamResult.status === 'fulfilled')
+				{
+					this.liveUri = `${streamResult.value.uri}`;
+					this.setSettings({ urlLive: this.liveUri });
+				}
+				else
+				{
+					this.homey.app.updateLog('Get stream URL error (' + this.name + '): ' + (streamResult.reason?.message || streamResult.reason), 0);
+				}
+
+				// Handle presets result
+				let presets = null;
+				if (presetsResult.status === 'fulfilled')
+				{
+					presets = presetsResult.value;
 					if (presets && Object.keys(presets).length > 0)
 					{
 						// Presets are available, add capability if it doesn't exist
@@ -889,7 +1106,8 @@ class CameraDevice extends Homey.Device
 							this.registerCapabilityListener('ptz_preset', this.onCapabilityPTZPreset.bind(this));
 						}
 						await this.updatePresets();
-					} else
+					}
+					else
 					{
 						// No presets available, remove capability if it exists
 						if (this.hasCapability('ptz_preset'))
@@ -898,25 +1116,23 @@ class CameraDevice extends Homey.Device
 						}
 					}
 				}
-				catch (err)
+				else
 				{
 					// Error while retrieving presets, remove capability
+					const ptzErr = presetsResult.reason;
 					if (this.hasCapability('ptz_preset'))
 					{
 						await this.removeCapability('ptz_preset');
 					}
-					this.homey.app.updateLog(`No PTZ presets (${this.name}): ${err.message}`, 0);
-				}
-
-				try
-				{
-					let reply = await this.homey.app.getStreamURL(this.cam);
-					this.liveUri = `${reply.uri}`;
-					this.setSettings({ urlLive: this.liveUri });
-				}
-				catch (err)
-				{
-					this.homey.app.updateLog('Get stream URL error (' + this.name + '): ' + err.message, 0);
+					const ptzErrMsg = (ptzErr?.message || '').toLowerCase();
+					if (ptzErrMsg.includes('onvif item not found') || ptzErrMsg.includes('item not found'))
+					{
+						this.homey.app.updateLog(`No PTZ presets (${this.getLogDeviceLabel()}): camera reported none`, 1);
+					}
+				else
+					{
+						this.homey.app.updateLog(`No PTZ presets (${this.getLogDeviceLabel()}): ${ptzErr?.message || ptzErr}`, 0);
+					}
 				}
 
 				await this.setAvailable();
@@ -936,12 +1152,6 @@ class CameraDevice extends Homey.Device
 				this.setCapabilityValue('alarm_tamper', false).catch(this.error);
 				this.homey.app.updateLog('Camera (' + this.name + ') ' + this.homey.app.varToString(this.cam), 3);
 				this.homey.app.updateLog('Camera (' + this.name + ') is ready');
-
-				if (presets && Object.keys(presets).length > 0)
-				{
-					// Check available presets directly after connecting
-					await this.updatePresets();
-				}
 			}
 			catch (err)
 			{
@@ -1082,8 +1292,9 @@ class CameraDevice extends Homey.Device
 			try
 			{
 				const snapURL = await this.homey.app.getSnapshotURL(this.cam);
-				this.snapUri = snapURL.uri;
-				if (snapURL.uri.indexOf('http') < 0)
+				const uri = snapURL && typeof snapURL.uri === 'string' ? snapURL.uri : null;
+				this.snapUri = uri;
+				if (!uri || uri.indexOf('http') < 0)
 				{
 					this.snapUri = null;
 				}
@@ -1097,10 +1308,15 @@ class CameraDevice extends Homey.Device
 
 		if (!this.snapUri)
 		{
-			this.homey.app.updateLog('Invalid Snapshot URL, it must be http or https: null', 0);
+			this.logSnapshotIssue(
+				'invalid_snapshot_url',
+				'Invalid Snapshot URL (' + this.getLogDeviceLabel() + '): camera did not return a snapshot URI',
+				0,
+				300000
+			);
 			return;
 		}
-		this.homey.app.updateLog('Event snapshot URL (' + this.name + '): ' + this.homey.app.varToString(this.snapUri).replace(this.password, 'YOUR_PASSWORD'));
+		this.homey.app.updateLog('Event snapshot URL (' + this.getLogDeviceLabel() + '): ' + this.homey.app.varToString(this.snapUri).replace(this.password, 'YOUR_PASSWORD'));
 
 		let res = await this.doFetch('MOTION EVENT');
 		if (!res.ok)
@@ -1140,7 +1356,7 @@ class CameraDevice extends Homey.Device
 						.trigger(this, tokens)
 						.catch(err =>
 						{
-							this.homey.app.updateLog('Snapshot error (' + this.name + '): ' + this.homey.app.varToString(err), 0);
+							this.homey.app.updateLog('Snapshot error (' + this.getLogDeviceLabel() + '): ' + this.homey.app.varToString(err), 0);
 							reject(err);
 							return;
 						})
@@ -1234,7 +1450,7 @@ class CameraDevice extends Homey.Device
 				{
 					this.eventTimeoutId = null;
 					this.setCapabilityValue('alarm_motion', false).catch(this.error);
-					console.log('Event off timeout', this.name, this.channel);
+					this.homey.app.updateLog('Event off timeout (' + this.name + ') channel ' + this.channel, 1);
 				}, 180000);
 
 				if (!settings.single || !this.getCapabilityValue('alarm_motion'))
@@ -1245,13 +1461,13 @@ class CameraDevice extends Homey.Device
 						//start the minimum on time
 						this.eventMinTimeId = this.homey.setTimeout(() =>
 						{
-							console.log('Minimum event time elapsed', this.name, this.channel);
+							this.homey.app.updateLog('Minimum event time elapsed (' + this.name + ') channel ' + this.channel, 1);
 							this.eventMinTimeId = null;
 							if (!this.lastState)
 							{
 								// The event has been turned off already
 								this.setCapabilityValue('alarm_motion', false).catch(this.error);
-								console.log('Turned off event alarm', this.name, this.channel);
+								this.homey.app.updateLog('Turned off event alarm (' + this.name + ') channel ' + this.channel, 1);
 							}
 						}, settings.on_time * 1000);
 
@@ -1276,12 +1492,12 @@ class CameraDevice extends Homey.Device
 					{
 						// Minimum time has elapsed so switch the alarm of now
 						this.setCapabilityValue('alarm_motion', false).catch(this.error);
-						console.log('Turned off event alarm', this.name, this.channel);
+						this.homey.app.updateLog('Turned off event alarm (' + this.name + ') channel ' + this.channel, 1);
 					}
 				}
 				else
 				{
-					console.log('Event alarm switch off delayed for minimum time', this.name, this.channel);
+					this.homey.app.updateLog('Event alarm switch off delayed for minimum time (' + this.name + ') channel ' + this.channel, 1);
 				}
 				this.homey.clearTimeout(this.eventTimeoutId);
 				this.eventTimeoutId = null;
@@ -1296,7 +1512,7 @@ class CameraDevice extends Homey.Device
 			}
 			catch (err)
 			{
-				this.homey.app.updateLog('unsubscribe error (' + this.name + '): ' + this.homey.app.varToString(err.mesage), 0);
+				this.homey.app.updateLog('unsubscribe error (' + this.name + '): ' + this.homey.app.varToString(err.message), 0);
 			}
 		}
 	}
@@ -1324,7 +1540,7 @@ class CameraDevice extends Homey.Device
 
 	async triggerLineCrossedEvent(ObjectId)
 	{
-		if (!this.isEventFeatureEnabled('line_crossed', 'alarm_line_crossed'))
+		if (!(await this.ensureOptionalCapability('line_crossed')))
 		{
 			return;
 		}
@@ -1333,19 +1549,7 @@ class CameraDevice extends Homey.Device
 
 		this.homey.app.updateLog('Event Processing (' + this.name + '):' + ObjectId);
 
-		if (!this.hasCapability('alarm_line_crossed'))
-		{
-			this.addCapability('alarm_line_crossed')
-				.then(() =>
-				{
-					this.triggerLineCrossedEvent(ObjectId);
-					this.setCapabilityValue('alarm_line_crossed', true).catch(this.error);
-				})
-				.catch(this.error);
-
-			return;
-		}
-		else if (this.getCapabilityValue('alarm_line_crossed'))
+		if (this.getCapabilityValue('alarm_line_crossed'))
 		{
 			// Already triggered so ignore
 			this.homey.app.updateLog('Ignoring unchanged event (' + this.name + ') Line Crossed', 1);
@@ -1358,7 +1562,7 @@ class CameraDevice extends Homey.Device
 		this.driver.eventLineCrossedTrigger
 			.trigger(this)
 			.catch(this.error)
-			.then(this.log('Triggered enable on'));
+			.then(() => this.log('Triggered enable on'));
 
 		// This event doesn't clear so set a timer to clear it
 		this.homey.clearTimeout(this.lineCrossedTimeoutId);
@@ -1366,14 +1570,14 @@ class CameraDevice extends Homey.Device
 		{
 			this.setCapabilityValue('alarm_line_crossed', false).catch(this.error);
 			this.triggerMotionEvent('Line Crossed', false).catch(this.err);
-			console.log('Line crossed off');
+			this.homey.app.updateLog('Line crossed off (' + this.name + ')', 1);
 		}, 15000);
 
 	}
 
 	async triggerPersonEvent(dataValue)
 	{
-		if (!this.isEventFeatureEnabled('person', 'alarm_person'))
+		if (!(await this.ensureOptionalCapability('person')))
 		{
 			return;
 		}
@@ -1381,27 +1585,12 @@ class CameraDevice extends Homey.Device
 		this.setAvailable().catch(this.error);
 
 		this.homey.app.updateLog('Event Processing (' + this.name + '):' + dataValue);
-		if (!this.hasCapability('alarm_person'))
+		if (this.getCapabilityValue('alarm_person') !== dataValue)
 		{
-			this.addCapability('alarm_person')
-				.then(() =>
-				{
-					this.triggerPersonEvent(dataValue);
-					this.setCapabilityValue('alarm_person', dataValue).catch(this.error);
-				})
-				.catch(this.error);
+			// Only trigger if the state has changed
+			this.triggerMotionEvent('Person Detected', dataValue).catch(this.err);
 
-			return;
-		}
-		else
-		{
-			if (this.getCapabilityValue('alarm_person') !== dataValue)
-			{
-				// Only trigger if the state has changed
-				this.triggerMotionEvent('Person Detected', dataValue).catch(this.err);
-
-				this.setCapabilityValue('alarm_person', dataValue).catch(this.error);
-			}
+			this.setCapabilityValue('alarm_person', dataValue).catch(this.error);
 		}
 
 		this.homey.clearTimeout(this.personTimeoutId);
@@ -1410,21 +1599,21 @@ class CameraDevice extends Homey.Device
 			this.driver.eventPersonTrigger
 				.trigger(this)
 				.catch(this.error)
-				.then(this.log('Triggered enable on'));
+				.then(() => this.log('Triggered enable on'));
 
 			// If this event doesn't clear, set a timer to clear it
 			this.personTimeoutId = this.homey.setTimeout(() =>
 			{
 				this.setCapabilityValue('alarm_person', false).catch(this.error);
 				this.triggerMotionEvent('Person Detected', false).catch(this.err);
-				console.log('Person Detected off');
+				this.homey.app.updateLog('Person Detected off (' + this.name + ')', 1);
 			}, 15000);
 		}
 	}
 
 	async triggerDogCatEvent(dataValue)
 	{
-		if (!this.isEventFeatureEnabled('dog_cat', 'alarm_dog_cat'))
+		if (!(await this.ensureOptionalCapability('dog_cat')))
 		{
 			return;
 		}
@@ -1432,27 +1621,12 @@ class CameraDevice extends Homey.Device
 		this.setAvailable().catch(this.error);
 
 		this.homey.app.updateLog('Event Processing (' + this.name + '):' + dataValue);
-		if (!this.hasCapability('alarm_dog_cat'))
+		// Only trigger if the state has changed
+		if (this.getCapabilityValue('alarm_dog_cat') !== dataValue)
 		{
-			this.addCapability('alarm_dog_cat')
-				.then(() =>
-				{
-					this.triggerDogCatEvent(dataValue);
-					this.setCapabilityValue('alarm_dog_cat', dataValue).catch(this.error);
-				})
-				.catch(this.error);
+			this.triggerMotionEvent('Dog / Cat Detected', dataValue).catch(this.err);
 
-			return;
-		}
-		else
-		{
-			// Only trigger if the state has changed
-			if (this.getCapabilityValue('alarm_dog_cat') !== dataValue)
-			{
-				this.triggerMotionEvent('Dog / Cat Detected', dataValue).catch(this.err);
-
-				this.setCapabilityValue('alarm_dog_cat', dataValue).catch(this.error);
-			}
+			this.setCapabilityValue('alarm_dog_cat', dataValue).catch(this.error);
 		}
 
 		// If this event doesn't clear, set a timer to clear it
@@ -1462,20 +1636,20 @@ class CameraDevice extends Homey.Device
 			this.driver.eventDogCatTrigger
 				.trigger(this)
 				.catch(this.error)
-				.then(this.log('Triggered enable on'));
+				.then(() => this.log('Triggered enable on'));
 
 			this.dogCatTimeoutId = this.homey.setTimeout(() =>
 			{
 				this.setCapabilityValue('alarm_dog_cat', false).catch(this.error);
 				this.triggerMotionEvent('Dog / Cat Detected', false).catch(this.err);
-				console.log('Dog / Cat Detected off');
+				this.homey.app.updateLog('Dog / Cat Detected off (' + this.name + ')', 1);
 			}, 15000);
 		}
 	}
 
-	async triggerVistorEvent(dataValue)
+	async triggerVisitorEvent(dataValue)
 	{
-		if (!this.isEventFeatureEnabled('visitor', 'alarm_visitor'))
+		if (!(await this.ensureOptionalCapability('visitor')))
 		{
 			return;
 		}
@@ -1483,48 +1657,33 @@ class CameraDevice extends Homey.Device
 		this.setAvailable().catch(this.error);
 
 		this.homey.app.updateLog('Event Processing (' + this.name + '):' + dataValue);
-		if (!this.hasCapability('alarm_visitor'))
+		if (this.hasCapability('alarm_generic'))
 		{
-			this.addCapability('alarm_visitor')
-				.then(() =>
-				{
-					this.triggerVistorEvent(dataValue);
-					this.setCapabilityValue('alarm_visitor', dataValue).catch(this.error);
-				})
-				.catch(this.error);
+			if (this.getCapabilityValue('alarm_generic') !== dataValue)
+			{
+				this.triggerMotionEvent('Generic Detected', dataValue).catch(this.err);
+				this.setCapabilityValue('alarm_generic', dataValue).catch(this.error);
+			}
+ 		}
 
-			return;
-		}
-		else
+		// Only trigger if the state has changed
+		if (this.getCapabilityValue('alarm_visitor') !== dataValue)
 		{
-			if (this.hasCapability('alarm_generic'))
-			{
-				if (this.getCapabilityValue('alarm_generic') !== dataValue)
-				{
-					this.triggerMotionEvent('Generic Detected', dataValue).catch(this.err);
-					this.setCapabilityValue('alarm_generic', dataValue).catch(this.error);
-				}
-			}
-
-			// Only trigger if the state has changed
-			if (this.getCapabilityValue('alarm_visitor') !== dataValue)
-			{
-				this.triggerMotionEvent('Vistor Detected', dataValue).catch(this.err);
-				this.setCapabilityValue('alarm_visitor', dataValue).catch(this.error);
-			}
+			this.triggerMotionEvent('Visitor Detected', dataValue).catch(this.err);
+			this.setCapabilityValue('alarm_visitor', dataValue).catch(this.error);
 		}
 
 		// If this event doesn't clear, set a timer to clear it
-		this.homey.clearTimeout(this.vistorTimeoutId);
+		this.homey.clearTimeout(this.visitorTimeoutId || this.vistorTimeoutId);
 		if (dataValue)
 		{
-			this.homey.app.updateLog('Triggering event (' + this.name + ') Vistor Detected  = ' + dataValue, 1);
-			this.driver.eventVistorTrigger
+			this.homey.app.updateLog('Triggering event (' + this.name + ') Visitor Detected = ' + dataValue, 1);
+			(this.driver.eventVisitorTrigger || this.driver.eventVistorTrigger)
 				.trigger(this)
 				.catch(this.error)
-				.then(this.log('Triggered enable on'));
+				.then(() => this.log('Triggered enable on'));
 
-			this.vistorTimeoutId = this.homey.setTimeout(() =>
+			this.visitorTimeoutId = this.homey.setTimeout(() =>
 			{
 				if (this.hasCapability('alarm_generic'))
 				{
@@ -1532,15 +1691,23 @@ class CameraDevice extends Homey.Device
 				}
 
 				this.setCapabilityValue('alarm_visitor', false).catch(this.error);
-				this.triggerMotionEvent('Vistor Detected', false).catch(this.err);
-				console.log('Vistor Detected off');
+				this.triggerMotionEvent('Visitor Detected', false).catch(this.err);
+				this.homey.app.updateLog('Visitor Detected off (' + this.name + ')', 1);
 			}, 15000);
+
+			// Keep legacy property updated for backward compatibility in long-lived runtime state.
+			this.vistorTimeoutId = this.visitorTimeoutId;
 		}
+	}
+
+	async triggerVistorEvent(dataValue)
+	{
+		return this.triggerVisitorEvent(dataValue);
 	}
 
 	async triggerFaceEvent(dataValue)
 	{
-		if (!this.isEventFeatureEnabled('face', 'alarm_face'))
+		if (!(await this.ensureOptionalCapability('face')))
 		{
 			return;
 		}
@@ -1548,27 +1715,12 @@ class CameraDevice extends Homey.Device
 		this.setAvailable().catch(this.error);
 
 		this.homey.app.updateLog('Event Processing (' + this.name + '):' + dataValue);
-		if (!this.hasCapability('alarm_face'))
+		// Only trigger if the state has changed
+		if (this.getCapabilityValue('alarm_face') !== dataValue)
 		{
-			this.addCapability('alarm_face')
-				.then(() =>
-				{
-					this.triggerFaceEvent(dataValue);
-					this.setCapabilityValue('alarm_face', dataValue).catch(this.error);
-				})
-				.catch(this.error);
+			this.triggerMotionEvent('Face Detected', dataValue).catch(this.err);
 
-			return;
-		}
-		else
-		{
-			// Only trigger if the state has changed
-			if (this.getCapabilityValue('alarm_face') !== dataValue)
-			{
-				this.triggerMotionEvent('Face Detected', dataValue).catch(this.err);
-
-				this.setCapabilityValue('alarm_face', dataValue).catch(this.error);
-			}
+			this.setCapabilityValue('alarm_face', dataValue).catch(this.error);
 		}
 
 		// If this event doesn't clear, set a timer to clear it
@@ -1578,20 +1730,20 @@ class CameraDevice extends Homey.Device
 			this.driver.eventFaceTrigger
 				.trigger(this)
 				.catch(this.error)
-				.then(this.log('Triggered enable on'));
+				.then(() => this.log('Triggered enable on'));
 
 			this.faceTimeoutId = this.homey.setTimeout(() =>
 			{
 				this.setCapabilityValue('alarm_face', false).catch(this.error);
 				this.triggerMotionEvent('Face Detected', false).catch(this.err);
-				console.log('Face Detected off');
+				this.homey.app.updateLog('Face Detected off (' + this.name + ')', 1);
 			}, 15000);
 		}
 	}
 
 	async triggerVehicleEvent(dataValue)
 	{
-		if (!this.isEventFeatureEnabled('vehicle', 'alarm_vehicle'))
+		if (!(await this.ensureOptionalCapability('vehicle')))
 		{
 			return;
 		}
@@ -1599,26 +1751,11 @@ class CameraDevice extends Homey.Device
 		this.setAvailable().catch(this.error);
 
 		this.homey.app.updateLog('Event Processing (' + this.name + '):' + dataValue);
-		if (!this.hasCapability('alarm_vehicle'))
+		// Only trigger if the state has changed
+		if (this.getCapabilityValue('alarm_vehicle') !== dataValue)
 		{
-			this.addCapability('alarm_vehicle')
-				.then(() =>
-				{
-					this.triggerVehicleEvent(dataValue);
-					this.setCapabilityValue('alarm_vehicle', dataValue).catch(this.error);
-				})
-				.catch(this.error);
-
-			return;
-		}
-		else
-		{
-			// Only trigger if the state has changed
-			if (this.getCapabilityValue('alarm_vehicle') !== dataValue)
-			{
-				this.triggerMotionEvent('Vehicle Detected', dataValue).catch(this.err);
-				this.setCapabilityValue('alarm_vehicle', dataValue).catch(this.error);
-			}
+			this.triggerMotionEvent('Vehicle Detected', dataValue).catch(this.err);
+			this.setCapabilityValue('alarm_vehicle', dataValue).catch(this.error);
 
 		}
 
@@ -1629,20 +1766,20 @@ class CameraDevice extends Homey.Device
 			this.driver.eventVehicleTrigger
 				.trigger(this)
 				.catch(this.error)
-				.then(this.log('Triggered enable on'));
+				.then(() => this.log('Triggered enable on'));
 
 			this.vehicleTimeoutId = this.homey.setTimeout(() =>
 			{
 				this.setCapabilityValue('alarm_vehicle', false).catch(this.error);
 				this.triggerMotionEvent('Vehicle Detected', false).catch(this.err);
-				console.log('Vehicle Detected off');
+				this.homey.app.updateLog('Vehicle Detected off (' + this.name + ')', 1);
 			}, 5000);
 		}
 	}
 
 	async triggerDarkImageEvent(value)
 	{
-		if (!this.isEventFeatureEnabled('dark_image', 'alarm_dark_image'))
+		if (!(await this.ensureOptionalCapability('dark_image')))
 		{
 			return;
 		}
@@ -1703,185 +1840,33 @@ class CameraDevice extends Homey.Device
 	{
 		if (this.getCapabilityValue('motion_enabled'))
 		{
+			if (this.shouldDropCameraEvent())
+			{
+				return;
+			}
+
+			this.activeEventHandlers += 1;
 			try
 			{
 				this.homey.app.updateLog('\r\n--  Event detected (' + this.name + ')  --', 1);
 				this.homey.app.updateLog(this.homey.app.varToString(camMessage));
 
-				let dataSource = camMessage?.message.message.data.simpleItem;
-				if (this.token)
+				const camEvent = this.parseCamEvent(camMessage);
+				if (!camEvent)
 				{
-					let eventSource = camMessage.message?.message.source.simpleItem;
-					if (Array.isArray(eventSource))
-					{
-						eventSource = eventSource[0];
-					}
-
-					if (eventSource.$)
-					{
-						this.homey.app.updateLog(`*** Event token ${eventSource.$.Value}, channel token ${this.token} `, 1);
-
-						if ((eventSource.$.Name == 'VideoSourceConfigurationToken') ||
-							(eventSource.$.Name == 'Source'))
-						{
-							if (eventSource.$.Value !== this.token)
-							{
-								// Different channel so ignore this event
-								this.homey.app.updateLog(`Event Ignored on this channel:\r\n${this.homey.app.varToString(dataSource)}\r\n`, 1);
-								return;
-							}
-						}
-					}
-					else
-					{
-						this.homey.app.updateLog(`*** Event source invalid: ${this.homey.app.varToString(camMessage)}`, 1);
-					}
+					return;
 				}
 
 				this.setAvailable().catch(this.error);
-
-				let eventTopic = camMessage.topic._;
-				eventTopic = this.homey.app.stripNamespaces(eventTopic);
-
-				let dataName = '';
-				let dataValue = '';
-				let objectId = '';
-
-				// DATA (Name:Value)
-				if (dataSource)
-				{
-					if (Array.isArray(dataSource))
-					{
-						dataName = camMessage.message.message.data.simpleItem[0].$.Name;
-						dataValue = camMessage.message.message.data.simpleItem[0].$.Value;
-					}
-					else
-					{
-						dataName = camMessage.message.message.data.simpleItem.$.Name;
-						dataValue = camMessage.message.message.data.simpleItem.$.Value;
-					}
-				}
-				else if (camMessage.message.message.data && camMessage.message.message.data.elementItem)
-				{
-					this.homey.app.updateLog('WARNING: Data contains an elementItem', 0);
-					dataName = 'elementItem';
-					dataValue = this.homey.app.varToString(camMessage.message.message.data.elementItem);
-				}
-				else
-				{
-					this.homey.app.updateLog('WARNING: Data does not contain a simpleItem or elementItem', 0);
-					dataName = null;
-					dataValue = null;
-				}
-
-				if (dataName)
-				{
-					if (camMessage.message.message.key && camMessage.message.message.key.simpleItem)
-					{
-						objectId = camMessage.message.message.key.simpleItem.$.Value;
-					}
-
-					this.homey.app.updateLog('Event data: (' + this.name + ') ' + eventTopic + ': ' + dataName + ' = ' + dataValue + (objectId === '' ? '' : (' (' + objectId + ')')), 1, true);
-					const compareSetting = eventTopic + ':' + dataName;
-					if ((compareSetting === this.eventTN) && ((this.eventObjectID === '') || (this.eventObjectID.indexOf(objectId) >= 0)))
-					{
-						this.triggerMotionEvent(dataName, dataValue).catch(this.err);
-					}
-					else if ((compareSetting === 'RuleEngine/LineDetector/Crossed:ObjectId') && ((this.eventObjectID === '') || (this.eventObjectID.indexOf(dataValue) >= 0)))
-					{
-						// Line crossed
-						this.triggerLineCrossedEvent(dataValue).catch(this.err);
-					}
-					else if (compareSetting === 'VideoSource/ImageTooDark/ImagingService:State')
-					{
-						// Image too dark dataName = 'State', 'dataValue = true / false
-						this.triggerDarkImageEvent(dataValue).catch(this.err);
-					}
-					else if (compareSetting === 'Monitoring/ProcessorUsage:Value')
-					{
-						if (!this.isEventFeatureEnabled('cpu', 'measure_cpu'))
-						{
-							return;
-						}
-
-						// Processor usage = 'Value', 'dataValue = %usage
-						if (!this.hasCapability('measure_cpu'))
-						{
-							await this.addCapability('measure_cpu');
-						}
-						if (dataValue <= 1)
-						{
-							dataValue *= 100;
-						}
-						this.setCapabilityValue('measure_cpu', dataValue).catch(this.error);
-					}
-					else if (compareSetting === 'Device/HardwareFailure/StorageFailure:Failed')
-					{
-						if (!this.isEventFeatureEnabled('storage', 'alarm_storage'))
-						{
-							return;
-						}
-
-						// Processor usage = 'Value', 'dataValue = %usage
-						if (!this.hasCapability('alarm_storage'))
-						{
-							await this.addCapability('alarm_storage');
-						}
-						this.setCapabilityValue('alarm_storage', dataValue).catch(this.error);
-					}
-					else if (compareSetting === 'AudioAnalytics/Audio/DetectedSound:IsSoundDetected')
-					{
-						if (!this.isEventFeatureEnabled('sound', 'alarm_sound'))
-						{
-							return;
-						}
-
-						if (!this.hasCapability('alarm_sound'))
-						{
-							await this.addCapability('alarm_sound');
-						}
-
-						// Processor usage = 'Value', 'dataValue = %usage
-						this.setCapabilityValue('alarm_sound', dataValue).catch(this.error);
-					}
-					else if (compareSetting === 'RuleEngine/MyRuleDetector/Visitor:State')
-					{
-						// Vistor
-						this.triggerVistorEvent(dataValue).catch(this.err);
-					}
-					else if ((compareSetting === 'RuleEngine/MyRuleDetector/PeopleDetect:State') || (compareSetting === 'RuleEngine/PeopleDetector/People:IsPeople'))
-					{
-						// Person
-						this.triggerPersonEvent(dataValue).catch(this.err);
-					}
-					else if (compareSetting === 'RuleEngine/MyRuleDetector/FaceDetect:State')
-					{
-						// Face
-						this.triggerFaceEvent(dataValue).catch(this.err);
-					}
-					else if (compareSetting === 'RuleEngine/MyRuleDetector/VehicleDetect:State')
-					{
-						// Vehicle
-						this.triggerVehicleEvent(dataValue).catch(this.err);
-					}
-					else if (compareSetting === 'RuleEngine/MyRuleDetector/DogCatDetect:State')
-					{
-						// Dog or Cat
-						this.triggerDogCatEvent(dataValue).catch(this.err);
-					}
-					else if (dataName === 'IsTamper')
-					{
-						this.triggerTamperEvent(dataName, dataValue).catch(this.err);
-					}
-					else
-					{
-						this.homey.app.updateLog('Ignoring event type (' + this.name + ') ' + eventTopic + ': ' + dataName + ' = ' + dataValue);
-					}
-				}
+				await this.routeCamEvent(camEvent);
 			}
 			catch (err)
 			{
 				this.homey.app.updateLog('Camera Event Error (' + this.name + '): ' + err.message, 0);
+			}
+			finally
+			{
+				this.activeEventHandlers = Math.max(0, this.activeEventHandlers - 1);
 			}
 		}
 	}
@@ -1894,7 +1879,7 @@ class CameraDevice extends Homey.Device
 			{
 				this.homey.clearTimeout(this.eventTimerId);
 
-				console.log('onCapabilityMotionEnable: ', value);
+				this.homey.app.updateLog('onCapabilityMotionEnable (' + this.name + '): ' + value, 1);
 				this.setCapabilityValue('alarm_motion', false).catch(this.error);
 
 				if (value && this.hasMotion)
@@ -1911,7 +1896,7 @@ class CameraDevice extends Homey.Device
 					this.driver.motionEnabledTrigger
 						.trigger(this)
 						.catch(this.error)
-						.then(this.log('Triggered enable on'));
+						.then(() => this.log('Triggered enable on'));
 				}
 				else
 				{
@@ -1925,14 +1910,14 @@ class CameraDevice extends Homey.Device
 					}
 					catch (err)
 					{
-						this.homey.app.updateLog(this.getName() + ' onCapabilityOff Error (' + this.name + ') ' + err.mesage, 0);
+						this.homey.app.updateLog(this.getName() + ' onCapabilityOff Error (' + this.name + ') ' + err.message, 0);
 						return false;
 					}
 
 					this.driver.motionDisabledTrigger
 						.trigger(this)
 						.catch(this.error)
-						.then(this.log('Triggered enable off'));
+						.then(() => this.log('Triggered enable off'));
 				}
 
 				return true;
@@ -2029,14 +2014,20 @@ class CameraDevice extends Homey.Device
 			{
 				// Use ONVIF snapshot URL
 				const snapURL = await this.homey.app.getSnapshotURL(this.cam);
-				if (snapURL.uri.indexOf('http') < 0)
+				const uri = snapURL && typeof snapURL.uri === 'string' ? snapURL.uri : null;
+				if (!uri || uri.indexOf('http') < 0)
 				{
 					this.snapUri = null;
-					this.homey.app.updateLog('Invalid Snapshot URL, it must be http or https: ' + this.homey.app.varToString(snapURL.uri).replace(this.password, 'YOUR_PASSWORD'), 0);
+					this.logSnapshotIssue(
+						'invalid_snapshot_url',
+						uri ? ('Invalid Snapshot URL (' + this.getLogDeviceLabel() + '), it must be http or https: ' + this.homey.app.varToString(uri).replace(this.password, 'YOUR_PASSWORD')) : ('Invalid Snapshot URL (' + this.getLogDeviceLabel() + '): camera did not return a snapshot URI'),
+						0,
+						300000
+					);
 					return;
 				}
 
-				this.snapUri = snapURL.uri;
+				this.snapUri = uri;
 				this.invalidAfterConnect = snapURL.invalidAfterConnect;
 
 			}
@@ -2079,7 +2070,7 @@ class CameraDevice extends Homey.Device
 						let res = await this.doFetch('NOW');
 						if (!res.ok)
 						{
-							this.homey.app.updateLog('Fetch NOW error (' + this.name + '): ' + res.statusText, 0);
+							this.homey.app.updateLog('Fetch NOW error (' + this.getLogDeviceLabel() + '): ' + res.statusText, 0);
 							this.setWarning(res.statusText);
 							throw new Error(res.statusText);
 						}
@@ -2088,7 +2079,7 @@ class CameraDevice extends Homey.Device
 
 						stream.on('error', (err) =>
 						{
-							this.homey.app.updateLog('Fetch Now image error (' + this.name + '): ' + err.message, 0);
+							this.homey.app.updateLog('Fetch Now image error (' + this.getLogDeviceLabel() + '): ' + err.message, 0);
 						});
 						stream.on('finish', () =>
 						{
@@ -2103,7 +2094,7 @@ class CameraDevice extends Homey.Device
 			}
 			catch (err)
 			{
-				this.homey.app.updateLog('SnapShot nowImage error (' + this.name + ') = ' + err.message, 0);
+				this.homey.app.updateLog('SnapShot nowImage error (' + this.getLogDeviceLabel() + ') = ' + err.message, 0);
 			}
 
 			try
@@ -2132,7 +2123,7 @@ class CameraDevice extends Homey.Device
 					let res = await this.doFetch('Motion Event');
 					if (!res.ok)
 					{
-						this.homey.app.updateLog('Fetch MOTION error (' + this.name + '): ' + this.homey.app.varToString(res), 0);
+						this.homey.app.updateLog('Fetch MOTION error (' + this.getLogDeviceLabel() + '): ' + this.homey.app.varToString(res), 0);
 						this.updatingEventImage = false;
 						throw new Error(res.statusText);
 					}
@@ -2141,7 +2132,7 @@ class CameraDevice extends Homey.Device
 
 					storageStream.on('error', (err) =>
 					{
-						this.homey.app.updateLog('Fetch event image error (' + this.name + '): ' + err.message, true);
+						this.homey.app.updateLog('Fetch event image error (' + this.getLogDeviceLabel() + '): ' + err.message, true);
 						this.updatingEventImage = false;
 					});
 					storageStream.on('finish', () =>
@@ -2166,14 +2157,14 @@ class CameraDevice extends Homey.Device
 			}
 			catch (err)
 			{
-				this.homey.app.updateLog('Event SnapShot error (' + this.name + '): ' + err.message, 0);
+				this.homey.app.updateLog('Event SnapShot error (' + this.getLogDeviceLabel() + '): ' + err.message, 0);
 				this.updatingEventImage = false;
 			}
 		}
 		catch (err)
 		{
 			//this.homey.app.updateLog("SnapShot error: " + this.homey.app.varToString(err), true);
-			this.homey.app.updateLog('SnapShot error (' + this.name + '): ' + err.message, 0);
+			this.homey.app.updateLog('SnapShot error (' + this.getLogDeviceLabel() + '): ' + err.message, 0);
 		}
 	}
 
@@ -2199,7 +2190,7 @@ class CameraDevice extends Homey.Device
 				if (this.authType == 0)
 				{
 					this.homey.app.updateLog('Fetching (' + this.name + ') ' + name + ' image with no Auth from: ' + this.homey.app.varToString(this.snapUri).replace(this.password, 'YOUR_PASSWORD'), 1);
-					res = await fetch(this.snapUri, { agent: agent });
+					res = await fetch(this.snapUri, { agent: agent, timeout: 10000 });
 					this.homey.app.updateLog(`SnapShot fetch result (${this.name}): Status: ${res.ok}, Message: ${res.statusText}, Code: ${res.status}\r\n`, 1);
 					if (!res.ok)
 					{
@@ -2214,13 +2205,13 @@ class CameraDevice extends Homey.Device
 			}
 			catch (err)
 			{
-				this.homey.app.updateLog('SnapShot error (' + this.name + '): ' + err.message, 0);
+				this.logSnapshotFetchError(err, name);
 				// Try Basic Authentication
 				this.authType = 1;
 
 				res = {
 					'ok': false,
-					'statusText': err.code
+					'statusText': err.code || err.message || 'snapshot_fetch_failed'
 				};
 
 				if (startAuthType === this.authType)
@@ -2237,7 +2228,7 @@ class CameraDevice extends Homey.Device
 					this.homey.app.updateLog('Fetching (' + this.name + ') ' + name + ' image with Basic Auth. From: ' + this.homey.app.varToString(this.snapUri).replace(this.password, 'YOUR_PASSWORD'), 1);
 
 					const client = new DigestFetch(this.username, this.password, { basic: true, });
-					res = await client.fetch(this.snapUri, { agent: agent });
+					res = await client.fetch(this.snapUri, { agent: agent, timeout: 10000 });
 					this.homey.app.updateLog(`SnapShot fetch result (${this.name}): Status: ${res.ok}, Message: ${res.statusText}, Code: ${res.status}\r\n`, 1);
 					if (!res.ok)
 					{
@@ -2252,13 +2243,13 @@ class CameraDevice extends Homey.Device
 			}
 			catch (err)
 			{
-				this.homey.app.updateLog('SnapShot error (' + this.name + '): ' + err.message, 0);
+				this.logSnapshotFetchError(err, name);
 				// Try Digest Authentication
 				this.authType = 2;
 
 				res = {
 					'ok': false,
-					'statusText': err.code
+					'statusText': err.code || err.message || 'snapshot_fetch_failed'
 				};
 
 				if (startAuthType === this.authType)
@@ -2275,7 +2266,7 @@ class CameraDevice extends Homey.Device
 					this.homey.app.updateLog('Fetching (' + this.name + ') ' + name + ' image with Digest Auth. From: ' + this.homey.app.varToString(this.snapUri).replace(this.password, 'YOUR_PASSWORD'), 1);
 
 					const client = new DigestFetch(this.username, this.password, { algorithm: 'MD5' });
-					res = await client.fetch(this.snapUri, { agent: agent });
+					res = await client.fetch(this.snapUri, { agent: agent, timeout: 10000 });
 					this.homey.app.updateLog(`SnapShot fetch result (${this.name}): Status: ${res.ok}, Message: ${res.statusText}, Code: ${res.status}\r\n`, 1);
 					if (!res.ok)
 					{
@@ -2290,14 +2281,14 @@ class CameraDevice extends Homey.Device
 			}
 			catch (err)
 			{
-				this.homey.app.updateLog('SnapShot error (' + this.name + '): ' + err.message, 0);
+				this.logSnapshotFetchError(err, name);
 
 				// Go back to no Authentication
 				this.authType = 0;
 
 				res = {
 					'ok': false,
-					'statusText': err.code
+					'statusText': err.code || err.message || 'snapshot_fetch_failed'
 				};
 
 				if (startAuthType === this.authType)
@@ -2351,22 +2342,22 @@ class CameraDevice extends Homey.Device
 			if (this.eventImageFilename)
 			{
 				const eventImagePath = this.homey.app.getUserDataPath(this.eventImageFilename);
-				if (!fs.existsSync(eventImagePath))
+				if (fs.existsSync(eventImagePath))
 				{
 					fs.unlink(eventImagePath, (err) =>
 					{
-						if (!err)
+						if (err)
 						{
-							//console.log('successfully deleted: ', this.eventImageFilename);
+							this.homey.app.updateLog('Delete event image error (' + this.name + '): ' + err.message, 0);
 						}
 					});
 				}
 			}
-			console.log('Delete device');
+			this.homey.app.updateLog('Delete device (' + this.name + ')', 1);
 		}
 		catch (err)
 		{
-			console.log('Delete device error', err);
+			this.homey.app.updateLog('Delete device error (' + this.name + '): ' + err.message, 0);
 		}
 	}
 
@@ -2391,7 +2382,7 @@ class CameraDevice extends Homey.Device
 		const options = this.getCapabilityOptions('ptz_preset');
 		if (!options || !options.values || options.values.length === 0)
 		{
-			this.homey.app.updateLog(`No PTZ presets available for ${this.name}`, 0);
+			this.homey.app.updateLog(`No PTZ presets available for ${this.getLogDeviceLabel()}`, 0);
 			throw new Error('No PTZ presets available');
 		}
 		if (presetNumber < 1 || presetNumber > options.values.length)

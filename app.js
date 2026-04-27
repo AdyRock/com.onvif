@@ -17,8 +17,18 @@ const nodemailer = require('./lib/nodemailer');
 
 const http = require('http');
 const { promisify } = require('util');
+
+const PUSH_EVENT_WINDOW_MS = 5000;
+const MAX_PUSH_EVENTS_PER_WINDOW = 30;
+const PUSH_EVENT_WARNING_INTERVAL_MS = 30000;
+
 class MyApp extends Homey.App
 {
+    getConfiguredLogLevel()
+    {
+        const configuredLogLevel = Number(this.homey.settings.get('logLevel'));
+        return Number.isFinite(configuredLogLevel) ? configuredLogLevel : 1;
+    }
 
     async onInit()
     {
@@ -34,6 +44,7 @@ class MyApp extends Homey.App
 
         this.discoveredDevices = [];
         this.discoveryInitialised = false;
+        this.pushEventFloodState = new Map();
         //this.homey.settings.set('diagLog', "");
 
         this.homeyId = await this.homey.cloud.getHomeyId();
@@ -44,13 +55,13 @@ class MyApp extends Homey.App
 
         this.pushEvents = [];
 
-        this.logLevel = this.homey.settings.get('logLevel');
+        this.logLevel = this.getConfiguredLogLevel();
 
         this.homey.settings.on('set', (setting) =>
         {
             if (setting === 'logLevel')
             {
-                this.logLevel = this.homey.settings.get('logLevel');
+                this.logLevel = this.getConfiguredLogLevel();
             }
             if (setting == 'port')
             {
@@ -186,7 +197,7 @@ class MyApp extends Homey.App
                 args.device.driver.snapshotReadyTrigger
                     .trigger(args.device, tokens)
                     .catch(args.device.error)
-                    .then(args.device.log('Now Snapshot ready (' + args.device.id + ')'));
+					.then(() => args.device.log('Now Snapshot ready (' + args.device.id + ')'));
             }
             return err;
         });
@@ -354,6 +365,10 @@ class MyApp extends Homey.App
                         body = '';
                         response.writeHead(200);
                         response.end('ok');
+                        if (this.shouldDropPushEvent(eventIP))
+                        {
+                            return;
+                        }
                         if (this.logLevel >= 3)
                         {
                             this.updateLog('Push event: ' + soapMsg, 3);
@@ -405,6 +420,49 @@ class MyApp extends Homey.App
         {
             this.log(err);
         }
+    }
+
+    shouldDropPushEvent(eventIP)
+    {
+        const now = Date.now();
+        const key = eventIP || 'unknown';
+        let state = this.pushEventFloodState.get(key);
+
+        if (!state || ((now - state.windowStartedAt) >= PUSH_EVENT_WINDOW_MS))
+        {
+            if (state && (state.droppedCount > 0))
+            {
+                this.updateLog('Push event flood protection recovered (' + key + '): dropped ' + state.droppedCount + ' push events in the previous window', 0);
+            }
+
+            state = {
+                windowStartedAt: now,
+                count: 0,
+                droppedCount: 0,
+                lastWarningAt: state ? state.lastWarningAt : 0
+            };
+        }
+
+        state.count += 1;
+        this.pushEventFloodState.set(key, state);
+
+        if (state.count <= MAX_PUSH_EVENTS_PER_WINDOW)
+        {
+            return false;
+        }
+
+        const windowElapsedMs = Math.max(1, now - state.windowStartedAt);
+        const eventsPerSecond = (state.count * 1000) / windowElapsedMs;
+
+        if (!state.lastWarningAt || ((now - state.lastWarningAt) >= PUSH_EVENT_WARNING_INTERVAL_MS))
+        {
+            state.lastWarningAt = now;
+            this.updateLog('Push event flood protection active (' + key + '): dropping excess push events (' + state.count + ' events in ' + windowElapsedMs + ' ms, burst rate ' + eventsPerSecond.toFixed(1) + ' events/s)', 0);
+        }
+
+        state.droppedCount += 1;
+
+        return true;
     }
 
     async discoverCameras()

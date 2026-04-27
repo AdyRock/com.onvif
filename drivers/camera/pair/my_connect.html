@@ -1,26 +1,33 @@
-</br>
-<p data-i18n="pair.manual_add.intro" style="text-align:center;"></p>
+<style>
+    .pair-intro { text-align: center; }
+    .pair-form { text-align: left; }
+    .pair-submit { margin: 15px; padding: 10px; text-align: center; color: white; background-color: DodgerBlue; border-radius: 10px; }
+    .pair-status { resize: none; width: 100%; box-sizing: border-box; white-space: pre-wrap; word-break: break-word; border: none; outline: none; }
+</style>
 
-<form id="form" name="form" onsubmit="return getForm()" action="javascript:void(0);" method="post" style="text-align:left;">
+</br>
+<p class="pair-intro" data-i18n="pair.manual_add.intro"></p>
+
+<form id="form" name="form" class="pair-form" onsubmit="return getForm()" action="javascript:void(0);" method="post">
     <div class="form-group">
         <label class="homey-form-label" for="username" data-i18n="pair.manual_add.username"></label>
-        <input class="homey-form-input" type="text" name="username" id="username" />
+        <input class="homey-form-input" type="text" name="username" id="username" title="Username" />
         <label class="homey-form-label" for="password" data-i18n="pair.manual_add.password"></label>
-        <input class="homey-form-input" type="password" name="password" id="password" />
+        <input class="homey-form-input" type="password" name="password" id="password" title="Password" />
         <label class="homey-form-label" for="ip_address" data-i18n="pair.manual_add.ip_address"></label>
-        <input class="homey-form-input" type="text" name="ip_address" id="ip_address" />
+        <input class="homey-form-input" type="text" name="ip_address" id="ip_address" title="IP Address" />
         <label class="homey-form-label" for="port" data-i18n="pair.manual_add.port"></label>
-        <input class="homey-form-input" type="text" name="port" id="port" />
+        <input class="homey-form-input" type="text" name="port" id="port" title="Port" />
 		<label class="homey-form-checkbox">
-			<input class="homey-form-checkbox-input" id="addPortToID" type="checkbox" value="addPort" />
+			<input class="homey-form-checkbox-input" id="addPortToID" type="checkbox" value="addPort" title="Add port to device ID" />
 			<span class="homey-form-checkbox-checkmark"></span>
 			<span class="homey-form-checkbox-text"><span data-i18n="pair.manual_add.add_port"></span></span>
 		</label>
 
-		<input class="homey-form-input" type="submit" id="submit" value="Login" style="margin: 15px; padding: 10px; text-align:center; color: white; background-color: DodgerBlue;border-radius: 10px" />
+		<input class="homey-form-input pair-submit" type="submit" id="submit" value="Login" />
         </br>
         </br>
-        <input class="homey-form-input" type="text" id="status" readonly />
+        <textarea class="homey-form-input pair-status" id="status" readonly rows="5" title="Status"></textarea>
     </div>
 </form>
 

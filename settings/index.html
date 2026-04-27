@@ -1,7 +1,10 @@
 <!doctype html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ONVIF Settings</title>
     <link rel="stylesheet" type="text/css" href="lwsa.css">
     <link rel="stylesheet" type="text/css" href="busy_indicator.css" />
 
@@ -20,6 +23,13 @@
         #busybox.show {
             display: block;
         }
+
+        #saveButton {
+            display: block;
+            background-color: #0f9e16;
+            color: white;
+            margin: 15px 20px 5px 5px;
+        }
     </style>
 
     <!-- The '/homey.js' script must be included in your settings view to work -->
@@ -35,8 +45,8 @@
 
     <!-- Tab links -->
     <div class="tab">
-        <button class="tablinks" onclick="setPage(event, 'settings')" id="defaultOpen"><span data-i18n="settings.settings"></span></button>
-        <button class="tablinks" onclick="setPage(event, 'log')"><span data-i18n="settings.diagnosticsLog"></span></button>
+        <button class="tablinks" onclick="setPage(event, 'settings')" id="defaultOpen" title="Settings"><span data-i18n="settings.settings"></span></button>
+        <button class="tablinks" onclick="setPage(event, 'log')" title="Diagnostics Log"><span data-i18n="settings.diagnosticsLog"></span></button>
     </div>
 
     <!-- SETTINGS PAGE -->
@@ -45,10 +55,10 @@
             <h1 data-i18n="settings.title"></h1>
             <div class="field row">
                 <label class="homey-form-label" for="port" data-i18n="settings.port"></label>
-                <input class="homey-form-input" id="port" type="text" value="" />
+                <input class="homey-form-input" id="port" type="text" value="" title="Port" />
             </div>
             <div class="field row">
-                <button class="homey-button-secondary-shadow" id="saveButton" class="left" style="display:block;background-color:#0f9e16;color:white;margin:15px 20px 5px 5px;" data-i18n="settings.save"></button>
+                <button class="homey-button-secondary-shadow" id="saveButton" title="Save settings" data-i18n="settings.save"></button>
             </div>
         </fieldset>
     </div>
@@ -57,7 +67,7 @@
     <div id="log" class="tabcontent">
         <div class="field row">
             <label class="homey-form-label" for="logLevel"><span data-i18n="settings.logLevel"></span></label>
-            <select  class="homey-form-select" id="logLevel">
+            <select class="homey-form-select" id="logLevel" title="Log Level">
                 <option value=0>Errors Only</option>
                 <option value=1>Basic Information</option>
                 <option value=2>Detailed Information</option>
@@ -66,12 +76,12 @@
         </div>
         <div class="field row">
             <label class="homey-form-label"  for="email"><span data-i18n="settings.email"></span></label>
-            <input class="homey-form-input" id="email" type="text" value="" />
+            <input class="homey-form-input" id="email" type="text" value="" title="Email address" />
             <P></P>
         </div>
-        <p><button class="homey-button-secondary-shadow" id="clearLog"><span data-i18n="settings.ClearLog"></span></button> <button class="homey-button-secondary-shadow" id="sendLog"><span data-i18n="settings.SendLog"></span></button></p>
+        <p><button class="homey-button-secondary-shadow" id="clearLog" title="Clear log"><span data-i18n="settings.ClearLog"></span></button> <button class="homey-button-secondary-shadow" id="sendLog" title="Send log"><span data-i18n="settings.SendLog"></span></button></p>
         <div class="field row">
-            <textarea id="diagLog"></textarea>
+            <textarea id="diagLog" title="Diagnostics log"></textarea>
         </div>
     </div>
 
@@ -103,12 +113,6 @@
                 {
                     if (err) return Homey.alert(err);
                     portElement.value = port;
-                });
-
-                Homey.get('logLevel', function(err, logLevel)
-                {
-                    if (err) return Homey.alert(err);
-                    logLevelElement.value = logLevel;
                 });
 
                 Homey.get('diagLog', function(err, diagLog)
@@ -209,7 +213,7 @@
                 Homey.get('logLevel', function(err, logLevel)
                 {
                     if (err) return Homey.alert(err);
-                    logLevelElement.value = logLevel;
+                    logLevelElement.value = String(logLevel);
                 });
 
                 Homey.get('diagLog', function(err, diagLog)
