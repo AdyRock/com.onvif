@@ -353,11 +353,14 @@ class MyApp extends Homey.App
                 if (contentType.startsWith('application/soap+xml'))
                 {
                     let body = '';
+                    let tooLarge = false;
                     request.on('data', chunk =>
                     {
+                        if (tooLarge) return;
                         body += chunk.toString(); // convert Buffer to string
                         if (body.length > 50000)
                         {
+                            tooLarge = true;
                             this.updateLog('Push data error: Payload too large', 0);
                             response.writeHead(413);
                             response.end('Payload Too Large');
@@ -367,6 +370,7 @@ class MyApp extends Homey.App
                     });
                     request.on('end', () =>
                     {
+                        if (tooLarge) return;
                         let soapMsg = body;
                         body = '';
                         response.writeHead(200);

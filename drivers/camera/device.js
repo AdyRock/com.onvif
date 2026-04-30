@@ -1018,14 +1018,14 @@ class CameraDevice extends Homey.Device
 				{
 					await this.setSettings(
 						{
-							'manufacturer': info.manufacturer,
-							'model': info.model,
-							'serialNumber': info.serialNumber.toString(),
-							'firmwareVersion': info.firmwareVersion.toString(),
+							'manufacturer': String(info.manufacturer || ''),
+							'model': String(info.model || ''),
+							'serialNumber': String(info.serialNumber || ''),
+							'firmwareVersion': String(info.firmwareVersion || ''),
 							'hasMotion': this.hasMotion,
 							'notificationMethods': notificationMethods,
 							'notificationTypes': supportedEvents.toString(),
-							'hasSnapshot': this.snapshotSupported,
+							'hasSnapshot': Boolean(this.snapshotSupported),
 						});
 				}
 				catch (err)
