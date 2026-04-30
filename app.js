@@ -19,8 +19,10 @@ const http = require('http');
 const { promisify } = require('util');
 
 const PUSH_EVENT_WINDOW_MS = 5000;
-const MAX_PUSH_EVENTS_PER_WINDOW = 30;
+const MAX_PUSH_EVENTS_PER_WINDOW = 100;
 const PUSH_EVENT_WARNING_INTERVAL_MS = 30000;
+const PUSH_EVENT_RATE_LOG_INTERVAL_MS = 10000;
+const PUSH_EVENT_RATE_HISTORY_MAX = 10;
 
 class MyApp extends Homey.App
 {
@@ -45,6 +47,8 @@ class MyApp extends Homey.App
         this.discoveredDevices = [];
         this.discoveryInitialised = false;
         this.pushEventFloodState = new Map();
+        this.pushEventRateCounter = 0;
+        this.pushEventRateInterval = null;
         //this.homey.settings.set('diagLog', "");
 
         this.homeyId = await this.homey.cloud.getHomeyId();
@@ -56,6 +60,7 @@ class MyApp extends Homey.App
         this.pushEvents = [];
 
         this.logLevel = this.getConfiguredLogLevel();
+        this.startPushEventRateLogging();
 
         this.homey.settings.on('set', (setting) =>
         {
@@ -91,6 +96,7 @@ class MyApp extends Homey.App
 
         this.homey.on('unload', () =>
         {
+            this.stopPushEventRateLogging();
             if (this.server)
             {
                 this.server.close();
@@ -365,6 +371,7 @@ class MyApp extends Homey.App
                         body = '';
                         response.writeHead(200);
                         response.end('ok');
+                        this.pushEventRateCounter += 1;
                         if (this.shouldDropPushEvent(eventIP))
                         {
                             return;
@@ -465,6 +472,57 @@ class MyApp extends Homey.App
         return true;
     }
 
+    startPushEventRateLogging()
+    {
+        this.stopPushEventRateLogging();
+        this.pushEventRateCounter = 0;
+
+        this.pushEventRateInterval = this.homey.setInterval(() =>
+        {
+            const eventsInWindow = this.pushEventRateCounter;
+            this.pushEventRateCounter = 0;
+
+            if (eventsInWindow <= 0)
+            {
+                return;
+            }
+
+            const eventsPerSecond = eventsInWindow / (PUSH_EVENT_RATE_LOG_INTERVAL_MS / 1000);
+            this.publishPushEventRateStats(eventsInWindow, eventsPerSecond);
+
+            this.updateLog('Push event rate: ' + eventsPerSecond.toFixed(2) + ' events/s over last 10s (' + eventsInWindow + ' events)', 1);
+        }, PUSH_EVENT_RATE_LOG_INTERVAL_MS);
+    }
+
+    publishPushEventRateStats(eventsInWindow, eventsPerSecond)
+    {
+        const sample = {
+            timestamp: Date.now(),
+            eventsInWindow: eventsInWindow,
+            eventsPerSecond: Number(eventsPerSecond.toFixed(2)),
+        };
+
+        this.homey.settings.set('pushEventRateLast', sample);
+
+        const history = this.homey.settings.get('pushEventRateHistory');
+        const nextHistory = Array.isArray(history) ? history : [];
+        nextHistory.push(sample);
+        if (nextHistory.length > PUSH_EVENT_RATE_HISTORY_MAX)
+        {
+            nextHistory.splice(0, nextHistory.length - PUSH_EVENT_RATE_HISTORY_MAX);
+        }
+        this.homey.settings.set('pushEventRateHistory', nextHistory);
+    }
+
+    stopPushEventRateLogging()
+    {
+        if (this.pushEventRateInterval)
+        {
+            clearInterval(this.pushEventRateInterval);
+            this.pushEventRateInterval = null;
+        }
+    }
+
     async discoverCameras()
     {
         this.discoveredDevices = [];
@@ -556,29 +614,49 @@ class MyApp extends Homey.App
         this.updateLog('--------------------------');
         this.updateLog('Connect to Camera ' + hostname + ':' + port + ' - ' + username);
 
+        const parsedPort = Number.parseInt(port, 10);
+        const configuredPort = Number.isFinite(parsedPort) && (parsedPort > 0) ? parsedPort : 80;
+
+        const createStageError = (stage, err, attempt) =>
+        {
+            const protocol = attempt.useSecure ? 'https' : 'http';
+            const errorCode = err?.code || 'NO_CODE';
+            const errorMessage = err?.message || this.varToString(err);
+            const wrappedError = new Error(stage + ' failed (' + hostname + ':' + attempt.port + ', ' + protocol + ') [' + errorCode + ']: ' + errorMessage);
+            wrappedError.code = err?.code;
+            wrappedError.stage = stage;
+            wrappedError.useSecure = attempt.useSecure;
+            wrappedError.port = attempt.port;
+            return wrappedError;
+        };
+
+        const attempt = { port: configuredPort, useSecure: false };
+        const protocol = attempt.useSecure ? 'https' : 'http';
+
         const camObj = new Cam(
             {
                 homeyApp: this.homey,
                 hostname: hostname,
                 username: username,
                 password: password,
-                port: parseInt(port),
+                port: attempt.port,
                 timeout: 15000,
                 autoconnect: false,
+                useSecure: attempt.useSecure,
+                secureOpts: attempt.useSecure ? { rejectUnauthorized: false } : undefined,
             });
 
         // Attach an error handler immediately so low-level connection failures
         // (for example ECONNREFUSED) never become unhandled EventEmitter errors.
         camObj.on('error', (err, xml) =>
         {
-            this.updateLog('Camera socket error (' + hostname + ':' + port + '): ' + this.varToString(err), 0);
+            const errorCode = err?.code || 'NO_CODE';
+            this.updateLog('Camera socket error (' + hostname + ':' + attempt.port + ', ' + protocol + ') [' + errorCode + ']: ' + this.varToString(err), 0);
             if (xml)
             {
                 this.updateLog('Camera socket error xml: ' + this.varToString(xml), 3);
             }
         });
-
-        // Use Promisify that was added to Node v8
 
         const promiseGetSystemDateAndTime = promisify(camObj.getSystemDateAndTime).bind(camObj);
         const promiseGetServices = promisify(camObj.getServices).bind(camObj);
@@ -589,49 +667,73 @@ class MyApp extends Homey.App
 
         // Use Promisify to convert ONVIF Library calls into Promises.
         // Date & Time must work before anything else
-        await promiseGetSystemDateAndTime();
-
-        // Services can live without
-        let gotServices = null;
         try
         {
-            gotServices = await promiseGetServices();
+            await promiseGetSystemDateAndTime();
         }
         catch (err)
         {
-            this.updateLog('Error getting services: ' + err.message, 0);
+            const stagedError = createStageError('getSystemDateAndTime', err, attempt);
+            this.updateLog('Connect stage error: ' + stagedError.message, 0);
+            throw stagedError;
+        }
+
+        // Services can live without
+        try
+        {
+            await promiseGetServices();
+        }
+        catch (err)
+        {
+            this.updateLog('Error getting services [' + (err?.code || 'NO_CODE') + ']: ' + err.message, 0);
         }
 
         // Must have capabilities
-        let gotCapabilities = await promiseGetCapabilities();
-
-        // Must have device information
-        let gotInfo = await promiseGetDeviceInformation();
-
-        // Profiles are optional
-        let gotProfiles = [];
-        let gotActiveSources = [];
         try
         {
-            gotProfiles = await promiseGetProfiles();
+            await promiseGetCapabilities();
         }
         catch (err)
         {
-            this.updateLog('Error getting profiles: ' + err.message, 0);
+            const stagedError = createStageError('getCapabilities', err, attempt);
+            this.updateLog('Connect stage error: ' + stagedError.message, 0);
+            throw stagedError;
+        }
+
+        // Must have device information
+        try
+        {
+            await promiseGetDeviceInformation();
+        }
+        catch (err)
+        {
+            const stagedError = createStageError('getDeviceInformation', err, attempt);
+            this.updateLog('Connect stage error: ' + stagedError.message, 0);
+            throw stagedError;
+        }
+
+        // Profiles are optional
+        try
+        {
+            await promiseGetProfiles();
+        }
+        catch (err)
+        {
+            this.updateLog('Error getting profiles [' + (err?.code || 'NO_CODE') + ']: ' + err.message, 0);
         }
 
         // Video sources are optional
         try
         {
             await promiseGetVideoSources();
-            gotActiveSources = camObj.getActiveSources();
+            camObj.getActiveSources();
         }
         catch (err)
         {
-            this.updateLog('Error getting video sources: ' + err.message, 0);
+            this.updateLog('Error getting video sources [' + (err?.code || 'NO_CODE') + ']: ' + err.message, 0);
         }
 
-        return (camObj);
+        return camObj;
     }
 
     async checkCameras()

@@ -62,6 +62,7 @@ class CameraDevice extends Homey.Device
 		this.snapshotSupported = true;
 		this.eventMinTimeId = null;
 		this.checkTimerId = null;
+		this.connectCooldownUntil = 0;
 		this.eventTimerId = null;
 		this.video = null;
 		this.activeEventHandlers = 0;
@@ -1157,9 +1158,18 @@ class CameraDevice extends Homey.Device
 			{
 				if (!this.repairing)
 				{
-					this.homey.app.updateLog('Connect to camera error (' + this.name + '): ' + err.message, 0);
+					const stageSuffix = err?.stage ? (' @ ' + err.stage) : '';
+					const codeSuffix = err?.code ? (' [' + err.code + ']') : '';
+					this.homey.app.updateLog('Connect to camera error (' + this.name + ')' + stageSuffix + codeSuffix + ': ' + (err?.message || this.homey.app.varToString(err)), 0);
 					this.setUnavailable(err).catch(this.err);
+
+					if (err?.stage === 'getSystemDateAndTime' && err?.code === 'ECONNRESET')
+					{
+						this.connectCooldownUntil = Date.now() + 60000;
+						this.homey.app.updateLog('Connect to camera (' + this.name + '): ECONNRESET - pausing reconnect for 60s', 1);
+					}
 				}
+
 				this.clearTimers();
 
 				// this.setCapabilityValue('alarm_tamper', false).catch(this.error);
@@ -1179,6 +1189,11 @@ class CameraDevice extends Homey.Device
 
 		if (!this.cam)
 		{
+			if (this.connectCooldownUntil && Date.now() < this.connectCooldownUntil)
+			{
+				return;
+			}
+			this.connectCooldownUntil = 0;
 			return this.connectCamera(false);
 		}
 

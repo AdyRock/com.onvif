@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ONVIF Settings</title>
+    <title></title>
     <link rel="stylesheet" type="text/css" href="lwsa.css">
     <link rel="stylesheet" type="text/css" href="busy_indicator.css" />
 
@@ -30,6 +30,35 @@
             color: white;
             margin: 15px 20px 5px 5px;
         }
+
+        .stats-card {
+            border: 1px solid #d5d5d5;
+            border-radius: 6px;
+            background: #f7f9fc;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .stats-title {
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        #statsLastRate {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        #statsList {
+            max-height: 320px;
+            overflow-y: auto;
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        #statsList li {
+            margin: 4px 0;
+        }
     </style>
 
     <!-- The '/homey.js' script must be included in your settings view to work -->
@@ -45,8 +74,9 @@
 
     <!-- Tab links -->
     <div class="tab">
-        <button class="tablinks" onclick="setPage(event, 'settings')" id="defaultOpen" title="Settings"><span data-i18n="settings.settings"></span></button>
-        <button class="tablinks" onclick="setPage(event, 'log')" title="Diagnostics Log"><span data-i18n="settings.diagnosticsLog"></span></button>
+        <button class="tablinks" onclick="setPage(event, 'settings')" id="defaultOpen"><span data-i18n="settings.settings"></span></button>
+        <button class="tablinks" onclick="setPage(event, 'log')"><span data-i18n="settings.diagnosticsLog"></span></button>
+        <button class="tablinks" onclick="setPage(event, 'statistics')"><span data-i18n="settings.statistics"></span></button>
     </div>
 
     <!-- SETTINGS PAGE -->
@@ -55,10 +85,10 @@
             <h1 data-i18n="settings.title"></h1>
             <div class="field row">
                 <label class="homey-form-label" for="port" data-i18n="settings.port"></label>
-                <input class="homey-form-input" id="port" type="text" value="" title="Port" />
+                <input class="homey-form-input" id="port" type="text" value="" />
             </div>
             <div class="field row">
-                <button class="homey-button-secondary-shadow" id="saveButton" title="Save settings" data-i18n="settings.save"></button>
+                <button class="homey-button-secondary-shadow" id="saveButton" data-i18n="settings.save"></button>
             </div>
         </fieldset>
     </div>
@@ -67,21 +97,33 @@
     <div id="log" class="tabcontent">
         <div class="field row">
             <label class="homey-form-label" for="logLevel"><span data-i18n="settings.logLevel"></span></label>
-            <select class="homey-form-select" id="logLevel" title="Log Level">
-                <option value=0>Errors Only</option>
-                <option value=1>Basic Information</option>
-                <option value=2>Detailed Information</option>
-                <option value=3>Full Information</option>
+            <select class="homey-form-select" id="logLevel">
+                <option value=0 data-i18n="settings.logLevelErrorsOnly"></option>
+                <option value=1 data-i18n="settings.logLevelBasic"></option>
+                <option value=2 data-i18n="settings.logLevelDetailed"></option>
+                <option value=3 data-i18n="settings.logLevelFull"></option>
             </select>
         </div>
         <div class="field row">
             <label class="homey-form-label"  for="email"><span data-i18n="settings.email"></span></label>
-            <input class="homey-form-input" id="email" type="text" value="" title="Email address" />
+            <input class="homey-form-input" id="email" type="text" value="" />
             <P></P>
         </div>
-        <p><button class="homey-button-secondary-shadow" id="clearLog" title="Clear log"><span data-i18n="settings.ClearLog"></span></button> <button class="homey-button-secondary-shadow" id="sendLog" title="Send log"><span data-i18n="settings.SendLog"></span></button></p>
+        <p><button class="homey-button-secondary-shadow" id="clearLog"><span data-i18n="settings.ClearLog"></span></button> <button class="homey-button-secondary-shadow" id="sendLog"><span data-i18n="settings.SendLog"></span></button></p>
         <div class="field row">
-            <textarea id="diagLog" title="Diagnostics log"></textarea>
+            <textarea id="diagLog"></textarea>
+        </div>
+    </div>
+
+    <!-- STATISTICS PAGE -->
+    <div id="statistics" class="tabcontent">
+        <div class="stats-card">
+            <div class="stats-title" data-i18n="settings.statsLastRateTitle"></div>
+            <div id="statsLastRate" data-i18n="settings.statsNoDataYet"></div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-title" data-i18n="settings.statsRateUpdatesTitle"></div>
+            <ol id="statsList"></ol>
         </div>
     </div>
 
@@ -98,12 +140,95 @@
         var clearLogElement = document.getElementById('clearLog');
         var sendLogElement = document.getElementById('sendLog');
         var emailElement = document.getElementById('email');
+        var statsLastRateElement = document.getElementById('statsLastRate');
+        var statsListElement = document.getElementById('statsList');
+        var i18nText =
+        {
+            statsNoDataYet: '',
+            statsNoUpdatesYet: '',
+            statsRateUnit: '',
+            statsEventsLabel: '',
+            statsAtLabel: '',
+            saveSuccess: '',
+            sendLogConfirm: '',
+            sendLogSuccess: '',
+        };
+
+        function initLocalizedText(Homey)
+        {
+            i18nText.statsNoDataYet = Homey.__('settings.statsNoDataYet');
+            i18nText.statsNoUpdatesYet = Homey.__('settings.statsNoUpdatesYet');
+            i18nText.statsRateUnit = Homey.__('settings.statsRateUnit');
+            i18nText.statsEventsLabel = Homey.__('settings.statsEventsLabel');
+            i18nText.statsAtLabel = Homey.__('settings.statsAtLabel');
+            i18nText.saveSuccess = Homey.__('settings.saveSuccess');
+            i18nText.sendLogConfirm = Homey.__('settings.sendLogConfirm');
+            i18nText.sendLogSuccess = Homey.__('settings.sendLogSuccess');
+        }
+
+        function formatRateSample(sample)
+        {
+            if (!sample || typeof sample !== 'object')
+            {
+                return i18nText.statsNoDataYet;
+            }
+
+            var eps = Number(sample.eventsPerSecond);
+            var events = Number(sample.eventsInWindow);
+            var stamp = Number(sample.timestamp);
+            var dateText = Number.isFinite(stamp) ? new Date(stamp).toLocaleTimeString() : '-';
+            var epsText = Number.isFinite(eps) ? eps.toFixed(2) : '0.00';
+            var eventsText = Number.isFinite(events) ? String(events) : '0';
+
+            return epsText + ' ' + i18nText.statsRateUnit + ' (' + eventsText + ' ' + i18nText.statsEventsLabel + ') ' + i18nText.statsAtLabel + ' ' + dateText;
+        }
+
+        function renderRateStats(lastSample, history)
+        {
+            statsLastRateElement.textContent = formatRateSample(lastSample);
+
+            statsListElement.innerHTML = '';
+            if (!Array.isArray(history) || history.length === 0)
+            {
+                var emptyItem = document.createElement('li');
+                emptyItem.textContent = i18nText.statsNoUpdatesYet;
+                statsListElement.appendChild(emptyItem);
+                return;
+            }
+
+            var maxItems = 10;
+            var startIndex = history.length - 1;
+            var endIndex = Math.max(history.length - maxItems, 0);
+
+            for (var i = startIndex; i >= endIndex; i--)
+            {
+                var item = document.createElement('li');
+                item.textContent = formatRateSample(history[i]);
+                statsListElement.appendChild(item);
+            }
+        }
+
+        function refreshRateStats(Homey)
+        {
+            Homey.get('pushEventRateLast', function(err, lastSample)
+            {
+                if (err) return Homey.alert(err);
+
+                Homey.get('pushEventRateHistory', function(err2, history)
+                {
+                    if (err2) return Homey.alert(err2);
+                    renderRateStats(lastSample, history);
+                });
+            });
+        }
 
         // a method named 'onHomeyReady' must be present in your code
         function onHomeyReady(Homey)
         {
             // Tell Homey we're ready to be displayed
             Homey.ready();
+            initLocalizedText(Homey);
+            document.title = Homey.__('settings.pageTitle');
 
             document.getElementById("defaultOpen").click();
 
@@ -120,6 +245,8 @@
                     if (err) return Homey.alert(err);
                     diagLogElement.value = diagLog;
                 });
+
+                refreshRateStats(Homey);
             });
 
             saveButtonElement.addEventListener('click', function()
@@ -134,7 +261,7 @@
                             }
                             else
                             {
-                                Homey.alert("Saved successfully");
+                                Homey.alert(i18nText.saveSuccess);
                             }
                     }
                 });
@@ -159,7 +286,7 @@
 
             sendLogElement.addEventListener('click', function(e)
             {
-                Homey.confirm("Send the log contents to the developer?", null, function(e, ok)
+                Homey.confirm(i18nText.sendLogConfirm, null, function(e, ok)
                 {
                     if (ok)
                     {
@@ -176,7 +303,7 @@
                             }
                             else
                             {
-                                Homey.alert("Log sent successfully");
+                                Homey.alert(i18nText.sendLogSuccess);
                             }
                             waitCursor(false);
                         });
@@ -234,6 +361,10 @@
                     if (err) return Homey.alert(err);
                     portElement.value = port;
                 });
+            }
+            else if (tabPage == 'statistics')
+            {
+                refreshRateStats(Homey);
             }
         }
 
