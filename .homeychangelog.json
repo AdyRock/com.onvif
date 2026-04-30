@@ -451,5 +451,8 @@
 	},
 	"2.0.63": {
 		"en": "Major update with significant error checking improvements."
+	},
+	"2.0.64": {
+		"en": "Added a localized Statistics tab with push event rate history; limited history to 10 items (FILO) and improved reconnect behavior by pausing retries for 60s after ECONNRESET during getSystemDateAndTime."
 	}
 }
