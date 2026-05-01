@@ -454,5 +454,8 @@
 	},
 	"2.0.64": {
 		"en": "Added a localized Statistics tab with push event rate history; limited history to 10 items (FILO) and improved reconnect behavior by pausing retries for 60s after ECONNRESET during getSystemDateAndTime."
+	},
+	"2.0.65": {
+		"en": "Improved settings assignment with type coercion for manufacturer, model, serialNumber, and firmwareVersion to handle cameras that return non-string values."
 	}
 }
