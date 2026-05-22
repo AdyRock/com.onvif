@@ -106,7 +106,7 @@ class CameraDriver extends Homey.Driver
 						let token = '';
 						if (source.$)
 						{
-							token = source.$.token;
+							token = String(source.$.token);
 						}
 						let channelSuf = ' (Ch' + (devices.length + 1) + ')';
 						this.homey.app.updateLog('list_devices2: Adding source ' + this.lastURN + channelSuf + ' to list', 1);

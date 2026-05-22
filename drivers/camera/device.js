@@ -95,11 +95,11 @@ class CameraDevice extends Homey.Device
 				});
 		}
 
-		if (typeof settings.token === 'undefined')
+		if (typeof settings.token !== 'string')
 		{
 			await this.setSettings(
 				{
-					'token': ''
+					'token': settings.token !== undefined && settings.token !== null ? String(settings.token) : ''
 				});
 		}
 
@@ -1086,7 +1086,14 @@ class CameraDevice extends Homey.Device
 				if (streamResult.status === 'fulfilled')
 				{
 					this.liveUri = `${streamResult.value.uri}`;
-					this.setSettings({ urlLive: this.liveUri });
+					try
+					{
+						await this.setSettings({ urlLive: this.liveUri });
+					}
+					catch (err)
+					{
+						this.homey.app.updateLog('Set stream URL setting error (' + this.name + '): ' + (err?.message || err), 0);
+					}
 				}
 				else
 				{
@@ -1240,7 +1247,7 @@ class CameraDevice extends Homey.Device
 				{
 					this.setCapabilityValue('alarm_tamper', true).catch(this.error);
 					this.alarmTime = new Date(Date.now());
-					this.setStoreValue('alarmTime', this.alarmTime);
+					try { await this.setStoreValue('alarmTime', this.alarmTime); } catch (err) { this.homey.app.updateLog('setStoreValue alarmTime error: ' + (err?.message || err), 0); }
 					this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, this.getSettings(), false)).catch(this.error);
 				}
 
@@ -1401,7 +1408,7 @@ class CameraDevice extends Homey.Device
 			}, delay * 1000 + 20000);
 
 			this.eventTime = new Date(Date.now());
-			this.setStoreValue('eventTime', this.eventTime);
+			try { await this.setStoreValue('eventTime', this.eventTime); } catch (err) { this.homey.app.updateLog('setStoreValue eventTime error: ' + (err?.message || err), 0); }
 			this.setCapabilityValue('event_time', this.convertDate(this.eventTime, settings, false)).catch(this.error);
 			if (this.snapshotSupported)
 			{
@@ -1543,7 +1550,7 @@ class CameraDevice extends Homey.Device
 			if (dataValue)
 			{
 				this.alarmTime = new Date(Date.now());
-				this.setStoreValue('alarmTime', this.alarmTime).catch(this.err);
+				try { await this.setStoreValue('alarmTime', this.alarmTime); } catch (err) { this.homey.app.updateLog('setStoreValue alarmTime error: ' + (err?.message || err), 0); }
 				this.setCapabilityValue('tamper_time', this.convertDate(this.alarmTime, this.getSettings(), false)).catch(this.error);
 			}
 		}

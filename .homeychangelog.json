@@ -457,5 +457,8 @@
 	},
 	"2.0.65": {
 		"en": "Improved settings assignment with type coercion for manufacturer, model, serialNumber, and firmwareVersion to handle cameras that return non-string values."
+	},
+	"2.0.66": {
+		"en": "Fixed unhandled rejections: wrapped setSettings and setStoreValue calls in try/catch to handle device-not-found errors gracefully. Fixed invalid setting type error for the token setting caused by the ONVIF library converting numeric token values to numbers; token is now always stored and migrated as a string."
 	}
 }
