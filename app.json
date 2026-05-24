@@ -69,6 +69,14 @@
     "sendLog": {
       "method": "post",
       "path": "/sendLog/"
+    },
+    "getRateStats": {
+      "method": "get",
+      "path": "/getRateStats/"
+    },
+    "clearPeakRate": {
+      "method": "post",
+      "path": "/clearPeakRate/"
     }
   },
   "flow": {

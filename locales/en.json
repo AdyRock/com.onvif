@@ -22,6 +22,10 @@
         "statsRateUnit": "events/s",
         "statsEventsLabel": "events",
         "statsAtLabel": "at",
+        "statsPeakRateTitle": "Peak Push Event Rate (since startup)",
+        "statsPeakRateNone": "No peak recorded yet",
+        "statsPeakRateCamera": "{camera} — {eps} {unit} {at} {time}",
+        "statsClearPeak": "Reset Peak",
         "saveSuccess": "Saved successfully",
         "sendLogConfirm": "Send the log contents to the developer?",
         "sendLogSuccess": "Log sent successfully"

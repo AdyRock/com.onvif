@@ -22,6 +22,10 @@
         "statsRateUnit": "eventi/s",
         "statsEventsLabel": "eventi",
         "statsAtLabel": "alle",
+        "statsPeakRateTitle": "Tasso massimo eventi Push (dall'avvio)",
+        "statsPeakRateNone": "Nessun picco registrato",
+        "statsPeakRateCamera": "{camera} — {eps} {unit} {at} {time}",
+        "statsClearPeak": "Azzera picco",
         "saveSuccess": "Salvato con successo",
         "sendLogConfirm": "Inviare il contenuto del log allo sviluppatore?",
         "sendLogSuccess": "Log inviato con successo"

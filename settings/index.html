@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title></title>
+    <title>ONVIF Settings</title>
     <link rel="stylesheet" type="text/css" href="lwsa.css">
     <link rel="stylesheet" type="text/css" href="busy_indicator.css" />
 
@@ -59,6 +59,10 @@
         #statsList li {
             margin: 4px 0;
         }
+
+        #clearPeakButton {
+            margin-top: 8px;
+        }
     </style>
 
     <!-- The '/homey.js' script must be included in your settings view to work -->
@@ -74,9 +78,9 @@
 
     <!-- Tab links -->
     <div class="tab">
-        <button class="tablinks" onclick="setPage(event, 'settings')" id="defaultOpen"><span data-i18n="settings.settings"></span></button>
-        <button class="tablinks" onclick="setPage(event, 'log')"><span data-i18n="settings.diagnosticsLog"></span></button>
-        <button class="tablinks" onclick="setPage(event, 'statistics')"><span data-i18n="settings.statistics"></span></button>
+        <button class="tablinks" onclick="setPage(event, 'settings')" id="defaultOpen" title="Settings"><span data-i18n="settings.settings"></span></button>
+        <button class="tablinks" onclick="setPage(event, 'log')" title="Diagnostics Log"><span data-i18n="settings.diagnosticsLog"></span></button>
+        <button class="tablinks" onclick="setPage(event, 'statistics')" title="Statistics"><span data-i18n="settings.statistics"></span></button>
     </div>
 
     <!-- SETTINGS PAGE -->
@@ -85,10 +89,10 @@
             <h1 data-i18n="settings.title"></h1>
             <div class="field row">
                 <label class="homey-form-label" for="port" data-i18n="settings.port"></label>
-                <input class="homey-form-input" id="port" type="text" value="" />
+                <input class="homey-form-input" id="port" type="text" value="" title="Listening Port" placeholder="Listening Port" />
             </div>
             <div class="field row">
-                <button class="homey-button-secondary-shadow" id="saveButton" data-i18n="settings.save"></button>
+                <button class="homey-button-secondary-shadow" id="saveButton" title="Save" data-i18n="settings.save"></button>
             </div>
         </fieldset>
     </div>
@@ -97,7 +101,7 @@
     <div id="log" class="tabcontent">
         <div class="field row">
             <label class="homey-form-label" for="logLevel"><span data-i18n="settings.logLevel"></span></label>
-            <select class="homey-form-select" id="logLevel">
+            <select class="homey-form-select" id="logLevel" title="Log Level" aria-label="Log Level">
                 <option value=0 data-i18n="settings.logLevelErrorsOnly"></option>
                 <option value=1 data-i18n="settings.logLevelBasic"></option>
                 <option value=2 data-i18n="settings.logLevelDetailed"></option>
@@ -106,17 +110,22 @@
         </div>
         <div class="field row">
             <label class="homey-form-label"  for="email"><span data-i18n="settings.email"></span></label>
-            <input class="homey-form-input" id="email" type="text" value="" />
+            <input class="homey-form-input" id="email" type="text" value="" title="Email Address or Forum ID" placeholder="Email Address or Forum ID" />
             <P></P>
         </div>
-        <p><button class="homey-button-secondary-shadow" id="clearLog"><span data-i18n="settings.ClearLog"></span></button> <button class="homey-button-secondary-shadow" id="sendLog"><span data-i18n="settings.SendLog"></span></button></p>
+        <p><button class="homey-button-secondary-shadow" id="clearLog" title="Clear Log"><span data-i18n="settings.ClearLog"></span></button> <button class="homey-button-secondary-shadow" id="sendLog" title="Send Log"><span data-i18n="settings.SendLog"></span></button></p>
         <div class="field row">
-            <textarea id="diagLog"></textarea>
+            <textarea id="diagLog" title="Diagnostics Log" placeholder="Diagnostics Log"></textarea>
         </div>
     </div>
 
     <!-- STATISTICS PAGE -->
     <div id="statistics" class="tabcontent">
+        <div class="stats-card">
+            <div class="stats-title" data-i18n="settings.statsPeakRateTitle"></div>
+            <div id="statsPeakRate" data-i18n="settings.statsPeakRateNone"></div>
+            <button class="homey-button-secondary-shadow" id="clearPeakButton" title="Reset Peak" data-i18n="settings.statsClearPeak"></button>
+        </div>
         <div class="stats-card">
             <div class="stats-title" data-i18n="settings.statsLastRateTitle"></div>
             <div id="statsLastRate" data-i18n="settings.statsNoDataYet"></div>
@@ -142,6 +151,8 @@
         var emailElement = document.getElementById('email');
         var statsLastRateElement = document.getElementById('statsLastRate');
         var statsListElement = document.getElementById('statsList');
+        var statsPeakRateElement = document.getElementById('statsPeakRate');
+        var clearPeakButtonElement = document.getElementById('clearPeakButton');
         var i18nText =
         {
             statsNoDataYet: '',
@@ -149,6 +160,8 @@
             statsRateUnit: '',
             statsEventsLabel: '',
             statsAtLabel: '',
+            statsPeakRateNone: '',
+            statsPeakRateCamera: '',
             saveSuccess: '',
             sendLogConfirm: '',
             sendLogSuccess: '',
@@ -161,6 +174,8 @@
             i18nText.statsRateUnit = Homey.__('settings.statsRateUnit');
             i18nText.statsEventsLabel = Homey.__('settings.statsEventsLabel');
             i18nText.statsAtLabel = Homey.__('settings.statsAtLabel');
+            i18nText.statsPeakRateNone = Homey.__('settings.statsPeakRateNone');
+            i18nText.statsPeakRateCamera = Homey.__('settings.statsPeakRateCamera');
             i18nText.saveSuccess = Homey.__('settings.saveSuccess');
             i18nText.sendLogConfirm = Homey.__('settings.sendLogConfirm');
             i18nText.sendLogSuccess = Homey.__('settings.sendLogSuccess');
@@ -181,6 +196,26 @@
             var eventsText = Number.isFinite(events) ? String(events) : '0';
 
             return epsText + ' ' + i18nText.statsRateUnit + ' (' + eventsText + ' ' + i18nText.statsEventsLabel + ') ' + i18nText.statsAtLabel + ' ' + dateText;
+        }
+
+        function renderPeakRate(peak)
+        {
+            if (!peak || typeof peak !== 'object' || !Number.isFinite(Number(peak.eventsPerSecond)))
+            {
+                statsPeakRateElement.textContent = i18nText.statsPeakRateNone;
+                return;
+            }
+            var eps = Number(peak.eventsPerSecond);
+            var stamp = Number(peak.timestamp);
+            var dateText = Number.isFinite(stamp) ? new Date(stamp).toLocaleTimeString() : '-';
+            var epsText = Number.isFinite(eps) ? eps.toFixed(2) : '0.00';
+            var camera = peak.camera || peak.ip || 'unknown';
+            statsPeakRateElement.textContent = i18nText.statsPeakRateCamera
+                .replace('{camera}', camera)
+                .replace('{eps}', epsText)
+                .replace('{unit}', i18nText.statsRateUnit)
+                .replace('{at}', i18nText.statsAtLabel)
+                .replace('{time}', dateText);
         }
 
         function renderRateStats(lastSample, history)
@@ -210,16 +245,21 @@
 
         function refreshRateStats(Homey)
         {
-            Homey.get('pushEventRateLast', function(err, lastSample)
+            Homey.api('GET', '/getRateStats/', null, function(err, stats)
             {
                 if (err) return Homey.alert(err);
 
-                Homey.get('pushEventRateHistory', function(err2, history)
-                {
-                    if (err2) return Homey.alert(err2);
-                    renderRateStats(lastSample, history);
-                });
+                var safeStats = stats && typeof stats === 'object' ? stats : {};
+                renderPeakRate(safeStats.peak);
+                renderRateStats(safeStats.lastSample, safeStats.history);
             });
+        }
+
+        function applyRateStats(stats)
+        {
+            var safeStats = stats && typeof stats === 'object' ? stats : {};
+            renderPeakRate(safeStats.peak);
+            renderRateStats(safeStats.lastSample, safeStats.history);
         }
 
         // a method named 'onHomeyReady' must be present in your code
@@ -249,6 +289,11 @@
                 refreshRateStats(Homey);
             });
 
+            Homey.on('pushEventRateStatsUpdated', function(stats)
+            {
+                applyRateStats(stats);
+            });
+
             saveButtonElement.addEventListener('click', function()
             {
                 Homey.set('port', portElement.value, function(err)
@@ -272,6 +317,16 @@
                 Homey.set('logLevel', logLevelElement.value, function(err)
                 {
                     if (err) return Homey.alert(err);
+                });
+            });
+
+            clearPeakButtonElement.addEventListener('click', function(e)
+            {
+                Homey.api('POST', '/clearPeakRate/', null, function(err, stats)
+                {
+                    if (err) return Homey.alert(err);
+                    var safeStats = stats && typeof stats === 'object' ? stats : {};
+                    renderPeakRate(safeStats.peak);
                 });
             });
 

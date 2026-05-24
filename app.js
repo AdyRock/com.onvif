@@ -48,15 +48,19 @@ class MyApp extends Homey.App
         this.discoveryInitialised = false;
         this.pushEventFloodState = new Map();
         this.pushEventRateCounter = 0;
+        this.pushEventRateByCameraMap = new Map();
+        this.pushEventRateLast = this.homey.settings.get('pushEventRateLast') || null;
+        const savedRateHistory = this.homey.settings.get('pushEventRateHistory');
+        this.pushEventRateHistory = Array.isArray(savedRateHistory) ? savedRateHistory : [];
+        this.pushEventPeakRate = this.homey.settings.get('pushEventPeakRate') || {};
+        this.pushEventRateDirty = false;
         this.pushEventRateInterval = null;
         //this.homey.settings.set('diagLog', "");
 
         this.homeyId = await this.homey.cloud.getHomeyId();
         this.homeyHash = this.hashCode(this.homeyId).toString();
 
-        this.homeyIP = await this.homey.cloud.getLocalAddress();
-        this.homeyIP = (this.homeyIP.split(':'))[0];
-
+        this.homeyIP = null;
         this.pushEvents = [];
 
         this.logLevel = this.getConfiguredLogLevel();
@@ -91,12 +95,13 @@ class MyApp extends Homey.App
 
         setImmediate(() =>
         {
-            this.checkCameras();
+            this.resolveHomeyIP().then(() => this.checkCameras()).catch(this.err);
         });
 
         this.homey.on('unload', () =>
         {
             this.stopPushEventRateLogging();
+            this.persistPushEventStats();
             if (this.server)
             {
                 this.server.close();
@@ -107,6 +112,7 @@ class MyApp extends Homey.App
 
         this.homey.on('memwarn', (data) =>
         {
+            this.persistPushEventStats();
             if (data)
             {
                 if (data.count >= data.limit - 2)
@@ -123,6 +129,7 @@ class MyApp extends Homey.App
 
         this.homey.on('cpuwarn', (data) =>
         {
+            this.persistPushEventStats();
             if (data)
             {
                 if (data.count >= data.limit - 2)
@@ -149,6 +156,33 @@ class MyApp extends Homey.App
                 this.updateLog('cpuwarn', 0);
             }
         });
+    }
+
+    async resolveHomeyIP()
+    {
+        const RETRY_DELAYS_MS = [5000, 10000, 30000, 60000];
+        const MAX_RETRY_DELAY_MS = 120000;
+
+        let attempt = 0;
+        while (true)
+        {
+            try
+            {
+                const addr = await this.homey.cloud.getLocalAddress();
+                this.homeyIP = (addr.split(':'))[0];
+                this.updateLog(`Homey local IP resolved: ${this.homeyIP}`, 1);
+                return;
+            }
+            catch (err)
+            {
+                const delay = attempt < RETRY_DELAYS_MS.length
+                    ? RETRY_DELAYS_MS[attempt]
+                    : MAX_RETRY_DELAY_MS;
+                this.error(`Failed to get local address (attempt ${attempt + 1}), retrying in ${delay / 1000}s:`, err.message);
+                await new Promise(resolve => this.homey.setTimeout(resolve, delay));
+                attempt++;
+            }
+        }
     }
 
     async registerFlowCard()
@@ -376,6 +410,7 @@ class MyApp extends Homey.App
                         response.writeHead(200);
                         response.end('ok');
                         this.pushEventRateCounter += 1;
+                        this.pushEventRateByCameraMap.set(eventIP, (this.pushEventRateByCameraMap.get(eventIP) || 0) + 1);
                         if (this.shouldDropPushEvent(eventIP))
                         {
                             return;
@@ -480,6 +515,7 @@ class MyApp extends Homey.App
     {
         this.stopPushEventRateLogging();
         this.pushEventRateCounter = 0;
+        this.pushEventRateByCameraMap.clear();
 
         this.pushEventRateInterval = this.homey.setInterval(() =>
         {
@@ -491,8 +527,29 @@ class MyApp extends Homey.App
                 return;
             }
 
-            const eventsPerSecond = eventsInWindow / (PUSH_EVENT_RATE_LOG_INTERVAL_MS / 1000);
+            const intervalSecs = PUSH_EVENT_RATE_LOG_INTERVAL_MS / 1000;
+            const eventsPerSecond = eventsInWindow / intervalSecs;
             this.publishPushEventRateStats(eventsInWindow, eventsPerSecond);
+
+            // Check each camera's rate against the stored peak
+            let currentPeak = this.pushEventPeakRate;
+            for (const [ip, count] of this.pushEventRateByCameraMap)
+            {
+                const cameraEps = count / intervalSecs;
+                if (!currentPeak || !Number.isFinite(Number(currentPeak.eventsPerSecond)) || cameraEps > currentPeak.eventsPerSecond)
+                {
+                    currentPeak = {
+                        camera: this.getCameraLabel(ip),
+                        ip: ip,
+                        eventsPerSecond: Number(cameraEps.toFixed(2)),
+                        timestamp: Date.now(),
+                    };
+                    this.pushEventPeakRate = currentPeak;
+                    this.pushEventRateDirty = true;
+                    this.homey.settings.set('pushEventPeakRate', this.pushEventPeakRate || {});
+                }
+            }
+            this.pushEventRateByCameraMap.clear();
 
             this.updateLog('Push event rate: ' + eventsPerSecond.toFixed(2) + ' events/s over last 10s (' + eventsInWindow + ' events)', 1);
         }, PUSH_EVENT_RATE_LOG_INTERVAL_MS);
@@ -506,16 +563,73 @@ class MyApp extends Homey.App
             eventsPerSecond: Number(eventsPerSecond.toFixed(2)),
         };
 
-        this.homey.settings.set('pushEventRateLast', sample);
+        this.pushEventRateLast = sample;
 
-        const history = this.homey.settings.get('pushEventRateHistory');
-        const nextHistory = Array.isArray(history) ? history : [];
+        const nextHistory = Array.isArray(this.pushEventRateHistory) ? this.pushEventRateHistory : [];
         nextHistory.push(sample);
         if (nextHistory.length > PUSH_EVENT_RATE_HISTORY_MAX)
         {
             nextHistory.splice(0, nextHistory.length - PUSH_EVENT_RATE_HISTORY_MAX);
         }
-        this.homey.settings.set('pushEventRateHistory', nextHistory);
+        this.pushEventRateHistory = nextHistory;
+        this.pushEventRateDirty = true;
+
+        this.homey.api.realtime('pushEventRateStatsUpdated', this.getRateStats());
+    }
+
+    persistPushEventStats()
+    {
+        if (!this.pushEventRateDirty)
+        {
+            return;
+        }
+
+        this.homey.settings.set('pushEventRateLast', this.pushEventRateLast || {});
+        this.homey.settings.set('pushEventRateHistory', Array.isArray(this.pushEventRateHistory) ? this.pushEventRateHistory : []);
+        this.homey.settings.set('pushEventPeakRate', this.pushEventPeakRate || {});
+        this.pushEventRateDirty = false;
+    }
+
+    getRateStats()
+    {
+        return {
+            lastSample: this.pushEventRateLast || {},
+            history: Array.isArray(this.pushEventRateHistory) ? this.pushEventRateHistory : [],
+            peak: this.pushEventPeakRate || {}
+        };
+    }
+
+    clearPeakRate()
+    {
+        this.pushEventPeakRate = {};
+        this.pushEventRateDirty = true;
+        const stats = this.getRateStats();
+        this.homey.api.realtime('pushEventRateStatsUpdated', stats);
+        return stats;
+    }
+
+    getCameraLabel(ip)
+    {
+        try
+        {
+            const driver = this.homey.drivers.getDriver('camera');
+            if (driver)
+            {
+                const devices = driver.getDevices();
+                for (const device of devices)
+                {
+                    if (device.cam && device.cam.hostname === ip)
+                    {
+                        return `${device.name} (${ip})`;
+                    }
+                }
+            }
+        }
+        catch (err)
+        {
+            // ignore — fall through to raw IP
+        }
+        return ip || 'unknown';
     }
 
     stopPushEventRateLogging()
@@ -960,6 +1074,12 @@ class MyApp extends Homey.App
             }
             else
             {
+                if (!this.homeyIP)
+                {
+                    reject(new Error('Homey local IP address is unavailable (unknown_network_interface); push events cannot be set up'));
+                    return;
+                }
+
                 // const url = "http://" + this.homeyIP + ":" + this.pushServerPort + "/onvif/events?deviceId=" + Device.cam.hostname;
                 const hostPath = Device.cam.hostname;
 

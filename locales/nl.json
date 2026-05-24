@@ -22,6 +22,10 @@
         "statsRateUnit": "gebeurtenissen/s",
         "statsEventsLabel": "gebeurtenissen",
         "statsAtLabel": "om",
+        "statsPeakRateTitle": "Piek push-gebeurtenissnelheid (sinds opstarten)",
+        "statsPeakRateNone": "Nog geen piek opgenomen",
+        "statsPeakRateCamera": "{camera} — {eps} {unit} {at} {time}",
+        "statsClearPeak": "Piek resetten",
         "saveSuccess": "Succesvol opgeslagen",
         "sendLogConfirm": "Loginhoud naar de ontwikkelaar sturen?",
         "sendLogSuccess": "Log succesvol verzonden"

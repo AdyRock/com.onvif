@@ -22,6 +22,10 @@
         "statsRateUnit": "Ereignisse/s",
         "statsEventsLabel": "Ereignisse",
         "statsAtLabel": "um",
+        "statsPeakRateTitle": "Höchste Push-Ereignisrate (seit Start)",
+        "statsPeakRateNone": "Noch kein Spitzenwert aufgezeichnet",
+        "statsPeakRateCamera": "{camera} — {eps} {unit} {at} {time}",
+        "statsClearPeak": "Spitzenwert zurücksetzen",
         "saveSuccess": "Erfolgreich gespeichert",
         "sendLogConfirm": "Den Protokollinhalt an den Entwickler senden?",
         "sendLogSuccess": "Protokoll erfolgreich gesendet"
