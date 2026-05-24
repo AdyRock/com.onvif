@@ -60,6 +60,21 @@
             margin: 4px 0;
         }
 
+        #statsThrottleNote {
+            margin: 0 0 8px 0;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        #statsThrottleList {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        #statsThrottleList li {
+            margin: 4px 0;
+        }
+
         #clearPeakButton {
             margin-top: 8px;
         }
@@ -127,12 +142,13 @@
             <button class="homey-button-secondary-shadow" id="clearPeakButton" title="Reset Peak" data-i18n="settings.statsClearPeak"></button>
         </div>
         <div class="stats-card">
-            <div class="stats-title" data-i18n="settings.statsLastRateTitle"></div>
-            <div id="statsLastRate" data-i18n="settings.statsNoDataYet"></div>
-        </div>
-        <div class="stats-card">
             <div class="stats-title" data-i18n="settings.statsRateUpdatesTitle"></div>
             <ol id="statsList"></ol>
+        </div>
+        <div class="stats-card">
+            <div class="stats-title" data-i18n="settings.statsThrottlingTitle"></div>
+            <p id="statsThrottleNote"></p>
+            <ul id="statsThrottleList"></ul>
         </div>
     </div>
 
@@ -149,9 +165,10 @@
         var clearLogElement = document.getElementById('clearLog');
         var sendLogElement = document.getElementById('sendLog');
         var emailElement = document.getElementById('email');
-        var statsLastRateElement = document.getElementById('statsLastRate');
         var statsListElement = document.getElementById('statsList');
         var statsPeakRateElement = document.getElementById('statsPeakRate');
+        var statsThrottleNoteElement = document.getElementById('statsThrottleNote');
+        var statsThrottleListElement = document.getElementById('statsThrottleList');
         var clearPeakButtonElement = document.getElementById('clearPeakButton');
         var i18nText =
         {
@@ -162,6 +179,9 @@
             statsAtLabel: '',
             statsPeakRateNone: '',
             statsPeakRateCamera: '',
+            statsThrottlingRule: '',
+            statsThrottlingNone: '',
+            statsThrottlingItem: '',
             saveSuccess: '',
             sendLogConfirm: '',
             sendLogSuccess: '',
@@ -176,9 +196,52 @@
             i18nText.statsAtLabel = Homey.__('settings.statsAtLabel');
             i18nText.statsPeakRateNone = Homey.__('settings.statsPeakRateNone');
             i18nText.statsPeakRateCamera = Homey.__('settings.statsPeakRateCamera');
+            i18nText.statsThrottlingRule = Homey.__('settings.statsThrottlingRule');
+            i18nText.statsThrottlingNone = Homey.__('settings.statsThrottlingNone');
+            i18nText.statsThrottlingItem = Homey.__('settings.statsThrottlingItem');
             i18nText.saveSuccess = Homey.__('settings.saveSuccess');
             i18nText.sendLogConfirm = Homey.__('settings.sendLogConfirm');
             i18nText.sendLogSuccess = Homey.__('settings.sendLogSuccess');
+        }
+
+        function renderThrottling(throttling)
+        {
+            var safe = throttling && typeof throttling === 'object' ? throttling : {};
+            var maxEvents = Number(safe.maxEventsPerWindow);
+            var windowMs = Number(safe.windowMs);
+            var windowSeconds = Number.isFinite(windowMs) ? (windowMs / 1000).toFixed(1) : '5.0';
+            var maxEventsText = Number.isFinite(maxEvents) ? String(maxEvents) : '100';
+
+            statsThrottleNoteElement.textContent = i18nText.statsThrottlingRule
+                .replace('{maxEvents}', maxEventsText)
+                .replace('{windowSeconds}', windowSeconds);
+
+            var active = Array.isArray(safe.activeCameras) ? safe.activeCameras : [];
+            statsThrottleListElement.innerHTML = '';
+            if (active.length === 0)
+            {
+                var emptyItem = document.createElement('li');
+                emptyItem.textContent = i18nText.statsThrottlingNone;
+                statsThrottleListElement.appendChild(emptyItem);
+                return;
+            }
+
+            for (var i = 0; i < active.length; i++)
+            {
+                var camera = active[i] && typeof active[i] === 'object' ? active[i] : {};
+                var label = camera.camera || camera.ip || 'unknown';
+                var dropped = Number(camera.droppedInWindow);
+                var rate = Number(camera.eventsPerSecond);
+                var droppedText = Number.isFinite(dropped) ? String(dropped) : '0';
+                var rateText = Number.isFinite(rate) ? rate.toFixed(2) : '0.00';
+                var item = document.createElement('li');
+                item.textContent = i18nText.statsThrottlingItem
+                    .replace('{camera}', label)
+                    .replace('{dropped}', droppedText)
+                    .replace('{rate}', rateText)
+                    .replace('{unit}', i18nText.statsRateUnit);
+                statsThrottleListElement.appendChild(item);
+            }
         }
 
         function formatRateSample(sample)
@@ -220,8 +283,6 @@
 
         function renderRateStats(lastSample, history)
         {
-            statsLastRateElement.textContent = formatRateSample(lastSample);
-
             statsListElement.innerHTML = '';
             if (!Array.isArray(history) || history.length === 0)
             {
@@ -252,6 +313,7 @@
                 var safeStats = stats && typeof stats === 'object' ? stats : {};
                 renderPeakRate(safeStats.peak);
                 renderRateStats(safeStats.lastSample, safeStats.history);
+                renderThrottling(safeStats.throttling);
             });
         }
 
@@ -260,6 +322,7 @@
             var safeStats = stats && typeof stats === 'object' ? stats : {};
             renderPeakRate(safeStats.peak);
             renderRateStats(safeStats.lastSample, safeStats.history);
+            renderThrottling(safeStats.throttling);
         }
 
         // a method named 'onHomeyReady' must be present in your code
@@ -326,7 +389,7 @@
                 {
                     if (err) return Homey.alert(err);
                     var safeStats = stats && typeof stats === 'object' ? stats : {};
-                    renderPeakRate(safeStats.peak);
+                    applyRateStats(safeStats);
                 });
             });
 

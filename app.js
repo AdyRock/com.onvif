@@ -479,6 +479,7 @@ class MyApp extends Homey.App
             if (state && (state.droppedCount > 0))
             {
                 this.updateLog('Push event flood protection recovered (' + key + '): dropped ' + state.droppedCount + ' push events in the previous window', 0);
+                this.homey.api.realtime('pushEventRateStatsUpdated', this.getRateStats());
             }
 
             state = {
@@ -507,6 +508,11 @@ class MyApp extends Homey.App
         }
 
         state.droppedCount += 1;
+
+        if (state.count === (MAX_PUSH_EVENTS_PER_WINDOW + 1))
+        {
+            this.homey.api.realtime('pushEventRateStatsUpdated', this.getRateStats());
+        }
 
         return true;
     }
@@ -595,7 +601,47 @@ class MyApp extends Homey.App
         return {
             lastSample: this.pushEventRateLast || {},
             history: Array.isArray(this.pushEventRateHistory) ? this.pushEventRateHistory : [],
-            peak: this.pushEventPeakRate || {}
+            peak: this.pushEventPeakRate || {},
+            throttling: this.getThrottlingStats()
+        };
+    }
+
+    getThrottlingStats()
+    {
+        const now = Date.now();
+        const activeCameras = [];
+
+        for (const [ip, state] of this.pushEventFloodState)
+        {
+            if (!state)
+            {
+                continue;
+            }
+
+            const elapsed = now - state.windowStartedAt;
+            if ((elapsed < 0) || (elapsed >= PUSH_EVENT_WINDOW_MS))
+            {
+                continue;
+            }
+
+            if (state.count > MAX_PUSH_EVENTS_PER_WINDOW)
+            {
+                const windowElapsedMs = Math.max(1, elapsed);
+                const eventsPerSecond = (state.count * 1000) / windowElapsedMs;
+                activeCameras.push({
+                    camera: this.getCameraLabel(ip),
+                    ip: ip,
+                    eventsInWindow: state.count,
+                    droppedInWindow: state.droppedCount,
+                    eventsPerSecond: Number(eventsPerSecond.toFixed(2)),
+                });
+            }
+        }
+
+        return {
+            windowMs: PUSH_EVENT_WINDOW_MS,
+            maxEventsPerWindow: MAX_PUSH_EVENTS_PER_WINDOW,
+            activeCameras: activeCameras,
         };
     }
 

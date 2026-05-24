@@ -460,5 +460,8 @@
 	},
 	"2.0.66": {
 		"en": "Fixed unhandled rejections: wrapped setSettings and setStoreValue calls in try/catch to handle device-not-found errors gracefully. Fixed invalid setting type error for the token setting caused by the ONVIF library converting numeric token values to numbers; token is now always stored and migrated as a string."
+	},
+	"2.0.67": {
+		"en": "Added peak events to statics tab. Added option to clear the peak events. Added extra error handling for cameras that return bad data that was causing the app to crash. Added extra logging to try and track down a specific issue with a camera."
 	}
 }
