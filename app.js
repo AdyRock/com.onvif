@@ -26,6 +26,29 @@ const PUSH_EVENT_RATE_HISTORY_MAX = 10;
 
 class MyApp extends Homey.App
 {
+    resolvePushServerPort(portValue)
+    {
+        const parsedPort = Number.parseInt(portValue, 10);
+        const isValid = Number.isInteger(parsedPort) && (parsedPort >= 1) && (parsedPort <= 65535);
+        return {
+            port: isValid ? parsedPort : 9998,
+            isValid
+        };
+    }
+
+    listenPushServer(portValue = this.pushServerPort)
+    {
+        const { port, isValid } = this.resolvePushServerPort(portValue);
+
+        if (!isValid)
+        {
+            this.updateLog('Invalid push server port value: ' + this.varToString(portValue) + '. Falling back to ' + port, 0);
+        }
+
+        this.pushServerPort = port;
+        this.server.listen(this.pushServerPort);
+    }
+
     getConfiguredLogLevel()
     {
         const configuredLogLevel = Number(this.homey.settings.get('logLevel'));
@@ -37,11 +60,11 @@ class MyApp extends Homey.App
         this.log('MyApp is running...');
         this.err = (err) => this.error(err);
 
-        this.pushServerPort = this.homey.settings.get('port');
-        if (!this.pushServerPort)
+        const configuredPushPort = this.resolvePushServerPort(this.homey.settings.get('port'));
+        this.pushServerPort = configuredPushPort.port;
+        if (!configuredPushPort.isValid)
         {
-            this.pushServerPort = 9998;
-            this.homey.settings.set('port', 9998);
+            this.homey.settings.set('port', this.pushServerPort);
         }
 
         this.discoveredDevices = [];
@@ -76,8 +99,11 @@ class MyApp extends Homey.App
             {
                 this.pushServerPort = this.homey.settings.get('port');
                 this.unregisterCameras();
-                this.server.close();
-                this.server.listen(this.pushServerPort);
+                if (this.server)
+                {
+                    this.server.close();
+                    this.listenPushServer();
+                }
             }
         });
 
@@ -145,7 +171,7 @@ class MyApp extends Homey.App
                         setTimeout(() =>
                         {
                             this.server.close();
-                            this.server.listen(this.pushServerPort);
+                            this.listenPushServer();
                         }, 300000);
                     }
                 }
@@ -453,14 +479,14 @@ class MyApp extends Homey.App
                 setTimeout(() =>
                 {
                     this.server.close();
-                    this.server.listen(this.pushServerPort);
+                    this.listenPushServer();
                 }, 10000);
             }
         });
 
         try
         {
-            this.server.listen(this.pushServerPort);
+            this.listenPushServer();
         }
         catch (err)
         {

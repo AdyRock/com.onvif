@@ -463,5 +463,8 @@
 	},
 	"2.0.67": {
 		"en": "Added peak events to statics tab. Added option to clear the peak events. Added extra error handling for cameras that return bad data that was causing the app to crash. Added extra logging to try and track down a specific issue with a camera."
+	},
+	"2.0.68": {
+		"en": "Fix potential crash if the listener port is empty."
 	}
 }

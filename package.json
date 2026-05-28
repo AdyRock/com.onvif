@@ -1,6 +1,6 @@
 {
   "name": "com.onvif",
-  "version": "2.0.67",
+  "version": "2.0.68",
   "main": "app.js",
   "scripts": {
     "test": "node test/event-routing.test.js"
