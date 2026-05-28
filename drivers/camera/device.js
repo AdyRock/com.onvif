@@ -1181,8 +1181,9 @@ class CameraDevice extends Homey.Device
 					}
 				}
 
-				// Fetch presets and stream URL in parallel — they are independent SOAP calls
-				const [presetsResult, streamResult] = await Promise.allSettled([
+				// Fetch PTZ support, presets and stream URL in parallel — these are independent SOAP calls
+				const [ptzSupportResult, presetsResult, streamResult] = await Promise.allSettled([
+					this.homey.app.getPTZStatus(this.cam),
 					new Promise((resolve, reject) =>
 					{
 						this.cam.getPresets({}, (err, data) =>
@@ -1212,9 +1213,24 @@ class CameraDevice extends Homey.Device
 					this.homey.app.updateLog('Get stream URL error (' + this.name + '): ' + (streamResult.reason?.message || streamResult.reason), 0);
 				}
 
+				const ptzSupported = (ptzSupportResult.status === 'fulfilled') ? Boolean(ptzSupportResult.value) : false;
+				if (ptzSupportResult.status === 'rejected')
+				{
+					this.homey.app.updateLog('PTZ support check error (' + this.name + '): ' + (ptzSupportResult.reason?.message || ptzSupportResult.reason), 0);
+				}
+
+				if (!ptzSupported)
+				{
+					if (this.hasCapability('ptz_preset'))
+					{
+						await this.removeCapability('ptz_preset');
+					}
+					this.homey.app.updateLog('PTZ not supported, preset capability removed (' + this.getLogDeviceLabel() + ')', 1);
+				}
+
 				// Handle presets result
 				let presets = null;
-				if (presetsResult.status === 'fulfilled')
+				if (ptzSupported && (presetsResult.status === 'fulfilled'))
 				{
 					presets = presetsResult.value;
 					if (presets && Object.keys(presets).length > 0)
@@ -1236,7 +1252,7 @@ class CameraDevice extends Homey.Device
 						}
 					}
 				}
-				else
+				else if (ptzSupported)
 				{
 					// Error while retrieving presets, remove capability
 					const ptzErr = presetsResult.reason;
