@@ -215,9 +215,11 @@ class CameraDevice extends Homey.Device
 
 	async notificationTypesUpdated(settings)
 	{
-		await Promise.all(
-			Object.keys(OPTIONAL_EVENT_CAPABILITIES).map((settingName) => this.syncOptionalCapability(settingName, settings))
-		);
+		// make sure to process synchronously else the system gets confused and doesn't add / remove capabilities correctly.
+		for (const settingName of Object.keys(OPTIONAL_EVENT_CAPABILITIES))
+		{
+			await this.syncOptionalCapability(settingName, settings);
+		}
 	}
 
 	getOptionalEventCapability(settingName)
@@ -243,8 +245,16 @@ class CameraDevice extends Homey.Device
 		{
 			if (!this.hasCapability(capabilityConfig.capability))
 			{
-				await this.addCapability(capabilityConfig.capability).catch(this.error);
-				this.setCapabilityValue(capabilityConfig.capability, capabilityConfig.defaultValue).catch(this.error);
+				try
+				{
+					this.homey.app.updateLog('Adding optional capability (' + this.name + '): ' + capabilityConfig.capability, 0);
+					await this.addCapability(capabilityConfig.capability);
+					await this.setCapabilityValue(capabilityConfig.capability, capabilityConfig.defaultValue);
+				}
+				catch (err)
+				{
+					this.homey.app.updateLog('Error adding optional capability (' + this.name + '): ' + capabilityConfig.capability + ': ' + this.homey.app.varToString(err), 0);
+				}
 			}
 
 			return true;
@@ -252,7 +262,15 @@ class CameraDevice extends Homey.Device
 
 		if (this.hasCapability(capabilityConfig.capability))
 		{
-			await this.removeCapability(capabilityConfig.capability).catch(this.error);
+			try
+			{
+				this.homey.app.updateLog('Removing optional capability (' + this.name + '): ' + capabilityConfig.capability, 0);
+				await this.removeCapability(capabilityConfig.capability);
+			}
+			catch (err)
+			{
+				this.homey.app.updateLog('Error removing optional capability (' + this.name + '): ' + capabilityConfig.capability + ': ' + this.homey.app.varToString(err), 0);
+			}
 		}
 
 		return false;
@@ -270,7 +288,15 @@ class CameraDevice extends Homey.Device
 		{
 			if (this.hasCapability(capabilityConfig.capability))
 			{
-				await this.removeCapability(capabilityConfig.capability).catch(this.error);
+				try
+				{
+					this.homey.app.updateLog('Removing optional capability (' + this.name + '): ' + capabilityConfig.capability, 0);
+					await this.removeCapability(capabilityConfig.capability);
+				}
+				catch (err)
+				{
+					this.homey.app.updateLog('Error removing optional capability (' + this.name + '): ' + capabilityConfig.capability + ': ' + this.homey.app.varToString(err), 0);
+				}
 			}
 
 			return false;
@@ -278,8 +304,16 @@ class CameraDevice extends Homey.Device
 
 		if (!this.hasCapability(capabilityConfig.capability))
 		{
-			await this.addCapability(capabilityConfig.capability).catch(this.error);
-			this.setCapabilityValue(capabilityConfig.capability, capabilityConfig.defaultValue).catch(this.error);
+			try
+			{
+				this.homey.app.updateLog('Adding optional capability (' + this.name + '): ' + capabilityConfig.capability, 0);
+				await this.addCapability(capabilityConfig.capability);
+				await this.setCapabilityValue(capabilityConfig.capability, capabilityConfig.defaultValue).catch(this.error);
+			}
+			catch (err)
+			{
+				this.homey.app.updateLog('Error adding optional capability (' + this.name + '): ' + capabilityConfig.capability + ': ' + this.homey.app.varToString(err), 0);
+			}
 		}
 
 		return this.hasCapability(capabilityConfig.capability);
@@ -824,7 +858,10 @@ class CameraDevice extends Homey.Device
 
 		// Always resync optional capabilities on settings changes to avoid missed UI updates
 		// when changedKeys does not include all toggles in some Homey flows.
-		await this.notificationTypesUpdated(newSettings);
+		setImmediate(async () =>
+		{
+			this.notificationTypesUpdated(newSettings);
+		});
 
 		if (reconnect)
 		{
