@@ -2,5 +2,11 @@
     "cSpell.words": [
         "onvif"
     ],
-    "terminal.integrated.defaultProfile.windows": "Windows PowerShell"
+	"terminal.integrated.defaultProfile.windows": "Windows PowerShell",
+	"chat.tools.terminal.autoApprove": {
+		"/^node --check drivers/camera/device\\.js$/": {
+			"approve": true,
+			"matchCommandLine": true
+		}
+	}
 }
