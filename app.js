@@ -1027,7 +1027,7 @@ class MyApp extends Homey.App
     {
         const promiseGetSnapshotUri = promisify(camObj.getEventProperties).bind(camObj);
         const data = await promiseGetSnapshotUri();
-        let supportedEvents = [];
+        const supportedEvents = new Set();
         // Display the available Topics
         let parseNode = (node, topicPath, nodeName) =>
         {
@@ -1041,7 +1041,16 @@ class MyApp extends Homey.App
                 else if (child == 'messageDescription')
                 {
                     // we have found the details that go with an event
-                    supportedEvents.push(nodeName.toUpperCase());
+                    const normalizedNodeName = String(nodeName || '').toUpperCase();
+                    const normalizedTopicPath = String(topicPath || '').replace(/^\//, '').toUpperCase();
+                    if (normalizedNodeName)
+                    {
+                        supportedEvents.add(normalizedNodeName);
+                    }
+                    if (normalizedTopicPath)
+                    {
+                        supportedEvents.add(normalizedTopicPath);
+                    }
                     return;
                 }
                 else
@@ -1052,7 +1061,7 @@ class MyApp extends Homey.App
             }
         };
         parseNode(data.topicSet, '', '');
-        return (supportedEvents);
+        return Array.from(supportedEvents);
     }
 
     async subscribeToCamPushEvents(Device)

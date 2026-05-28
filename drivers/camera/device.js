@@ -34,6 +34,19 @@ const OPTIONAL_EVENT_CAPABILITIES = {
 	sound: { capability: 'alarm_sound', defaultValue: false }
 };
 
+const OPTIONAL_EVENT_SUPPORT_HINTS = {
+	line_crossed: ['RULEENGINE/LINEDETECTOR/CROSSED', 'LINEDETECTOR/CROSSED', 'CROSSED'],
+	person: ['RULEENGINE/MYRULEDETECTOR/PEOPLEDETECT', 'RULEENGINE/PEOPLEDETECTOR/PEOPLE', 'PEOPLEDETECT'],
+	visitor: ['RULEENGINE/MYRULEDETECTOR/VISITOR', 'MYRULEDETECTOR/VISITOR', 'VISITOR'],
+	face: ['RULEENGINE/MYRULEDETECTOR/FACEDETECT', 'MYRULEDETECTOR/FACEDETECT', 'FACEDETECT'],
+	dog_cat: ['RULEENGINE/MYRULEDETECTOR/DOGCATDETECT', 'MYRULEDETECTOR/DOGCATDETECT', 'DOGCATDETECT'],
+	vehicle: ['RULEENGINE/MYRULEDETECTOR/VEHICLEDETECT', 'MYRULEDETECTOR/VEHICLEDETECT', 'VEHICLEDETECT'],
+	dark_image: ['VIDEOSOURCE/IMAGETOODARK/IMAGINGSERVICE', 'IMAGETOODARK/IMAGINGSERVICE', 'IMAGETOODARK'],
+	storage: ['DEVICE/HARDWAREFAILURE/STORAGEFAILURE', 'HARDWAREFAILURE/STORAGEFAILURE', 'STORAGEFAILURE'],
+	cpu: ['MONITORING/PROCESSORUSAGE', 'PROCESSORUSAGE'],
+	sound: ['AUDIOANALYTICS/AUDIO/DETECTEDSOUND', 'DETECTEDSOUND']
+};
+
 const EVENT_RATE_LIMIT_WINDOW_MS = 5000;
 const MAX_EVENTS_PER_WINDOW = 100;
 const MAX_CONCURRENT_EVENT_HANDLERS = 8;
@@ -51,6 +64,7 @@ class CameraDevice extends Homey.Device
 		this.repairing = false;
 		this.connecting = false;
 		this.isReady = false;
+		this.isDeleting = false;
 		this.updatingEventImage = false;
 		this.cam = null;
 		this.eventImage = null;
@@ -211,6 +225,14 @@ class CameraDevice extends Homey.Device
 	{
 		this.homey.app.updateLog('CameraDevice has been added (' + this.name + ')');
 		this.setCapabilityValue('motion_enabled', false).catch(this.err);
+		try
+		{
+			await this.setStoreValue('optionalSettingsInitialized', false);
+		}
+		catch (err)
+		{
+			this.homey.app.updateLog('setStoreValue optionalSettingsInitialized error (' + this.name + '): ' + (err?.message || err), 0);
+		}
 	}
 
 	async notificationTypesUpdated(settings)
@@ -231,6 +253,37 @@ class CameraDevice extends Homey.Device
 		}
 
 		return null;
+	}
+
+	getSupportedOptionalEventSettings(supportedEvents)
+	{
+		const reportedTypes = Array.isArray(supportedEvents)
+			? supportedEvents.map((eventType) => String(eventType || '').toUpperCase())
+			: [];
+
+		return Object.keys(OPTIONAL_EVENT_CAPABILITIES).filter((settingName) =>
+		{
+			const hints = OPTIONAL_EVENT_SUPPORT_HINTS[settingName] || [];
+			return hints.some((hint) => reportedTypes.some((eventType) => eventType.indexOf(hint) >= 0));
+		});
+	}
+
+	buildUnsupportedOptionalSettingsUpdate(currentSettings, supportedOptionalSettings)
+	{
+		const update = {};
+		for (const settingName of Object.keys(OPTIONAL_EVENT_CAPABILITIES))
+		{
+			if (supportedOptionalSettings.indexOf(settingName) < 0)
+			{
+				update[settingName] = false;
+			}
+			else if (typeof currentSettings[settingName] !== 'boolean')
+			{
+				update[settingName] = true;
+			}
+		}
+
+		return update;
 	}
 
 	async syncOptionalCapability(settingName, settings = this.getSettings())
@@ -1051,6 +1104,12 @@ class CameraDevice extends Homey.Device
 				}
 
 				this.hasMotion = (((supportedEvents.indexOf('MOTION') >= 0) || (supportedEvents.indexOf('MOTIONALARM') >= 0) || (supportedEvents.indexOf('DIGITALINPUT') >= 0)) && (this.hasPullPoints || this.supportPushEvent));
+				const currentSettings = this.getSettings();
+				const optionalSettingsInitialized = this.getStoreValue('optionalSettingsInitialized') === true;
+				const supportedOptionalSettings = this.getSupportedOptionalEventSettings(supportedEvents);
+				const unsupportedOptionalSettingsUpdate = optionalSettingsInitialized
+					? {}
+					: this.buildUnsupportedOptionalSettingsUpdate(currentSettings, supportedOptionalSettings);
 				try
 				{
 					await this.setSettings(
@@ -1063,6 +1122,7 @@ class CameraDevice extends Homey.Device
 							'notificationMethods': notificationMethods,
 							'notificationTypes': supportedEvents.toString(),
 							'hasSnapshot': Boolean(this.snapshotSupported),
+							...unsupportedOptionalSettingsUpdate,
 						});
 				}
 				catch (err)
@@ -1070,8 +1130,23 @@ class CameraDevice extends Homey.Device
 					this.homey.app.updateLog('Connect to camera set settings error (' + this.name + '): ' + err.message, 0);
 				}
 
-				let settings = this.getSettings();
-				await this.notificationTypesUpdated(settings);
+				if (!optionalSettingsInitialized)
+				{
+					try
+					{
+						await this.setStoreValue('optionalSettingsInitialized', true);
+					}
+					catch (err)
+					{
+						this.homey.app.updateLog('setStoreValue optionalSettingsInitialized error (' + this.name + '): ' + (err?.message || err), 0);
+					}
+				}
+
+				const settingsForCapabilitySync = {
+					...currentSettings,
+					...unsupportedOptionalSettingsUpdate
+				};
+				await this.notificationTypesUpdated(settingsForCapabilitySync);
 
 				if (!this.hasMotion)
 				{
@@ -1897,6 +1972,11 @@ class CameraDevice extends Homey.Device
 
 	async processCamEventMessage(camMessage)
 	{
+		if (this.isDeleting)
+		{
+			return;
+		}
+
 		if (this.getCapabilityValue('motion_enabled'))
 		{
 			if (this.shouldDropCameraEvent())
@@ -2390,6 +2470,7 @@ class CameraDevice extends Homey.Device
 	{
 		try
 		{
+			this.isDeleting = true;
 			this.clearTimers();
 			if (this.cam)
 			{
@@ -2426,6 +2507,24 @@ class CameraDevice extends Homey.Device
 		this.checkTimerId = null;
 		this.homey.clearTimeout(this.eventTimerId);
 		this.eventTimerId = null;
+		this.homey.clearTimeout(this.eventMinTimeId);
+		this.eventMinTimeId = null;
+		this.homey.clearTimeout(this.eventTimeoutId);
+		this.eventTimeoutId = null;
+		this.homey.clearTimeout(this.lineCrossedTimeoutId);
+		this.lineCrossedTimeoutId = null;
+		this.homey.clearTimeout(this.personTimeoutId);
+		this.personTimeoutId = null;
+		this.homey.clearTimeout(this.dogCatTimeoutId);
+		this.dogCatTimeoutId = null;
+		this.homey.clearTimeout(this.visitorTimeoutId);
+		this.visitorTimeoutId = null;
+		this.homey.clearTimeout(this.vistorTimeoutId);
+		this.vistorTimeoutId = null;
+		this.homey.clearTimeout(this.faceTimeoutId);
+		this.faceTimeoutId = null;
+		this.homey.clearTimeout(this.vehicleTimeoutId);
+		this.vehicleTimeoutId = null;
 	}
 
 	async onCapabilityPTZPreset(value)
