@@ -466,5 +466,8 @@
 	},
 	"2.0.68": {
 		"en": "Fix potential crash if the listener port is empty."
+	},
+	"2.0.69": {
+		"en": "Added guard around potential crash scenarios when deleting devices."
 	}
 }

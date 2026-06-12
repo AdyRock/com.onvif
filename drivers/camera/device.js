@@ -485,6 +485,16 @@ class CameraDevice extends Homey.Device
 		this.homey.app.updateLog('SnapShot error (' + this.getLogDeviceLabel() + '): ' + message, 0);
 	}
 
+	async safeSetWarning(warning)
+	{
+		if (this.isDeleting)
+		{
+			return;
+		}
+
+		this.setWarning(warning).catch(this.error);
+	}
+
 	isEventObjectIdEnabled(objectId)
 	{
 		return (this.eventObjectID === '') || (this.eventObjectID.indexOf(objectId) >= 0);
@@ -2155,7 +2165,7 @@ class CameraDevice extends Homey.Device
 
 		try
 		{
-			this.setWarning(null);
+			await this.safeSetWarning(null);
 
 			const devData = this.getData();
 
@@ -2217,6 +2227,11 @@ class CameraDevice extends Homey.Device
 					this.nowImage = await this.homey.images.createImage();
 					this.nowImage.setStream(async (stream) =>
 					{
+						if (this.isDeleting)
+						{
+							return;
+						}
+
 						if (this.invalidAfterConnect)
 						{
 							await this.homey.app.getSnapshotURL(this.cam);
@@ -2226,7 +2241,7 @@ class CameraDevice extends Homey.Device
 						if (!res.ok)
 						{
 							this.homey.app.updateLog('Fetch NOW error (' + this.getLogDeviceLabel() + '): ' + res.statusText, 0);
-							this.setWarning(res.statusText);
+							await this.safeSetWarning(res.statusText);
 							throw new Error(res.statusText);
 						}
 
@@ -2457,11 +2472,11 @@ class CameraDevice extends Homey.Device
 
 		if (!res.ok)
 		{
-			this.setWarning(res.statusText).catch(this.error);
+			await this.safeSetWarning(res.statusText);
 		}
 		else
 		{
-			this.setWarning(null).catch(this.error);
+			await this.safeSetWarning(null);
 		}
 
 		return res;
