@@ -744,6 +744,16 @@ class CameraDevice extends Homey.Device
 		return true;
 	}
 
+	routeLineCrossedStateEvent(dataValue)
+	{
+		if (dataValue === true)
+		{
+			this.triggerLineCrossedEvent(dataValue).catch(this.err);
+		}
+
+		return true;
+	}
+
 	routeDarkImageEvent(dataValue)
 	{
 		this.triggerDarkImageEvent(dataValue).catch(this.err);

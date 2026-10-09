@@ -475,5 +475,8 @@
 	},
 	"2.0.71": {
 		"en": "Fix for typo in the 'alarm_vistor_true' trigger card."
+	},
+	"2.0.72": {
+		"en": "Add routeLineCrossedStateEvent and update event handlers."
 	}
 }

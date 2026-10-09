@@ -78,6 +78,14 @@ async function runTests()
 			specialCalls.push(['line', value]);
 			return true;
 		},
+		routeLineCrossedStateEvent: (value) =>
+		{
+			if (value === true)
+			{
+				specialCalls.push(['line-state', value]);
+			}
+			return true;
+		},
 		routeDarkImageEvent: (value) =>
 		{
 			specialCalls.push(['dark', value]);
@@ -86,9 +94,12 @@ async function runTests()
 	};
 	const specialHandlers = createEventSpecialHandlers(specialDevice);
 	assert.strictEqual(specialHandlers['RuleEngine/LineDetector/Crossed:ObjectId']('abc'), true);
+	assert.strictEqual(specialHandlers['RuleEngine/LineDetector/Crossed:State'](true), true);
+	assert.strictEqual(specialHandlers['RuleEngine/LineDetector/Crossed:State'](false), true);
 	assert.strictEqual(specialHandlers['VideoSource/ImageTooDark/ImagingService:State'](false), true);
 	assert.deepStrictEqual(specialCalls, [
 		['line', 'abc'],
+		['line-state', true],
 		['dark', false]
 	]);
 

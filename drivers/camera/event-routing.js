@@ -34,6 +34,7 @@ function createEventSpecialHandlers(device)
 {
 	return {
 		'RuleEngine/LineDetector/Crossed:ObjectId': device.routeLineCrossedEvent.bind(device),
+		'RuleEngine/LineDetector/Crossed:State': device.routeLineCrossedStateEvent.bind(device),
 		'VideoSource/ImageTooDark/ImagingService:State': device.routeDarkImageEvent.bind(device)
 	};
 }
