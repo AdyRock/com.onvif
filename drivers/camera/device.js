@@ -190,6 +190,11 @@ class CameraDevice extends Homey.Device
 			this.setCapabilityValue('alarm_motion', false).catch(this.error);
 		}
 
+		if (this.hasCapability('alarm_line_crossed'))
+		{
+			await this.setCapabilityValue('alarm_line_crossed', false).catch(this.error);
+		}
+
 		let requiredClass = settings.classType;
 		if (this.getClass() != requiredClass)
 		{
@@ -2667,6 +2672,11 @@ class CameraDevice extends Homey.Device
 		this.eventTimeoutId = null;
 		this.homey.clearTimeout(this.lineCrossedTimeoutId);
 		this.lineCrossedTimeoutId = null;
+		if (!this.isDeleting && this.hasCapability('alarm_line_crossed'))
+		{
+			// The cancelled timer can no longer clear a persisted crossing alarm.
+			this.setCapabilityValue('alarm_line_crossed', false).catch(this.error);
+		}
 		this.homey.clearTimeout(this.personTimeoutId);
 		this.personTimeoutId = null;
 		this.homey.clearTimeout(this.dogCatTimeoutId);

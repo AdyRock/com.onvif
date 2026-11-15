@@ -481,5 +481,8 @@
 	},
 	"2.0.73": {
 		"en": "Enhanced diagnostic logging by masking sensitive information and improving the log flushing mechanism."
+	},
+	"2.0.74": {
+		"en": "Fixed line-crossing alarms getting stuck on after an app restart or camera timer cleanup."
 	}
 }

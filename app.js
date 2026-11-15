@@ -1658,7 +1658,7 @@ class MyApp extends Homey.App
             // Check camera PTZ capabilities
             const capabilities = await this.getCapabilities(camObj);
             if (!capabilities || !capabilities.PTZ) {
-                this.updateLog('This camera does not support PTZ', 0);
+                this.updateLog('This camera does not support PTZ', 1);
                 return false;
             }
 
