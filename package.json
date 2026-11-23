@@ -1,9 +1,9 @@
 {
   "name": "com.onvif",
-  "version": "2.0.71",
+  "version": "2.0.74",
   "main": "app.js",
   "scripts": {
-    "test": "node test/event-routing.test.js"
+    "test": "node test/event-routing.test.js && node test/line-crossing.test.js"
   },
   "devDependencies": {
     "eslint": "^8.34.0"
