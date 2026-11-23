@@ -8,6 +8,7 @@ A camera requires profile S and T support for this app.
 
 ## The app has the following features:
 * Current snapshot.
+* IR cut-filter mode and automatic switching boundary/delay flow actions when supported by the camera.
 
 ## Plus, if the camera supports motion detection:
 * Motion alert with flow trigger,
@@ -20,6 +21,7 @@ A camera requires profile S and T support for this app.
 Motion alerts are available when supported by the camera. These can trigger a flow card.
 Note: Some cameras report they have motion alerts but don't seem to generate any positive triggers.
 The motion detection can be enabled / disabled in the device tile and by a flow action card.
+IR/white-light illumination intensity is not part of the standard ONVIF imaging controls and is not exposed by this app.
 
 When supported and enabled, the line-crossing alarm clears after 15 seconds. It also resets when the app starts or camera timers are cleared, so an interrupted reset timer cannot leave it stuck on.
 

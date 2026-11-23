@@ -291,6 +291,24 @@ class MyApp extends Homey.App
 				return device.gotoPresetNumber(presetNumber);
 			});
 
+        this.irCutFilterAction = this.homey.flow.getActionCard('set_ir_cut_filter')
+            .registerRunListener(async (args) =>
+            {
+                return args.device.setIrCutFilterMode(args.mode);
+            });
+
+        this.irCutFilterBoundaryAction = this.homey.flow.getActionCard('set_ir_cut_filter_boundary')
+            .registerRunListener(async (args) =>
+            {
+                return args.device.setIrCutFilterBoundaryOffset(args.boundary, args.offset);
+            });
+
+        this.irCutFilterResponseAction = this.homey.flow.getActionCard('set_ir_cut_filter_response')
+            .registerRunListener(async (args) =>
+            {
+                return args.device.setIrCutFilterResponseTime(args.boundary, args.response_time);
+            });
+
         this.motionTrigger = this.homey.flow.getTriggerCard('global_motion_detected');
 
     }

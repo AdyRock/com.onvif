@@ -15,6 +15,13 @@ const {
 	eventMatchesActiveSource,
 	getEventSourceTokens
 } = require('./event-routing');
+const {
+	assertBoundaryOffsetSupported,
+	assertIrCutFilterModeSupported,
+	assertResponseTimeSupported,
+	parseImagingSupport,
+	secondsToDuration
+} = require('./imaging-control');
 
 const APP_LOCALES = {
 	en: require('../../locales/en.json'),
@@ -105,6 +112,7 @@ class CameraDevice extends Homey.Device
 		this.cam = null;
 		this.eventImage = null;
 		this.nowImage = null;
+		this.imagingSupport = parseImagingSupport();
 		this.eventTime = this.getStoreValue('eventTime');
 		this.alarmTime = this.getStoreValue('alarmTime');
 		this.cameraTime = null;
@@ -1132,6 +1140,8 @@ class CameraDevice extends Homey.Device
 						this.cam.setActiveSource(this.channel - 1);
 					}
 
+					await this.refreshImagingSupport();
+
 					let capabilities = await this.homey.app.getServiceCapabilities(this.cam);
 					this.homey.app.updateLog('** service capabilities ' + this.name + ' = ' + this.homey.app.varToString(capabilities));
 
@@ -1449,6 +1459,95 @@ class CameraDevice extends Homey.Device
 
 			this.connecting = false;
 		}
+	}
+
+	async refreshImagingSupport()
+	{
+		this.imagingSupport = parseImagingSupport();
+		if (!this.cam)
+		{
+			return this.imagingSupport;
+		}
+
+		try
+		{
+			const options = await new Promise((resolve, reject) =>
+			{
+				this.cam.getVideoSourceOptions({}, (err, data) =>
+				{
+					if (err)
+					{
+						reject(err);
+					}
+					else
+					{
+						resolve(data);
+					}
+				});
+			});
+			this.imagingSupport = parseImagingSupport(options);
+			this.homey.app.updateLog('Imaging options (' + this.name + '): ' + this.homey.app.varToString(this.imagingSupport), 1);
+		}
+		catch (err)
+		{
+			this.homey.app.updateLog('Get imaging options error (' + this.name + '): ' + (err?.message || err), 1);
+		}
+
+		return this.imagingSupport;
+	}
+
+	async setImagingSettings(settings)
+	{
+		if (!this.cam)
+		{
+			throw new Error('Camera is not connected.');
+		}
+
+		await new Promise((resolve, reject) =>
+		{
+			this.cam.setImagingSettings(settings, (err) =>
+			{
+				if (err)
+				{
+					reject(err);
+				}
+				else
+				{
+					resolve();
+				}
+			});
+		});
+	}
+
+	async setIrCutFilterMode(mode)
+	{
+		await this.refreshImagingSupport();
+		assertIrCutFilterModeSupported(this.imagingSupport, mode);
+		await this.setImagingSettings({ irCutFilter: mode });
+	}
+
+	async setIrCutFilterBoundaryOffset(boundaryType, boundaryOffset)
+	{
+		await this.refreshImagingSupport();
+		assertBoundaryOffsetSupported(this.imagingSupport, boundaryType, boundaryOffset);
+		await this.setImagingSettings({
+			irCutFilterAutoAdjustment: {
+				boundaryType,
+				boundaryOffset
+			}
+		});
+	}
+
+	async setIrCutFilterResponseTime(boundaryType, responseTime)
+	{
+		await this.refreshImagingSupport();
+		assertResponseTimeSupported(this.imagingSupport, boundaryType, responseTime);
+		await this.setImagingSettings({
+			irCutFilterAutoAdjustment: {
+				boundaryType,
+				responseTime: secondsToDuration(responseTime)
+			}
+		});
 	}
 
 	async checkCamera()

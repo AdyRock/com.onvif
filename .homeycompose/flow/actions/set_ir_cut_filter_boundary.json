@@ -1,0 +1,54 @@
+{
+  "id": "set_ir_cut_filter_boundary",
+  "title": {
+    "en": "Adjust IR cut filter light boundary"
+  },
+  "titleFormatted": {
+    "en": "Set IR cut filter [[boundary]] boundary offset to [[offset]]"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=camera"
+    },
+    {
+      "type": "dropdown",
+      "name": "boundary",
+      "title": {
+        "en": "Boundary"
+      },
+      "values": [
+        {
+          "id": "Common",
+          "label": {
+            "en": "Both directions"
+          }
+        },
+        {
+          "id": "ToOn",
+          "label": {
+            "en": "Switch to day mode"
+          }
+        },
+        {
+          "id": "ToOff",
+          "label": {
+            "en": "Switch to night mode"
+          }
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "name": "offset",
+      "title": {
+        "en": "Light boundary offset"
+      },
+      "min": -1,
+      "max": 1,
+      "step": 0.05,
+      "value": 0
+    }
+  ]
+}

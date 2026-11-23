@@ -1,0 +1,55 @@
+{
+  "id": "set_ir_cut_filter_response",
+  "title": {
+    "en": "Adjust IR cut filter switch delay"
+  },
+  "titleFormatted": {
+    "en": "Set IR cut filter [[boundary]] switch delay to [[response_time]] seconds"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=camera"
+    },
+    {
+      "type": "dropdown",
+      "name": "boundary",
+      "title": {
+        "en": "Boundary"
+      },
+      "values": [
+        {
+          "id": "Common",
+          "label": {
+            "en": "Both directions"
+          }
+        },
+        {
+          "id": "ToOn",
+          "label": {
+            "en": "Switch to day mode"
+          }
+        },
+        {
+          "id": "ToOff",
+          "label": {
+            "en": "Switch to night mode"
+          }
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "name": "response_time",
+      "title": {
+        "en": "Switch delay"
+      },
+      "units": "seconds",
+      "min": 0,
+      "max": 3600,
+      "step": 0.1,
+      "value": 0
+    }
+  ]
+}

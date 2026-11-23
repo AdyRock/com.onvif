@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.onvif",
-  "version": "2.0.74",
+  "version": "2.0.75",
   "compatibility": ">=7.4.1",
   "platforms": [
     "local"
@@ -506,6 +506,158 @@
           }
         ],
         "id": "motionEnableAction"
+      },
+      {
+        "id": "set_ir_cut_filter",
+        "title": {
+          "en": "Set IR cut filter mode"
+        },
+        "titleFormatted": {
+          "en": "Set IR cut filter to [[mode]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          },
+          {
+            "type": "dropdown",
+            "name": "mode",
+            "title": {
+              "en": "Mode"
+            },
+            "values": [
+              {
+                "id": "AUTO",
+                "label": {
+                  "en": "Automatic"
+                }
+              },
+              {
+                "id": "ON",
+                "label": {
+                  "en": "On (day mode)"
+                }
+              },
+              {
+                "id": "OFF",
+                "label": {
+                  "en": "Off (night mode)"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "set_ir_cut_filter_boundary",
+        "title": {
+          "en": "Adjust IR cut filter light boundary"
+        },
+        "titleFormatted": {
+          "en": "Set IR cut filter [[boundary]] boundary offset to [[offset]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          },
+          {
+            "type": "dropdown",
+            "name": "boundary",
+            "title": {
+              "en": "Boundary"
+            },
+            "values": [
+              {
+                "id": "Common",
+                "label": {
+                  "en": "Both directions"
+                }
+              },
+              {
+                "id": "ToOn",
+                "label": {
+                  "en": "Switch to day mode"
+                }
+              },
+              {
+                "id": "ToOff",
+                "label": {
+                  "en": "Switch to night mode"
+                }
+              }
+            ]
+          },
+          {
+            "type": "number",
+            "name": "offset",
+            "title": {
+              "en": "Light boundary offset"
+            },
+            "min": -1,
+            "max": 1,
+            "step": 0.05,
+            "value": 0
+          }
+        ]
+      },
+      {
+        "id": "set_ir_cut_filter_response",
+        "title": {
+          "en": "Adjust IR cut filter switch delay"
+        },
+        "titleFormatted": {
+          "en": "Set IR cut filter [[boundary]] switch delay to [[response_time]] seconds"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=camera"
+          },
+          {
+            "type": "dropdown",
+            "name": "boundary",
+            "title": {
+              "en": "Boundary"
+            },
+            "values": [
+              {
+                "id": "Common",
+                "label": {
+                  "en": "Both directions"
+                }
+              },
+              {
+                "id": "ToOn",
+                "label": {
+                  "en": "Switch to day mode"
+                }
+              },
+              {
+                "id": "ToOff",
+                "label": {
+                  "en": "Switch to night mode"
+                }
+              }
+            ]
+          },
+          {
+            "type": "number",
+            "name": "response_time",
+            "title": {
+              "en": "Switch delay"
+            },
+            "units": "seconds",
+            "min": 0,
+            "max": 3600,
+            "step": 0.1,
+            "value": 0
+          }
+        ]
       },
       {
         "title": {

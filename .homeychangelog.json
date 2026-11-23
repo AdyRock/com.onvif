@@ -484,5 +484,8 @@
 	},
 	"2.0.74": {
 		"en": "Fixed line-crossing alarms getting stuck on after an app restart or camera timer cleanup."
+	},
+	"2.0.75": {
+		"en": "Added flow actions to set the IR cut filter to Auto, On, or Off, and to configure automatic switch boundary and response time when supported by the camera. IR/white-light intensity control is not included because it is not standardized by ONVIF."
 	}
 }

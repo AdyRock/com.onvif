@@ -1,0 +1,43 @@
+{
+  "id": "set_ir_cut_filter",
+  "title": {
+    "en": "Set IR cut filter mode"
+  },
+  "titleFormatted": {
+    "en": "Set IR cut filter to [[mode]]"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=camera"
+    },
+    {
+      "type": "dropdown",
+      "name": "mode",
+      "title": {
+        "en": "Mode"
+      },
+      "values": [
+        {
+          "id": "AUTO",
+          "label": {
+            "en": "Automatic"
+          }
+        },
+        {
+          "id": "ON",
+          "label": {
+            "en": "On (day mode)"
+          }
+        },
+        {
+          "id": "OFF",
+          "label": {
+            "en": "Off (night mode)"
+          }
+        }
+      ]
+    }
+  ]
+}
