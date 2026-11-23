@@ -23,6 +23,8 @@ const MAX_PUSH_EVENTS_PER_WINDOW = 100;
 const PUSH_EVENT_WARNING_INTERVAL_MS = 30000;
 const PUSH_EVENT_RATE_LOG_INTERVAL_MS = 10000;
 const PUSH_EVENT_RATE_HISTORY_MAX = 10;
+const MAX_DIAG_LOG_LENGTH = 200000;
+const DIAG_LOG_TRIM_LENGTH = 150000;
 
 class MyApp extends Homey.App
 {
@@ -1502,10 +1504,10 @@ class MyApp extends Homey.App
         }
 
         let oldText = this.diagLogCache;
-        if (oldText && oldText.length > 200000)
+        if (oldText && oldText.length > MAX_DIAG_LOG_LENGTH)
         {
-            // Remove the first 1000 characters.
-            oldText = oldText.substring(1000);
+            // Trim to a fixed target so the log stays bounded however large each entry is.
+            oldText = oldText.substring(oldText.length - DIAG_LOG_TRIM_LENGTH);
             let n = oldText.indexOf('\n');
             if (n >= 0)
             {
