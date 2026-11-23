@@ -23,6 +23,8 @@ const MAX_PUSH_EVENTS_PER_WINDOW = 100;
 const PUSH_EVENT_WARNING_INTERVAL_MS = 30000;
 const PUSH_EVENT_RATE_LOG_INTERVAL_MS = 10000;
 const PUSH_EVENT_RATE_HISTORY_MAX = 10;
+const MAX_DIAG_LOG_LENGTH = 200000;
+const DIAG_LOG_TRIM_LENGTH = 150000;
 
 class MyApp extends Homey.App
 {
@@ -95,6 +97,11 @@ class MyApp extends Homey.App
             {
                 this.logLevel = this.getConfiguredLogLevel();
             }
+            if (setting === 'diagLog' && !this.diagLogFlushing)
+            {
+                // Log changed externally (e.g. cleared from the settings page)
+                this.diagLogCache = this.homey.settings.get('diagLog') || '';
+            }
             if (setting == 'port')
             {
                 this.pushServerPort = this.homey.settings.get('port');
@@ -134,6 +141,7 @@ class MyApp extends Homey.App
                 this.updateLog('Server closed', 0);
             }
             this.unregisterCameras();
+            this.flushDiagLog();
         });
 
         this.homey.on('memwarn', (data) =>
@@ -1427,6 +1435,11 @@ class MyApp extends Homey.App
                             }
                             seen.add(value);
                         }
+                        // Never include credentials in diagnostic dumps
+                        if ((typeof value === 'string') && (value !== '') && /^(password|pass|pwd)$/i.test(key))
+                        {
+                            return 'YOUR_PASSWORD';
+                        }
                         return value;
                     };
                 };
@@ -1446,6 +1459,33 @@ class MyApp extends Homey.App
         return source.toString();
     }
 
+    // Masks credentials in text destined for the diagnostics log.
+    // Handles URL userinfo (user:pass@host), password-style query parameters and,
+    // when supplied, any literal or URL-encoded occurrence of the given password.
+    maskSensitive(source, password = null)
+    {
+        let text = this.varToString(source);
+        if (typeof text !== 'string')
+        {
+            return text;
+        }
+
+        text = text.replace(/\/\/([^:@/\s]+):([^@/\s]+)@/g, '//$1:YOUR_PASSWORD@');
+        text = text.replace(/([?&](?:password|pass|pwd)=)[^&\s"']+/gi, '$1YOUR_PASSWORD');
+
+        if (password)
+        {
+            text = text.split(password).join('YOUR_PASSWORD');
+            const encoded = encodeURIComponent(password);
+            if (encoded !== password)
+            {
+                text = text.split(encoded).join('YOUR_PASSWORD');
+            }
+        }
+
+        return text;
+    }
+
     updateLog(newMessage, logLevel = 2, insertBlankLine = false)
     {
         if (logLevel > this.logLevel)
@@ -1455,11 +1495,19 @@ class MyApp extends Homey.App
 
         this.log(newMessage);
 
-        let oldText = this.homey.settings.get('diagLog');
-        if (oldText && oldText.length > 200000)
+        // Work on an in-memory copy of the log; reading / writing the settings
+        // value on every log entry is expensive, so writes are batched and
+        // flushed by a timer (see scheduleDiagLogFlush).
+        if (this.diagLogCache === undefined)
         {
-            // Remove the first 1000 characters.
-            oldText = oldText.substring(1000);
+            this.diagLogCache = this.homey.settings.get('diagLog') || '';
+        }
+
+        let oldText = this.diagLogCache;
+        if (oldText && oldText.length > MAX_DIAG_LOG_LENGTH)
+        {
+            // Trim to a fixed target so the log stays bounded however large each entry is.
+            oldText = oldText.substring(oldText.length - DIAG_LOG_TRIM_LENGTH);
             let n = oldText.indexOf('\n');
             if (n >= 0)
             {
@@ -1508,7 +1556,44 @@ class MyApp extends Homey.App
         oldText += ': ';
         oldText += newMessage;
         oldText += '\r\n';
-        this.homey.settings.set('diagLog', oldText);
+        this.diagLogCache = oldText;
+        this.scheduleDiagLogFlush();
+    }
+
+    scheduleDiagLogFlush()
+    {
+        if (this.diagLogFlushTimer)
+        {
+            return;
+        }
+
+        this.diagLogFlushTimer = this.homey.setTimeout(() =>
+        {
+            this.diagLogFlushTimer = null;
+            this.flushDiagLog();
+        }, 1000);
+    }
+
+    flushDiagLog()
+    {
+        if (this.diagLogFlushTimer)
+        {
+            this.homey.clearTimeout(this.diagLogFlushTimer);
+            this.diagLogFlushTimer = null;
+        }
+
+        if (this.diagLogCache !== undefined)
+        {
+            this.diagLogFlushing = true;
+            try
+            {
+                this.homey.settings.set('diagLog', this.diagLogCache);
+            }
+            finally
+            {
+                this.diagLogFlushing = false;
+            }
+        }
     }
 
     async sendLog({email = ''})
@@ -1520,6 +1605,7 @@ class MyApp extends Homey.App
             try
             {
                 this.updateLog('Sending log', 0);
+                this.flushDiagLog();
                 // create reusable transporter object using the default SMTP transport
                 let transporter = nodemailer.createTransport(
                     {
@@ -1574,7 +1660,7 @@ class MyApp extends Homey.App
             // Check camera PTZ capabilities
             const capabilities = await this.getCapabilities(camObj);
             if (!capabilities || !capabilities.PTZ) {
-                this.updateLog('This camera does not support PTZ', 0);
+                this.updateLog('This camera does not support PTZ', 1);
                 return false;
             }
 

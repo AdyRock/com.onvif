@@ -21,6 +21,8 @@ Motion alerts are available when supported by the camera. These can trigger a fl
 Note: Some cameras report they have motion alerts but don't seem to generate any positive triggers.
 The motion detection can be enabled / disabled in the device tile and by a flow action card.
 
+When supported and enabled, the line-crossing alarm clears after 15 seconds. It also resets when the app starts or camera timers are cleared, so an interrupted reset timer cannot leave it stuck on.
+
 A snapshot image is captured when a motion alert is generated and can be viewed in the device as well as a 'live' snapshot image.
 Those images can be accessed by flow tags to be sent to other devices by action cards.
 
@@ -34,4 +36,3 @@ Touch 'Log In' and if the details are OK the device will be added to the Home se
 Only one camera can be selected at a time when adding but you can uses the add device option again to add other cameras.
 
 This app uses a modified version of the onvif library found here https://github.com/agsh/onvif
-
