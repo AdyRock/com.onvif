@@ -3,7 +3,7 @@
   "version": "2.0.75",
   "main": "app.js",
   "scripts": {
-    "test": "node test/event-routing.test.js && node test/line-crossing.test.js && node test/imaging-control.test.js"
+    "test": "node test/event-routing.test.js && node test/line-crossing.test.js && node test/imaging-control.test.js && node test/diagnostic-log.test.js"
   },
   "devDependencies": {
     "eslint": "^8.34.0"

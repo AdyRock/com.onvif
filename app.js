@@ -14,6 +14,7 @@ const parseSOAPString = require('./lib/onvif/lib/utils').parseSOAPString;
 const linerase = require('./lib/onvif/lib/utils').linerase;
 const path = require('path');
 const nodemailer = require('./lib/nodemailer');
+const { maskSensitiveText } = require('./lib/diagnostic-log');
 
 const http = require('http');
 const { promisify } = require('util');
@@ -100,7 +101,7 @@ class MyApp extends Homey.App
             if (setting === 'diagLog' && !this.diagLogFlushing)
             {
                 // Log changed externally (e.g. cleared from the settings page)
-                this.diagLogCache = this.homey.settings.get('diagLog') || '';
+                this.diagLogCache = this.maskSensitive(this.homey.settings.get('diagLog') || '');
             }
             if (setting == 'port')
             {
@@ -1482,26 +1483,7 @@ class MyApp extends Homey.App
     // when supplied, any literal or URL-encoded occurrence of the given password.
     maskSensitive(source, password = null)
     {
-        let text = this.varToString(source);
-        if (typeof text !== 'string')
-        {
-            return text;
-        }
-
-        text = text.replace(/\/\/([^:@/\s]+):([^@/\s]+)@/g, '//$1:YOUR_PASSWORD@');
-        text = text.replace(/([?&](?:password|pass|pwd)=)[^&\s"']+/gi, '$1YOUR_PASSWORD');
-
-        if (password)
-        {
-            text = text.split(password).join('YOUR_PASSWORD');
-            const encoded = encodeURIComponent(password);
-            if (encoded !== password)
-            {
-                text = text.split(encoded).join('YOUR_PASSWORD');
-            }
-        }
-
-        return text;
+        return maskSensitiveText(this.varToString(source), password);
     }
 
     updateLog(newMessage, logLevel = 2, insertBlankLine = false)
@@ -1511,14 +1493,15 @@ class MyApp extends Homey.App
             return;
         }
 
-        this.log(newMessage);
+        const safeMessage = this.maskSensitive(newMessage);
+        this.log(safeMessage);
 
         // Work on an in-memory copy of the log; reading / writing the settings
         // value on every log entry is expensive, so writes are batched and
         // flushed by a timer (see scheduleDiagLogFlush).
         if (this.diagLogCache === undefined)
         {
-            this.diagLogCache = this.homey.settings.get('diagLog') || '';
+            this.diagLogCache = this.maskSensitive(this.homey.settings.get('diagLog') || '');
         }
 
         let oldText = this.diagLogCache;
@@ -1572,7 +1555,7 @@ class MyApp extends Homey.App
         }
         oldText += milliSeconds;
         oldText += ': ';
-        oldText += newMessage;
+        oldText += safeMessage;
         oldText += '\r\n';
         this.diagLogCache = oldText;
         this.scheduleDiagLogFlush();
